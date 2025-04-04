@@ -1,0 +1,32 @@
+# Build files
+build/
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.a
+*.so
+*.dll
+
+# Qt generated files
+Makefile*
+*.pro.user
+*.moc
+moc_*.cpp
+moc_*.o
+qrc_*.cpp
+ui_*.h
+
+# Qt Creator
+*.autosave
+*.qmlproject.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+
+# Compiled binary
+project
+
+# Visual Studio Code settings
+.vscode/
