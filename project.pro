@@ -1,6 +1,9 @@
 # project.pro
+
 QT += widgets
 CONFIG += c++17
-SOURCES += main.cpp \
-           main_window.cpp
-HEADERS += MainWindow.h
+
+SOURCES += src/main.cpp \
+           src/main_window.cpp
+
+HEADERS += src/main_window.h
