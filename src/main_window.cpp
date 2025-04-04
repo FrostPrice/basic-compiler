@@ -7,24 +7,26 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    auto *editor = new QTextEdit(this);
+    editor = new QTextEdit(this);
     editor->setFontPointSize(14);
 
-    auto *compileButton = new QPushButton("Compilar", this);
+    QPushButton *compileButton = new QPushButton("Compilar", this);
 
-    auto *output = new QTextBrowser(this);
+    output = new QTextBrowser(this);
     output->setFontPointSize(14);
 
-    auto *layout = new QVBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(editor);
     layout->addWidget(compileButton);
     layout->addWidget(output);
 
-    auto *widget = new QWidget(this);
+    QWidget *widget = new QWidget(this);
     widget->setLayout(layout);
     setCentralWidget(widget);
-}
 
+    // Connect the button to the slot
+    connect(compileButton, &QPushButton::clicked, this, &MainWindow::compileCode);
+}
 void MainWindow::compileCode()
 {
     // Placeholder implementation
