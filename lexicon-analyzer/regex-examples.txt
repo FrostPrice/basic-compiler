@@ -1,0 +1,26 @@
+Crie as expressões regulares que reconheçam:
+
+• Binário pares
+(0|1)*0
+
+• Palavras com 00 no final
+.*00
+
+• Strings entre aspas
+".+"
+
+• E-mail .br ou .com.br
+\w+@\w+(\.com)?\.br
+[a-zA-Z]+@[a-zA-Z]+(\.com)?\.br
+
+• Telefones em SC
+\(4[7-9]\) 9 [0-9]{4}-[0-9]{4}
+
+• Placas de veículos no Brasil
+[A-Z]{3}[0-9]{4}
+
+• Comentários de linha //
+\/\/.*
+
+• Comentários de múltiplas linhas /* ... */
+(\/\*)(.*|\n)*(\*\/)

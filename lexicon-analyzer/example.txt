@@ -1,0 +1,76 @@
+// Example program using all tokens
+
+int main() {
+    // Variable declarations
+    int x = 10;
+    float y = 5.5;
+    string message = "Hello, world!";
+    char letter = 'A';
+    bool is_active = true;
+    
+    // Bitwise operations
+    int a = 0b1010;    // Binary literal
+    int b = 0x1F;      // Hexadecimal literal
+    int c = a << 2;    // Bitwise left shift
+    int d = b >> 1;    // Bitwise right shift
+    int e = a & b;     // Bitwise AND
+    int f = a | b;     // Bitwise OR
+    int g = ~a;        // Bitwise NOT
+    int h = a ^ b;     // Bitwise XOR
+
+    // Arithmetic operations
+    int sum = x + y;
+    int diff = x - y;
+    int product = x * y;
+    int quotient = x / 2;
+    int remainder = x % 3;
+
+    // Relational operations
+    if (x > y) {
+        message = "x is greater than y";
+    } else if (x == y) {
+        message = "x is equal to y";
+    } else {
+        message = "x is less than y";
+    }
+
+    // Logical operations
+    if (is_active && (x < 20 || y > 2)) {
+        message = "Condition met!";
+    }
+
+    // Loops
+    for (int i = 0; i < 5; i++) {
+        x += i;
+    }
+
+    while (x > 0) {
+        x--;
+    }
+
+    do {
+        x++;
+    } while (x < 10);
+
+    // Switch statement
+    switch (x) {
+        case 1:
+            message = "x is 1";
+            break;
+        case 2:
+            message = "x is 2";
+            break;
+        default:
+            message = "x is something else";
+    }
+
+    // Comments
+    // This is a single-line comment
+
+    /*
+      This is a multi-line comment
+      explaining a block of code
+    */
+
+    return 0;
+}
