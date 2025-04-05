@@ -104,5 +104,78 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 ":"
 "."
 #NonTerminals
-
+<assign>
+<exp>
+<exp0>
+<exp1>
+<exp2>
+<exp3>
+<exp4>
+<exp5>
+<exp6>
+<exp7>
+<exp8>
+<exp9>
+<exp10>
+<exp11>
+<exp12>
+<op_assign>
+<op_rel_low>
+<op_rel_high>
+<op_bitwise>
+<op_arit_low>
+<op_arit_high>
+<op_neg>
+<op_inc>
+<val_number>
+<val_string>
+<val_boolean>
+<data_type>
+<array_declaration>
+<type_declaration>
+<assignable>
+<array_access>
 #Grammar
+// falta chamadas de funções e vetores aceitarem expressões com valores/variáveis
+<assign> ::= <type_declaration> <assignable> <op_assign> <exp>;
+<exp> ::= <exp0> ";";
+<exp0> ::= <exp0> OR <exp1> | <exp1>;
+<exp1> ::= <exp1> AND <exp2> | <exp2>;
+<exp2> ::= <exp2> BIT_OR <exp3> | <exp3>;
+<exp3> ::= <exp3> BIT_XOR <exp4> | <exp4>;
+<exp4> ::= <exp4> BIT_AND <exp5> | <exp5>;
+<exp5> ::= <exp5> <op_rel_low> <exp6> | <exp6>;
+<exp6> ::= <exp6> <op_rel_high> <exp7> | <exp7>;
+<exp7> ::= <exp7> <op_bitwise> <exp8> | <exp8>;
+<exp8> ::= <exp8> <op_arit_low> <exp9> | <exp9>;
+<exp9> ::= <exp9> <op_arit_high> <exp10> | <exp10> ;
+<exp10> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp11>;
+<exp11> ::= <assignable> <op_inc> | <exp12>;
+<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | "(" <exp0> ")";
+
+<op_assign> ::= ASSIGNMENT | ASSIGNMENT_ADD | ASSIGNMENT_SUB | ASSIGNMENT_MULT | ASSIGNMENT_DIVIDE | ASSIGNMENT_REMAIN;
+<op_rel_low> ::= EQ | NE;
+<op_rel_high> ::= GT | LT | GE | LE;
+<op_bitwise> ::= BIT_LSHIFT | BIT_RSHIFT;
+<op_arit_low> ::= PLUS | MINUS;
+<op_arit_high> ::= MULTIPLY | DIVIDE | REMAINDER;
+<op_neg> ::= MINUS | BIT_NOT | NOT;
+<op_inc> ::= INCREMENT | DECREMENT;
+
+<val_number> ::= VAL_BINARY | VAL_HEXADECIMAL | VAL_INTEGER | VAL_FLOAT | VAL_DOUBLE;
+<val_string> ::= VAL_CHAR | VAL_STRING;
+<val_boolean> ::= VAL_TRUE | VAL_FALSE;
+
+<data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
+<array_declaration> ::= "[" "]" <array_declaration> | "[" "]";
+<type_declaration> ::= <data_type> <array_declaration> | <data_type>;
+
+// variable, vector[0], matrix[1][2], object.prop, cube.vertices[3].x
+<assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
+
+// [1], [2][3], [x[y]], [x.y]
+<array_access> ::= "[" VAL_INTEGER "]" <array_access> | "[" <assignable> "]" <array_access> | "[" VAL_INTEGER "]" | "[" <assignable> "]";
+
+
+//Exemplo com tudo para ser usado no simulador
+// -x + 8.8 - !x * 2 / ~y % 3 << 7 != y >> 3 || (x <= 3 && y > 8) | p & (h ^ g)
