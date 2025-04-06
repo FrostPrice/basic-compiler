@@ -4,6 +4,8 @@ QT += widgets
 CONFIG += c++17
 
 SOURCES += src/main.cpp \
-           src/main_window.cpp
+           src/ui/main_window.cpp \
+           src/ui/code_editor.cpp
 
-HEADERS += src/main_window.hpp
+HEADERS += src/ui/main_window.hpp \
+           src/ui/code_editor.hpp
