@@ -106,8 +106,8 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 #NonTerminals
 <declaration>
 <dec_assign>
-<var_assign>
-<exp0>
+<assignment>
+<expression>
 <exp1>
 <exp2>
 <exp3>
@@ -139,11 +139,11 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 #Grammar
 // falta chamadas de funções e vetores aceitarem expressões com valores/variáveis
 <declaration> ::= <type_declaration> <dec_assign> ";";
-<dec_assign> ::= ID ASSIGNMENT <exp0> "," <dec_assign> | ID ASSIGNMENT <exp0> | ID "," <dec_assign> | ID;
+<dec_assign> ::= ID ASSIGNMENT <expression> "," <dec_assign> | ID ASSIGNMENT <expression> | ID "," <dec_assign> | ID;
 
-<var_assign> ::= <assignable> <op_assign> <exp0> ";";
+<assignment> ::= <assignable> <op_assign> <expression>;
 
-<exp0> ::= <exp0> OR <exp1> | <exp1>;
+<expression> ::= <expression> OR <exp1> | <exp1>;
 <exp1> ::= <exp1> AND <exp2> | <exp2>;
 <exp2> ::= <exp2> BIT_OR <exp3> | <exp3>;
 <exp3> ::= <exp3> BIT_XOR <exp4> | <exp4>;
@@ -155,7 +155,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <exp9> ::= <exp9> <op_arit_high> <exp10> | <exp10> ;
 <exp10> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp11>;
 <exp11> ::= <assignable> <op_inc> | <exp12>;
-<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | "(" <exp0> ")";
+<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | "(" <expression> ")";
 
 <op_assign> ::= ASSIGNMENT | ASSIGNMENT_ADD | ASSIGNMENT_SUB | ASSIGNMENT_MULT | ASSIGNMENT_DIVIDE | ASSIGNMENT_REMAIN;
 <op_rel_low> ::= EQ | NE;
@@ -178,7 +178,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
 
 // [1], [2][3], [x[y]], [x.y]
-<array_access> ::= "[" <exp0> "]" <array_access> | "[" <exp0>"]";
+<array_access> ::= "[" <expression> "]" <array_access> | "[" <expression> "]";
 
 //Exemplo com tudo para ser usado no simulador
 // -x + 8.8 - !x * 2 / ~y % 3 << 7 != y >> 3 || (x <= 3 && y > 8) | p & (h ^ g)
