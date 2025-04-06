@@ -141,6 +141,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <array_access>
 <array_value>
 <params>
+<func_call>
 #Grammar
 <instruction_type> ::= <declaration> | <expression> | <assignment>;
 <instruction> ::= <instruction_type> ";";
@@ -164,7 +165,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <exp9> ::= <exp9> <op_arit_high> <exp10> | <exp10> ;
 <exp10> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp11>;
 <exp11> ::= <assignable> <op_inc> | <exp12>;
-<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | "(" <expression> ")";
+<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | <assignable> <func_call> | "(" <expression> ")";
 
 <op_assign> ::= ASSIGNMENT | ASSIGNMENT_ADD | ASSIGNMENT_SUB | ASSIGNMENT_MULT | ASSIGNMENT_DIVIDE | ASSIGNMENT_REMAIN;
 <op_rel_low> ::= EQ | NE;
@@ -191,6 +192,9 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <array_value> ::= "[" <params> "]";
 
 <params> ::= <expression> "," <params> | <array_value> "," <params> | <expression> | <array_value>;
+
+<func_call> ::= "(" <params> ")" <func_call> | "(" <params> ")"
+  | "(" ")" <func_call> | "(" ")";
 
 //Exemplo com tudo para ser usado no simulador
 // -x + 8.8 - !x * 2 / ~y % 3 << 7 != y >> 3 || (x <= 3 && y > 8) | p & (h ^ g)
