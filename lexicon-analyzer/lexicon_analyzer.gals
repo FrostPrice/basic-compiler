@@ -174,8 +174,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
 
 // [1], [2][3], [x[y]], [x.y]
-<array_access> ::= "[" VAL_INTEGER "]" <array_access> | "[" <assignable> "]" <array_access> | "[" VAL_INTEGER "]" | "[" <assignable> "]";
-
+<array_access> ::= "[" <exp0> "]" <array_access> | "[" <exp0>"]";
 
 //Exemplo com tudo para ser usado no simulador
 // -x + 8.8 - !x * 2 / ~y % 3 << 7 != y >> 3 || (x <= 3 && y > 8) | p & (h ^ g)
