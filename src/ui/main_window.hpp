@@ -3,6 +3,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLabel>
+#include "code_editor.hpp"
 
 class QTextEdit;
 class QTextBrowser;
@@ -19,7 +21,7 @@ private slots:
     void compileCode();
 
 private:
-    QTextEdit *editor;
+    CodeEditor *editor;
     QTextBrowser *output;
 };
 
