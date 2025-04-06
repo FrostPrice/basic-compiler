@@ -108,6 +108,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <instruction_type>
 <instruction>
 <declaration>
+<dec_assign_list>
 <dec_assign>
 <assignment>
 <expression>
@@ -136,16 +137,18 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <val_boolean>
 <data_type>
 <array_declaration>
-<type_declaration>
 <assignable>
 <array_access>
+<array_value>
+<params>
 #Grammar
 <instruction_type> ::= <declaration> | <expression> | <assignment>;
 <instruction> ::= <instruction_type> ";";
 <instruction_set> ::= <instruction_set> <instruction> | <instruction>;
 
-<declaration> ::= <type_declaration> <dec_assign> ";";
-<dec_assign> ::= ID ASSIGNMENT <expression> "," <dec_assign> | ID ASSIGNMENT <expression> | ID "," <dec_assign> | ID;
+<declaration> ::= <data_type> <dec_assign_list>;
+<dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
+<dec_assign> ::= ID ASSIGNMENT <expression> | ID <array_access> ASSIGNMENT <array_value> | ID <array_access> | ID;
 
 <assignment> ::= <assignable> <op_assign> <expression>;
 
@@ -178,13 +181,16 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 
 <data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
 <array_declaration> ::= "[" "]" <array_declaration> | "[" "]";
-<type_declaration> ::= <data_type> <array_declaration> | <data_type>;
 
 // variable, vector[0], matrix[1][2], object.prop, cube.vertices[3].x
 <assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
 
 // [1], [2][3], [x[y]], [x.y]
 <array_access> ::= "[" <expression> "]" <array_access> | "[" <expression> "]";
+
+<array_value> ::= "[" <params> "]";
+
+<params> ::= <expression> "," <params> | <array_value> "," <params> | <expression> | <array_value>;
 
 //Exemplo com tudo para ser usado no simulador
 // -x + 8.8 - !x * 2 / ~y % 3 << 7 != y >> 3 || (x <= 3 && y > 8) | p & (h ^ g)
