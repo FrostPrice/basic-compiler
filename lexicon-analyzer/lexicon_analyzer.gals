@@ -104,8 +104,9 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 ":"
 "."
 #NonTerminals
-<assign>
-<exp>
+<declaration>
+<dec_assign>
+<var_assign>
 <exp0>
 <exp1>
 <exp2>
@@ -137,8 +138,11 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <array_access>
 #Grammar
 // falta chamadas de funções e vetores aceitarem expressões com valores/variáveis
-<assign> ::= <type_declaration> <assignable> <op_assign> <exp>;
-<exp> ::= <exp0> ";";
+<declaration> ::= <type_declaration> <dec_assign> ";";
+<dec_assign> ::= ID ASSIGNMENT <exp0> "," <dec_assign> | ID ASSIGNMENT <exp0> | ID "," <dec_assign> | ID;
+
+<var_assign> ::= <assignable> <op_assign> <exp0> ";";
+
 <exp0> ::= <exp0> OR <exp1> | <exp1>;
 <exp1> ::= <exp1> AND <exp2> | <exp2>;
 <exp2> ::= <exp2> BIT_OR <exp3> | <exp3>;
