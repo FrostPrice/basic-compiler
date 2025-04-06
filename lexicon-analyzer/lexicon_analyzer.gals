@@ -205,7 +205,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 
 <array_value> ::= "[" <params> "]";
 
-<params> ::= <expression> "," <params> | <array_value> "," <params> | <expression> | <array_value>;
+<params> ::= <params> "," <expression> | <params> "," <array_value> | <expression> | <array_value>;
 
 <func_call> ::= "(" <params> ")" | "(" ")";
 
