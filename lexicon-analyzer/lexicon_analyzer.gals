@@ -110,6 +110,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <declaration>
 <dec_assign_list>
 <dec_assign>
+<dec_target>
 <assignment>
 <expression>
 <exp1>
@@ -138,7 +139,11 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <data_type>
 <array_declaration>
 <assignable>
+<access_chain>
+<access_element>
+<prop_access>
 <array_access>
+<array_access_list>
 <array_value>
 <params>
 <func_call>
@@ -148,8 +153,12 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <instruction_set> ::= <instruction_set> <instruction> | <instruction>;
 
 <declaration> ::= <data_type> <dec_assign_list>;
+
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
-<dec_assign> ::= ID ASSIGNMENT <expression> | ID <array_access> ASSIGNMENT <array_value> | ID <array_access> | ID;
+<dec_assign> ::= <dec_target> ASSIGNMENT <expression>
+  | <dec_target> ASSIGNMENT <array_value>
+  | <dec_target>;
+<dec_target> ::= ID <array_access_list> | ID;
 
 <assignment> ::= <assignable> <op_assign> <expression>;
 
@@ -165,7 +174,7 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <exp9> ::= <exp9> <op_arit_high> <exp10> | <exp10> ;
 <exp10> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp11>;
 <exp11> ::= <assignable> <op_inc> | <exp12>;
-<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | <assignable> <func_call> | "(" <expression> ")";
+<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | "(" <expression> ")";
 
 <op_assign> ::= ASSIGNMENT | ASSIGNMENT_ADD | ASSIGNMENT_SUB | ASSIGNMENT_MULT | ASSIGNMENT_DIVIDE | ASSIGNMENT_REMAIN;
 <op_rel_low> ::= EQ | NE;
@@ -181,20 +190,24 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <val_boolean> ::= VAL_TRUE | VAL_FALSE;
 
 <data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
-<array_declaration> ::= "[" "]" <array_declaration> | "[" "]";
+<array_declaration> ::= <array_declaration> "[" "]" | "[" "]";
 
-// variable, vector[0], matrix[1][2], object.prop, cube.vertices[3].x
-<assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
+<assignable> ::= ID <access_chain> | ID;
+<access_chain> ::= <access_chain> <access_element> | <access_element>;
+<access_element> ::= <array_access>
+  | <prop_access>
+  | <func_call>;
 
-// [1], [2][3], [x[y]], [x.y]
-<array_access> ::= "[" <expression> "]" <array_access> | "[" <expression> "]";
+<prop_access> ::= "." ID;
+
+<array_access> ::= "[" <expression> "]";
+<array_access_list> ::= <array_access_list> <array_access> | <array_access>;
 
 <array_value> ::= "[" <params> "]";
 
 <params> ::= <expression> "," <params> | <array_value> "," <params> | <expression> | <array_value>;
 
-<func_call> ::= "(" <params> ")" <func_call> | "(" <params> ")"
-  | "(" ")" <func_call> | "(" ")";
+<func_call> ::= "(" <params> ")" | "(" ")";
 
 //Exemplo com tudo para ser usado no simulador
 // -x + 8.8 - !x * 2 / ~y % 3 << 7 != y >> 3 || (x <= 3 && y > 8) | p & (h ^ g)
