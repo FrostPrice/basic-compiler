@@ -104,6 +104,9 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 ":"
 "."
 #NonTerminals
+<instruction_set>
+<instruction_type>
+<instruction>
 <declaration>
 <dec_assign>
 <assignment>
@@ -137,7 +140,10 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <assignable>
 <array_access>
 #Grammar
-// falta chamadas de funções e vetores aceitarem expressões com valores/variáveis
+<instruction_type> ::= <declaration> | <expression> | <assignment>;
+<instruction> ::= <instruction_type> ";";
+<instruction_set> ::= <instruction_set> <instruction> | <instruction>;
+
 <declaration> ::= <type_declaration> <dec_assign> ";";
 <dec_assign> ::= ID ASSIGNMENT <expression> "," <dec_assign> | ID ASSIGNMENT <expression> | ID "," <dec_assign> | ID;
 
