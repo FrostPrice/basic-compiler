@@ -117,7 +117,6 @@ VAL_FALSE = ID : "false"
 <declaration>
 <dec_assign_list>
 <dec_assign>
-<dec_target>
 <assignment>
 <expression>
 <exp1>
@@ -146,11 +145,7 @@ VAL_FALSE = ID : "false"
 <data_type>
 <array_declaration>
 <assignable>
-<access_chain>
-<access_element>
-<prop_access>
 <array_access>
-<array_access_list>
 <array_value>
 <params>
 <func_call>
@@ -197,12 +192,8 @@ VAL_FALSE = ID : "false"
 <instruction_set> ::= <instruction_set> <instruction> | <instruction>;
 
 <declaration> ::= <data_type> <dec_assign_list>;
-
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
-<dec_assign> ::= <dec_target> ASSIGNMENT <expression>
-  | <dec_target> ASSIGNMENT <array_value>
-  | <dec_target>;
-<dec_target> ::= ID <array_access_list> | ID;
+<dec_assign> ::= ID ASSIGNMENT <expression> | ID <array_access> ASSIGNMENT <array_value> | ID <array_access> | ID;
 
 <assignment> ::= <assignable> <op_assign> <expression>;
 
@@ -237,7 +228,7 @@ VAL_FALSE = ID : "false"
 <val_boolean> ::= VAL_TRUE | VAL_FALSE;
 
 <data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
-<array_declaration> ::= "[" "]" <array_declaration> | "[" "]";
+<array_declaration> ::= <array_declaration> "[" "]" | "[" "]";
 
 <assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
 <array_access> ::= "[" <expression> "]" <array_access> | "[" <expression> "]";
