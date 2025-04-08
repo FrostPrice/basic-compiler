@@ -7,13 +7,18 @@ ParserName = Sintatico
 SemanticName = Semantico
 ScannerCaseSensitive = true
 ScannerTable = Full
-Input = String
+Input = Stream
 Parser = SLR
 #RegularDefinitions
 
 #Tokens
 // Ignore
 :[\n\r\t\s]*
+
+// Comments (Ignore)
+:(/)(/)[^\n]*
+:/(\*)([^\*]|\*+[^"\/"])*(\*)/
+
 
 // Identifiers
 ID : [a-zA-Z_][a-zA-Z0-9_]*
@@ -38,6 +43,9 @@ RETURN = ID : "return"
 CONTINUE = ID : "continue"
 BREAK = ID : "break"
 DEFAULT = ID : "default"
+INPUT = ID : "input"
+OUTPUT = ID : "print"
+VOID = ID : "void"
 
 // Assignment
 ASSIGNMENT: "="
@@ -88,10 +96,6 @@ VAL_STRING: \"[^\"]*\"
 VAL_TRUE = ID : "true"
 VAL_FALSE = ID : "false"
 
-// Comments
-SINGLE_LINE_COMMENT : (/)(/)[^\n]*
-MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
-
 // Delimiters and Punctuation
 "("
 ")"
@@ -103,10 +107,13 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 ";"
 ":"
 "."
+"<<"
+">>"
 #NonTerminals
-<instruction_set>
+<program>
 <instruction_type>
 <instruction>
+<instruction_set>
 <declaration>
 <dec_assign_list>
 <dec_assign>
@@ -147,8 +154,45 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <array_value>
 <params>
 <func_call>
+<block>
+<statement_list>
+<while_loop>
+<for_loop>
+<do_while_loop>
+<loop>
+<conditional>
+<if_statement>
+<if_else_statement>
+<switch_case>
+<case_list>
+<case_item>
+<default_case>
+<return_statement>
+<break_statement>
+<continue_statement>
+<input>
+<input_list>
+<input_list_rest>
+<output>
+<output_list>
+<output_list_rest>
+<output_item>
+<variable>
+<subroutine_call>
+<arg_list>
+<arg_list_rest>
+<subroutine_def>
+<param_list>
+<param_list_rest>
+<param>
+<statement>
+<val>
+<assignable_func_call>
+
 #Grammar
-<instruction_type> ::= <declaration> | <expression> | <assignment>;
+<program> ::= <instruction_set>;
+
+<instruction_type> ::= <declaration> | <assignment>;
 <instruction> ::= <instruction_type> ";";
 <instruction_set> ::= <instruction_set> <instruction> | <instruction>;
 
@@ -162,19 +206,22 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 
 <assignment> ::= <assignable> <op_assign> <expression>;
 
-<expression> ::= <expression> OR <exp1> | <exp1>;
-<exp1> ::= <exp1> AND <exp2> | <exp2>;
-<exp2> ::= <exp2> BIT_OR <exp3> | <exp3>;
-<exp3> ::= <exp3> BIT_XOR <exp4> | <exp4>;
-<exp4> ::= <exp4> BIT_AND <exp5> | <exp5>;
-<exp5> ::= <exp5> <op_rel_low> <exp6> | <exp6>;
-<exp6> ::= <exp6> <op_rel_high> <exp7> | <exp7>;
-<exp7> ::= <exp7> <op_bitwise> <exp8> | <exp8>;
-<exp8> ::= <exp8> <op_arit_low> <exp9> | <exp9>;
-<exp9> ::= <exp9> <op_arit_high> <exp10> | <exp10> ;
-<exp10> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp11>;
-<exp11> ::= <assignable> <op_inc> | <exp12>;
-<exp12> ::= <val_number> | <val_string> | <val_boolean> | <assignable> | "(" <expression> ")";
+<expression> ::= <exp1>;
+<exp1> ::= <exp1> OR <exp2> | <exp2>;
+<exp2> ::= <exp2> AND <exp3> | <exp3>;
+<exp3> ::= <exp3> BIT_OR <exp4> | <exp4>;
+<exp4> ::= <exp4> BIT_XOR <exp5> | <exp5>;
+<exp5> ::= <exp5> BIT_AND <exp6> | <exp6>;
+<exp6> ::= <exp6> <op_rel_low> <exp7> | <exp7>;
+<exp7> ::= <exp7> <op_rel_high> <exp8> | <exp8>;
+<exp8> ::= <exp8> <op_bitwise> <exp9> | <exp9>;
+<exp9> ::= <exp9> <op_arit_low> <exp10> | <exp10>;
+<exp10> ::= <exp10> <op_arit_high> <exp11> | <exp11>;
+<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp12>;
+<exp12> ::= <assignable> <op_inc> | <val> | "(" <expression> ")";
+
+<val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
+<assignable_func_call> ::= <assignable> <func_call> | <assignable>;
 
 <op_assign> ::= ASSIGNMENT | ASSIGNMENT_ADD | ASSIGNMENT_SUB | ASSIGNMENT_MULT | ASSIGNMENT_DIVIDE | ASSIGNMENT_REMAIN;
 <op_rel_low> ::= EQ | NE;
@@ -190,24 +237,67 @@ MULTI_LINE_COMMENT: /(\*)([^\*]|\*+[^"\/"])*(\*)/
 <val_boolean> ::= VAL_TRUE | VAL_FALSE;
 
 <data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
-<array_declaration> ::= <array_declaration> "[" "]" | "[" "]";
+<array_declaration> ::= "[" "]" <array_declaration> | "[" "]";
 
-<assignable> ::= ID <access_chain> | ID;
-<access_chain> ::= <access_chain> <access_element> | <access_element>;
-<access_element> ::= <array_access>
-  | <prop_access>
-  | <func_call>;
-
-<prop_access> ::= "." ID;
-
-<array_access> ::= "[" <expression> "]";
-<array_access_list> ::= <array_access_list> <array_access> | <array_access>;
+<assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
+<array_access> ::= "[" <expression> "]" <array_access> | "[" <expression> "]";
 
 <array_value> ::= "[" <params> "]";
+<params> ::= <expression> "," <params> | <array_value> "," <params> | <expression> | <array_value>;
 
-<params> ::= <params> "," <expression> | <params> "," <array_value> | <expression> | <array_value>;
+<func_call> ::= "(" <params> ")" <func_call> | "(" <params> ")" | "(" ")" <func_call> | "(" ")";
 
-<func_call> ::= "(" <params> ")" | "(" ")";
+<block> ::= "{" <statement_list> "}";
+<statement_list> ::= <statement> <statement_list> | î;
 
-//Exemplo com tudo para ser usado no simulador
-// -x + 8.8 - !x * 2 / ~y % 3 << 7 != y >> 3 || (x <= 3 && y > 8) | p & (h ^ g)
+<while_loop> ::= WHILE "(" <expression> ")" <block>;
+<for_loop> ::= FOR "(" <assignment> ";" <expression> ";" <assignment> ")" <block>;
+<do_while_loop> ::= DO <block> WHILE "(" <expression> ")" ";";
+
+<loop> ::= <while_loop> | <for_loop> | <do_while_loop>;
+
+<conditional> ::= <if_statement> | <if_else_statement>;
+<if_statement> ::= IF "(" <expression> ")" <block>;
+<if_else_statement> ::= IF "(" <expression> ")" <block> ELSE <block>;
+
+<switch_case> ::= SWITCH "(" <expression> ")" "{" <case_list> <default_case> "}";
+<case_list> ::= <case_item> <case_list> | î;
+<case_item> ::= CASE <val_number> ":" <statement_list>;
+<default_case> ::= DEFAULT ":" <statement_list> | î;
+
+<return_statement> ::= RETURN <expression> ";";
+<break_statement> ::= BREAK ";";
+<continue_statement> ::= CONTINUE ";";
+
+<input> ::= INPUT ">>" <input_list> ";";
+<input_list> ::= <variable> <input_list_rest>;
+<input_list_rest> ::= ">>" <variable> <input_list_rest> | î;
+
+<output> ::= OUTPUT "<<" <output_list> ";";
+<output_list> ::= <output_item> <output_list_rest>;
+<output_list_rest> ::= "<<" <output_item> <output_list_rest> | î;
+<output_item> ::= <variable> | VAL_STRING | VAL_INTEGER | VAL_FLOAT | VAL_DOUBLE | VAL_CHAR | VAL_TRUE | VAL_FALSE;
+
+<variable> ::= ID | ID "[" <expression> "]";
+<subroutine_call> ::= ID "(" <arg_list> ")";
+<arg_list> ::= <expression> <arg_list_rest> | î;
+<arg_list_rest> ::= "," <expression> <arg_list_rest> | î;
+
+<subroutine_def> ::= <data_type> ID "(" <param_list> ")" <block>;
+<param_list> ::= <param> <param_list_rest> | î;
+<param_list_rest> ::= "," <param> <param_list_rest> | î;
+<param> ::= <data_type> <variable>;
+
+<statement> ::= <declaration>
+            | <assignment>
+            | <loop>
+            | <conditional>
+            | <switch_case>
+            | <return_statement>
+            | <break_statement>
+            | <continue_statement>
+            | <input>
+            | <output>
+            | <block>
+            | <subroutine_def>
+            | <subroutine_call> ";";
