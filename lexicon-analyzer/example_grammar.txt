@@ -1,0 +1,44 @@
+int a, b[10], c;
+float x = 3.14;
+bool flag = true;
+
+void printSomething(int value) {
+    cout << "Value: " << value;
+}
+
+int main() {
+    a = 5;
+    b[2] = [1, 2, 3];
+    c = a + b[2] * (10 - 3);
+    
+    if (c > 10) {
+        cout << "Greater than 10";
+    } else {
+        cout << "Not greater than 10";
+    }
+
+    for (a = 0; a < 10; a++) {
+        cout << a;
+    }
+
+    while (a > 0) {
+        a = a - 1;
+    }
+
+    do {
+        a = a + 1;
+    } while (a < 5);
+
+    switch (a) {
+        case 1:
+            cout << "One";
+        case 2:
+            cout << "Two";
+        default:
+            cout << "Other";
+    }
+
+    printSomething(a);
+
+    return a;
+}
