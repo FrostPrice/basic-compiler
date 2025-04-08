@@ -227,7 +227,7 @@ VAL_FALSE = ID : "false"
 <val_string> ::= VAL_CHAR | VAL_STRING;
 <val_boolean> ::= VAL_TRUE | VAL_FALSE;
 
-<data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
+<data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN | VOID;
 <array_declaration> ::= <array_declaration> "[" "]" | "[" "]";
 
 <assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
