@@ -1,13 +1,13 @@
 #Options
 GenerateScanner = true
 GenerateParser = true
-Language = Java
-ScannerName = Lexico
-ParserName = Sintatico
-SemanticName = Semantico
+Language = C++
+ScannerName = Lexical
+ParserName = Syntactic
+SemanticName = Semantic
 ScannerCaseSensitive = true
 ScannerTable = Full
-Input = Stream
+Input = String
 Parser = SLR
 #RegularDefinitions
 
@@ -30,6 +30,7 @@ DOUBLE = ID : "double"
 CHAR = ID : "char"
 STRING = ID : "string"
 BOOLEAN = ID : "bool"
+VOID = ID : "void"
 
 // Reserved Keywords
 IF = ID : "if"
@@ -45,7 +46,6 @@ BREAK = ID : "break"
 DEFAULT = ID : "default"
 INPUT = ID : "input"
 OUTPUT = ID : "print"
-VOID = ID : "void"
 
 // Assignment
 ASSIGNMENT: "="
@@ -111,13 +111,14 @@ VAL_FALSE = ID : "false"
 ">>"
 #NonTerminals
 <program>
-<instruction_type>
-<instruction>
-<instruction_set>
+//<instruction_type>
+//<instruction>
+//<instruction_set>
 <declaration>
 <dec_assign_list>
 <dec_assign>
 <assignment>
+<assign_array>
 <expression>
 <exp1>
 <exp2>
@@ -131,6 +132,8 @@ VAL_FALSE = ID : "false"
 <exp10>
 <exp11>
 <exp12>
+<val>
+<assignable_func_call>
 <op_assign>
 <op_rel_low>
 <op_rel_high>
@@ -152,12 +155,13 @@ VAL_FALSE = ID : "false"
 <block>
 <statement_list>
 <while_loop>
+<assign_or_dec>
 <for_loop>
 <do_while_loop>
 <loop>
-<conditional>
+//<conditional>
 <if_statement>
-<if_else_statement>
+//<if_else_statement>
 <switch_case>
 <case_list>
 <case_item>
@@ -166,36 +170,29 @@ VAL_FALSE = ID : "false"
 <break_statement>
 <continue_statement>
 <input>
-<input_list>
-<input_list_rest>
 <output>
-<output_list>
-<output_list_rest>
-<output_item>
 <variable>
-<subroutine_call>
 <arg_list>
 <arg_list_rest>
 <subroutine_def>
 <param_list>
 <param_list_rest>
 <param>
+<no_semicolon>
 <statement>
-<val>
-<assignable_func_call>
-
 #Grammar
-<program> ::= <instruction_set>;
+<program> ::= <statement_list>;
 
-<instruction_type> ::= <declaration> | <assignment>;
-<instruction> ::= <instruction_type> ";";
-<instruction_set> ::= <instruction_set> <instruction> | <instruction>;
+//<instruction_type> ::= <declaration> | <assignment> | <expression>;
+//<instruction> ::= <statement> ";" | <no_semi>;
+//<instruction_set> ::= <instruction_set> <instruction> | <instruction>;
 
 <declaration> ::= <data_type> <dec_assign_list>;
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
 <dec_assign> ::= ID ASSIGNMENT <expression> | ID <array_access> ASSIGNMENT <array_value> | ID <array_access> | ID;
 
-<assignment> ::= <assignable> <op_assign> <expression>;
+<assignment> ::= <assignable> <op_assign> <expression> | <assign_array>;
+<assign_array> ::= <assignable> <op_assign> <array_value>;
 
 <expression> ::= <exp1>;
 <exp1> ::= <exp1> OR <exp2> | <exp2>;
@@ -208,7 +205,7 @@ VAL_FALSE = ID : "false"
 <exp8> ::= <exp8> <op_bitwise> <exp9> | <exp9>;
 <exp9> ::= <exp9> <op_arit_low> <exp10> | <exp10>;
 <exp10> ::= <exp10> <op_arit_high> <exp11> | <exp11>;
-<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp12>;
+<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable_func_call> | <exp12>;
 <exp12> ::= <assignable> <op_inc> | <val> | "(" <expression> ")";
 
 <val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
@@ -239,38 +236,35 @@ VAL_FALSE = ID : "false"
 <func_call> ::= "(" <params> ")" <func_call> | "(" <params> ")" | "(" ")" <func_call> | "(" ")";
 
 <block> ::= "{" <statement_list> "}";
-<statement_list> ::= <statement> <statement_list> | î;
+<statement_list> ::= <statement_list> <statement> ";" | <statement_list> <no_semicolon> | <statement> ";" | <no_semicolon>;
 
 <while_loop> ::= WHILE "(" <expression> ")" <block>;
-<for_loop> ::= FOR "(" <assignment> ";" <expression> ";" <assignment> ")" <block>;
+<assign_or_dec> ::= <assignment> | <declaration>;
+<for_loop> ::= FOR "(" <assign_or_dec> ";" <expression> ";" <expression> ")" <block>;
 <do_while_loop> ::= DO <block> WHILE "(" <expression> ")" ";";
 
 <loop> ::= <while_loop> | <for_loop> | <do_while_loop>;
 
-<conditional> ::= <if_statement> | <if_else_statement>;
-<if_statement> ::= IF "(" <expression> ")" <block>;
-<if_else_statement> ::= IF "(" <expression> ")" <block> ELSE <block>;
+//<conditional> ::= <if_statement> | <if_else_statement>;
+<if_statement> ::= IF "(" <expression> ")" <block>
+                 | IF "(" <expression> ")" <block> ELSE <block>
+                 | IF "(" <expression> ")" <block> ELSE <if_statement>;
+
+//<if_else_statement> ::= <block> ELSE <block> | <block> ELSE <conditional>;
 
 <switch_case> ::= SWITCH "(" <expression> ")" "{" <case_list> <default_case> "}";
 <case_list> ::= <case_item> <case_list> | î;
-<case_item> ::= CASE <val_number> ":" <statement_list>;
+<case_item> ::= CASE <expression> ":" <statement_list>; // CASE <expression> ":"
 <default_case> ::= DEFAULT ":" <statement_list> | î;
 
-<return_statement> ::= RETURN <expression> ";";
-<break_statement> ::= BREAK ";";
-<continue_statement> ::= CONTINUE ";";
+<return_statement> ::= RETURN <expression>;
+<break_statement> ::= BREAK;
+<continue_statement> ::= CONTINUE;
 
-<input> ::= INPUT ">>" <input_list> ";";
-<input_list> ::= <variable> <input_list_rest>;
-<input_list_rest> ::= ">>" <variable> <input_list_rest> | î;
-
-<output> ::= OUTPUT "<<" <output_list> ";";
-<output_list> ::= <output_item> <output_list_rest>;
-<output_list_rest> ::= "<<" <output_item> <output_list_rest> | î;
-<output_item> ::= <variable> | VAL_STRING | VAL_INTEGER | VAL_FLOAT | VAL_DOUBLE | VAL_CHAR | VAL_TRUE | VAL_FALSE;
+<input> ::= INPUT "(" <assignable> ")";
+<output> ::= OUTPUT "(" <expression> ")";
 
 <variable> ::= ID | ID "[" <expression> "]";
-<subroutine_call> ::= ID "(" <arg_list> ")";
 <arg_list> ::= <expression> <arg_list_rest> | î;
 <arg_list_rest> ::= "," <expression> <arg_list_rest> | î;
 
@@ -279,16 +273,18 @@ VAL_FALSE = ID : "false"
 <param_list_rest> ::= "," <param> <param_list_rest> | î;
 <param> ::= <data_type> <variable>;
 
-<statement> ::= <declaration>
-            | <assignment>
-            | <loop>
-            | <conditional>
+// Sem ";"
+<no_semicolon> ::= <loop>
+            | <if_statement>
             | <switch_case>
-            | <return_statement>
-            | <break_statement>
-            | <continue_statement>
-            | <input>
-            | <output>
             | <block>
-            | <subroutine_def>
-            | <subroutine_call> ";";
+            | <subroutine_def>;
+
+<statement> ::= <declaration>
+              | <assignment>
+              | <expression>
+              | <return_statement>
+              | <break_statement>
+              | <continue_statement>
+              | <input>
+              | <output>;
