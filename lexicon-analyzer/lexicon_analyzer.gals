@@ -15,10 +15,9 @@ Parser = SLR
 // Ignore
 :[\n\r\t\s]*
 
-// Comments (Ignore)
-:(/)(/)[^\n]*
-:/(\*)([^\*]|\*+[^"\/"])*(\*)/
-
+// Comments
+SINGLE_LINE_COMMENT: (/)(/)[^\n]*
+MULTI_LINE_COMMENT: /\*([^\*]|[\r\n]|(\*+([^\*/]|[\r\n])))*\*+/
 
 // Identifiers
 ID : [a-zA-Z_][a-zA-Z0-9_]*
@@ -111,9 +110,9 @@ VAL_FALSE = ID : "false"
 ">>"
 #NonTerminals
 <program>
-//<instruction_type>
-//<instruction>
-//<instruction_set>
+<statement_list>
+<statement>
+<comments>
 <declaration>
 <dec_assign_list>
 <dec_assign>
@@ -152,16 +151,12 @@ VAL_FALSE = ID : "false"
 <array_value>
 <params>
 <func_call>
-<block>
-<statement_list>
 <while_loop>
 <assign_or_dec>
 <for_loop>
 <do_while_loop>
 <loop>
-//<conditional>
 <if_statement>
-//<if_else_statement>
 <switch_case>
 <case_list>
 <case_item>
@@ -172,28 +167,38 @@ VAL_FALSE = ID : "false"
 <input>
 <output>
 <variable>
-<arg_list>
-<arg_list_rest>
 <subroutine_def>
 <param_list>
-<param_list_rest>
 <param>
+<block>
 <no_semicolon>
-<statement>
 #Grammar
 <program> ::= <statement_list>;
 
-//<instruction_type> ::= <declaration> | <assignment> | <expression>;
-//<instruction> ::= <statement> ";" | <no_semi>;
-//<instruction_set> ::= <instruction_set> <instruction> | <instruction>;
+// Statements
+<statement_list> ::= <statement_list> <statement> ";" | <statement_list> <no_semicolon> | <statement> ";" | <no_semicolon>;
+<statement> ::= <declaration>
+              | <assignment>
+              | <expression>
+              | <return_statement>
+              | <break_statement>
+              | <continue_statement>
+              | <input>
+              | <output>;
+              
+// Comments
+<comments> ::= SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT;
 
+// Declarations
 <declaration> ::= <data_type> <dec_assign_list>;
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
 <dec_assign> ::= ID ASSIGNMENT <expression> | ID <array_access> ASSIGNMENT <array_value> | ID <array_access> | ID;
 
+// Assignments
 <assignment> ::= <assignable> <op_assign> <expression> | <assign_array>;
 <assign_array> ::= <assignable> <op_assign> <array_value>;
 
+// Expression
 <expression> ::= <exp1>;
 <exp1> ::= <exp1> OR <exp2> | <exp2>;
 <exp2> ::= <exp2> AND <exp3> | <exp3>;
@@ -211,6 +216,7 @@ VAL_FALSE = ID : "false"
 <val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
 <assignable_func_call> ::= <assignable> <func_call> | <assignable>;
 
+// Operators
 <op_assign> ::= ASSIGNMENT | ASSIGNMENT_ADD | ASSIGNMENT_SUB | ASSIGNMENT_MULT | ASSIGNMENT_DIVIDE | ASSIGNMENT_REMAIN;
 <op_rel_low> ::= EQ | NE;
 <op_rel_high> ::= GT | LT | GE | LE;
@@ -220,6 +226,7 @@ VAL_FALSE = ID : "false"
 <op_neg> ::= MINUS | BIT_NOT | NOT;
 <op_inc> ::= INCREMENT | DECREMENT;
 
+// Values and Function Calls
 <val_number> ::= VAL_BINARY | VAL_HEXADECIMAL | VAL_INTEGER | VAL_FLOAT | VAL_DOUBLE;
 <val_string> ::= VAL_CHAR | VAL_STRING;
 <val_boolean> ::= VAL_TRUE | VAL_FALSE;
@@ -231,13 +238,12 @@ VAL_FALSE = ID : "false"
 <array_access> ::= "[" <expression> "]" <array_access> | "[" <expression> "]";
 
 <array_value> ::= "[" <params> "]";
-<params> ::= <expression> "," <params> | <array_value> "," <params> | <expression> | <array_value>;
+<params> ::= <params> "," <expression> | <params> "," <array_value> | <expression> | <array_value>;
 
-<func_call> ::= "(" <params> ")" <func_call> | "(" <params> ")" | "(" ")" <func_call> | "(" ")";
+// Function Call
+<func_call> ::= "(" <params> ")" | "(" ")";
 
-<block> ::= "{" <statement_list> "}";
-<statement_list> ::= <statement_list> <statement> ";" | <statement_list> <no_semicolon> | <statement> ";" | <no_semicolon>;
-
+// Control Structures
 <while_loop> ::= WHILE "(" <expression> ")" <block>;
 <assign_or_dec> ::= <assignment> | <declaration>;
 <for_loop> ::= FOR "(" <assign_or_dec> ";" <expression> ";" <expression> ")" <block>;
@@ -245,46 +251,36 @@ VAL_FALSE = ID : "false"
 
 <loop> ::= <while_loop> | <for_loop> | <do_while_loop>;
 
-//<conditional> ::= <if_statement> | <if_else_statement>;
 <if_statement> ::= IF "(" <expression> ")" <block>
                  | IF "(" <expression> ")" <block> ELSE <block>
                  | IF "(" <expression> ")" <block> ELSE <if_statement>;
 
-//<if_else_statement> ::= <block> ELSE <block> | <block> ELSE <conditional>;
 
-<switch_case> ::= SWITCH "(" <expression> ")" "{" <case_list> <default_case> "}";
-<case_list> ::= <case_item> <case_list> | î;
-<case_item> ::= CASE <expression> ":" <statement_list>; // CASE <expression> ":"
-<default_case> ::= DEFAULT ":" <statement_list> | î;
+<switch_case> ::= SWITCH "(" <expression> ")" "{" <case_list> "}" | SWITCH "(" <expression> ")" "{" <case_list> <default_case> "}";
+<case_list> ::= <case_item> <case_list> | <case_item>;
+<case_item> ::= CASE <expression> ":" <statement_list>;
+<default_case> ::= DEFAULT ":" <statement_list>;
 
 <return_statement> ::= RETURN <expression>;
 <break_statement> ::= BREAK;
 <continue_statement> ::= CONTINUE;
 
+// I/O and Flow Control
 <input> ::= INPUT "(" <assignable> ")";
 <output> ::= OUTPUT "(" <expression> ")";
 
 <variable> ::= ID | ID "[" <expression> "]";
-<arg_list> ::= <expression> <arg_list_rest> | î;
-<arg_list_rest> ::= "," <expression> <arg_list_rest> | î;
 
-<subroutine_def> ::= <data_type> ID "(" <param_list> ")" <block>;
-<param_list> ::= <param> <param_list_rest> | î;
-<param_list_rest> ::= "," <param> <param_list_rest> | î;
+// Subroutines
+<subroutine_def> ::= <data_type> ID "(" <param_list> ")" <block> | <data_type> ID "(" ")" <block>;
+<param_list> ::= <param> "," <param_list> | <param>;
 <param> ::= <data_type> <variable>;
 
-// Sem ";"
+// Block & No Semicolon
+<block> ::= "{" <statement_list> "}";
 <no_semicolon> ::= <loop>
             | <if_statement>
             | <switch_case>
             | <block>
-            | <subroutine_def>;
-
-<statement> ::= <declaration>
-              | <assignment>
-              | <expression>
-              | <return_statement>
-              | <break_statement>
-              | <continue_statement>
-              | <input>
-              | <output>;
+            | <subroutine_def>
+            | <comments>;
