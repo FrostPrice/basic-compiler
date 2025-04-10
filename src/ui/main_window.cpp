@@ -113,6 +113,7 @@ void MainWindow::compileCode()
     try
     {
         syn.parse(&lex, &sem);
+        output->setTextColor(Qt::green);
         output->setText("Compiled successfully!");
     }
     catch (LexicalError err)
