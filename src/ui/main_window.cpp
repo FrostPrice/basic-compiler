@@ -1,4 +1,7 @@
 #include "main_window.hpp"
+#include "../gals/Lexical.h"
+#include "../gals/Semantic.h"
+#include "../gals/Syntactic.h"
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -98,6 +101,33 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 void MainWindow::compileCode()
 {
-    // Placeholder implementation
-    output->setText("Compilando... (função conectada com sucesso!)");
+    // Get the code from the editor
+    QString code = editor->toPlainText();
+
+    Lexical lex;
+    Syntactic syn;
+    Semantic sem;
+
+    lex.setInput(code.toStdString().c_str());
+
+    try
+    {
+        syn.parse(&lex, &sem);
+        output->setText("Compiled successfully!");
+    }
+    catch (LexicalError err)
+    {
+        output->setTextColor(Qt::red);
+        output->setText("Lexical error: " + QString::fromStdString(err.getMessage()));
+    }
+    catch (SyntacticError err)
+    {
+        output->setTextColor(Qt::red);
+        output->setText("Syntactic error: " + QString::fromStdString(err.getMessage()));
+    }
+    catch (SemanticError err)
+    {
+        output->setTextColor(Qt::red);
+        output->setText("Semantic error: " + QString::fromStdString(err.getMessage()));
+    }
 }
