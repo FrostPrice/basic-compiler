@@ -57,7 +57,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
             border: 1px solid #403E41;
         }
     )");
-    // output->setFixedHeight(120);
 
     QSplitter *verticalSplitter = new QSplitter(Qt::Vertical, this);
     verticalSplitter->setStyleSheet(R"(
