@@ -25,7 +25,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     editor->setStyleSheet(R"(
         background-color: #2D2A2E;
         color: #FCFCFA;
-        font-family: 'Fira Code', 'Courier New', monospace;
         border: 1px solid #403E41;
         padding-left: 4px;
     )");
@@ -55,7 +54,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         QTextBrowser {
             background-color: #2D2A2E;
             color: #A9DC76;
-            font-family: 'Fira Code', 'Courier New', monospace;
             border: 1px solid #403E41;
         }
     )");
