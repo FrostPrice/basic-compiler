@@ -106,8 +106,6 @@ VAL_FALSE = ID : "false"
 ";"
 ":"
 "."
-"<<"
-">>"
 #NonTerminals
 <program>
 <statement_list>
@@ -119,7 +117,6 @@ VAL_FALSE = ID : "false"
 <assignment>
 <assign_array>
 <expression>
-<exp1>
 <exp2>
 <exp3>
 <exp4>
@@ -166,10 +163,10 @@ VAL_FALSE = ID : "false"
 <continue_statement>
 <input>
 <output>
-<variable>
 <subroutine_def>
+<subroutine_def_type>
 <param_list>
-<param>
+<param_subroutine_def>
 <block>
 <no_semicolon>
 #Grammar
@@ -185,7 +182,7 @@ VAL_FALSE = ID : "false"
               | <continue_statement>
               | <input>
               | <output>;
-              
+
 // Comments
 <comments> ::= SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT;
 
@@ -199,8 +196,7 @@ VAL_FALSE = ID : "false"
 <assign_array> ::= <assignable> <op_assign> <array_value>;
 
 // Expression
-<expression> ::= <exp1>;
-<exp1> ::= <exp1> OR <exp2> | <exp2>;
+<expression> ::= <expression> OR <exp2> | <exp2>;
 <exp2> ::= <exp2> AND <exp3> | <exp3>;
 <exp3> ::= <exp3> BIT_OR <exp4> | <exp4>;
 <exp4> ::= <exp4> BIT_XOR <exp5> | <exp5>;
@@ -231,7 +227,7 @@ VAL_FALSE = ID : "false"
 <val_string> ::= VAL_CHAR | VAL_STRING;
 <val_boolean> ::= VAL_TRUE | VAL_FALSE;
 
-<data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN | VOID;
+<data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
 <array_declaration> ::= <array_declaration> "[" "]" | "[" "]";
 
 <assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
@@ -269,12 +265,11 @@ VAL_FALSE = ID : "false"
 <input> ::= INPUT "(" <assignable> ")";
 <output> ::= OUTPUT "(" <expression> ")";
 
-<variable> ::= ID | ID "[" <expression> "]";
-
 // Subroutines
-<subroutine_def> ::= <data_type> ID "(" <param_list> ")" <block> | <data_type> ID "(" ")" <block>;
-<param_list> ::= <param> "," <param_list> | <param>;
-<param> ::= <data_type> <variable>;
+<subroutine_def> ::= <subroutine_def_type> "(" <param_list> ")" <block> | <subroutine_def_type> "(" ")" <block>;
+<subroutine_def_type> ::= <data_type> ID | <data_type> <array_declaration> ID | VOID ID;
+<param_list> ::= <param_list> "," <param_subroutine_def> | <param_subroutine_def>;
+<param_subroutine_def> ::= <data_type> ID | <data_type> ID <array_declaration> | VOID ID;
 
 // Block & No Semicolon
 <block> ::= "{" <statement_list> "}";
