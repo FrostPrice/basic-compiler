@@ -3,7 +3,7 @@ float x = 3.14;
 bool flag = true;
 
 void printSomething(int value) {
-    cout << "Value: " << value;
+    print("Value: " + value);
 }
 
 int main() {
@@ -12,13 +12,13 @@ int main() {
     c = a + b[2] * (10 - 3);
     
     if (c > 10) {
-        cout << "Greater than 10";
+        print("Greater than 10");
     } else {
-        cout << "Not greater than 10";
+        print("Not greater than 10");
     }
 
     for (a = 0; a < 10; a++) {
-        cout << a;
+        print(a);
     }
 
     while (a > 0) {
@@ -31,11 +31,11 @@ int main() {
 
     switch (a) {
         case 1:
-            cout << "One";
+            print("One");
         case 2:
-            cout << "Two";
+            print("Two");
         default:
-            cout << "Other";
+            print("Other");
     }
 
     printSomething(a);
