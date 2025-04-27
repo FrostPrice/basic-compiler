@@ -39,8 +39,46 @@ The goal of this project is to implement a compiler for a custom programming lan
 3. Run the compiler:
 
 ```bash
-   ./basic-compiler
+   ./basic-compile
 ```
+
+## TODOs
+
+### Related to Semantic Actions on Gals
+
+TODO:
+
+- Loops (For, While, Do While)
+- If, Else, Else If
+- Switch
+
+OK:
+
+- Functions
+- Subroutines
+- Declarations
+- Assignments
+- Operators
+- Values
+- Arrays
+- Function calls
+- Blocks
+- Input and Output
+
+### Related to C++ Code
+
+TODO:
+
+- Add Symbol Table
+- Add all actions to the symbol table
+- Validate semantic actions
+
+### Related to GUI
+
+TODO:
+
+- Add semantic table to the GUI
+- Show errors and warnings in the GUI
 
 ## Authors
 
