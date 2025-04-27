@@ -17,7 +17,7 @@ Action Number, Description
 #16, ADD OP, (Add operator), for numbers and strings
 #17, INTEGER OP, (Only integer operator), for integers
 #18, BOOLEAN OP, (boolean operator), for boolean values
-#18, EQ NE OP, (Equal and not equal operator), for numbers and strings
+#19, EQ NE OP, (Equal and not equal operator), for numbers and strings
 
 // 21 - 30: Functions, subroutines and blocks
 #21, FUNCTION_DEF_PARAMETER, (Function definition parameter)
