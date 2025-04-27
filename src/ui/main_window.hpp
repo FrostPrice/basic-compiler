@@ -1,14 +1,15 @@
-// mainwindow.h
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QLabel>
 #include "code_editor.hpp"
+#include "semantic_table_model.hpp" // AAAAAAAA
 
 class QTextEdit;
 class QTextBrowser;
 class QPushButton;
+class QTableView;
 
 class MainWindow : public QMainWindow
 {
@@ -23,6 +24,8 @@ private slots:
 private:
     CodeEditor *editor;
     QTextBrowser *output;
+    QTableView *tableView;
+    SemanticTableModel *tableModel; // agora vai por favor
 };
 
 #endif // MAINWINDOW_H
