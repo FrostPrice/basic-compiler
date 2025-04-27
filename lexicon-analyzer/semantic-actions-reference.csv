@@ -1,0 +1,110 @@
+Action Number, Description
+// 1 - 10: declarations and assignments
+#1, ID, (Identifiers -> defined by the programmer)
+#2, TYPE, (Type of data -> used in declarations)
+#3, ARRAY LENGTH, (Array length)
+#4, ASSIGNMENT VALUE, (Assignment value)
+#5, ASSIGNMENT ARRAY, VALUE (Assignment value for arrays)
+#7, ARRAY VALUE, (Array value)
+#8, ARRAY DIMENSIONS, (Array dimensions)
+
+// 11 - 20: operators and 
+#11, ASSIGN OP, (Assignment operator)
+#12, ARITHMETICAL ASSIGN OP, (Arithmetic assignment operator), for numbers
+#13, ADD ASSIGN OP, (Add assignment operator), for numbers and strings
+#14, REMAINDER ASSIGN OP, (Add assignment operator), for numbers integers
+#15, NUMBER OP, (Number operator), for numbers
+#16, ADD OP, (Add operator), for numbers and strings
+#17, INTEGER OP, (Only integer operator), for integers
+#18, BOOLEAN OP, (boolean operator), for boolean values
+#18, EQ NE OP, (Equal and not equal operator), for numbers and strings
+
+// 21 - 30: Functions, subroutines and blocks
+#21, FUNCTION_DEF_PARAMETER, (Function definition parameter)
+#22, FUNCTION_CALL_PARAMETER, (Function call parameter)
+#23, BLOCK_INIT, (Block initialization)
+#24, BLOCK_END, (Block end)
+#25, RETURN, (Return statement)
+#26, INPUT, (Input function)
+#27, OUTPUT, (Output function)
+
+// 31 - 40: primitive values
+#31, INT VALUE, (Integer values)
+#32, DECIMAL VALUE, (Float and double values)
+#33, CHAR VALUE, (Character values)
+#34, STRING VALUE, (String values)
+#35, BOOLEAN VALUE, (Boolean values)
+
+// 41 - 50: conditionals and loops
+#41, IF CONDITION, (If condition)
+#42, SWITCH EXPRESSION, (Switch expression)
+#43, CASE VALUE, (Case value)
+#44, WHILE CONDITION, (While loop condition)
+#45, DO WHILE CONDITION, (Do while loop condition)
+#46, FOR ASSIGNMENT OR DECLARATION, (For loop assignment or declaration)
+#47, FOR CONDITION, (For loop condition)
+#48, FOR INCREMENT, (For loop increment)
+#49, BREAK, (Break statement)
+#50, CONTINUE, (Continue statement)
+
+<dec_assign> ::= ID #1 ASSIGNMENT #11 <expression> #4 | ID #1 <array_access> ASSIGNMENT #11 <array_value> #5 | ID #1 <array_access> | ID #1;
+
+<assignment> ::= <assignable> <op_assign> <expression> #4 | <assign_array>;
+<assign_array> ::= <assignable> ASSIGNMENT #11 <array_value> #5;
+
+<data_type> ::= INT #2 | FLOAT #2 | DOUBLE #2 | CHAR #2 | STRING #2 | BOOLEAN #2;
+
+<expression> ::= <expression> OR #18 <exp2> | <exp2>;
+<exp2> ::= <exp2> AND #18 <exp3> | <exp3>;
+<exp3> ::= <exp3> BIT_OR #17 <exp4> | <exp4>;
+<exp4> ::= <exp4> BIT_XOR #17 <exp5> | <exp5>;
+<exp5> ::= <exp5> BIT_AND #17 <exp6> | <exp6>;
+
+<op_assign> ::= ASSIGNMENT #11 | ASSIGNMENT_ADD #13 | ASSIGNMENT_SUB #12 | ASSIGNMENT_MULT #12 | ASSIGNMENT_DIVIDE #12 | ASSIGNMENT_REMAIN #14;
+<op_rel_low> ::= EQ #19 | NE #19;
+<op_rel_high> ::= GT #15 | LT #15 | GE #15 | LE #15;
+<op_bitwise> ::= BIT_LSHIFT #17 | BIT_RSHIFT #17;
+<op_arit_low> ::= PLUS #16 | MINUS #15;
+<op_arit_high> ::= MULTIPLY #15 | DIVIDE #15 | REMAINDER #17;
+<op_neg> ::= MINUS #15 | BIT_NOT #17 | NOT #18;
+<op_inc> ::= INCREMENT #15 | DECREMENT #15;
+
+// Values and Function Calls
+<val_number> ::= VAL_BINARY #31 | VAL_HEXADECIMAL #31 | VAL_INTEGER #31 | VAL_FLOAT #32 | VAL_DOUBLE #32;
+<val_string> ::= VAL_CHAR #33 | VAL_STRING #34;
+<val_boolean> ::= VAL_TRUE #35 | VAL_FALSE #35;
+
+<array_access> ::= <array_access> "[" <expression> #3 "]" | "[" <expression> #3 "]";
+
+<if_statement> ::= IF "(" <expression> #41 ")" <block>
+                 | IF "(" <expression> #41 ")" <block> ELSE <block>
+                 | IF "(" <expression> #41 ")" <block> ELSE <if_statement>;
+
+<switch_case> ::= SWITCH "(" <expression> #42 ")" "{" <case_list> "}" | SWITCH "(" <expression> #42 ")" "{" <case_list> <default_case> "}";
+<case_list> ::= <case_item> <case_list> | <case_item>;
+<case_item> ::= CASE <expression> #43 ":" <statement_list>;
+<default_case> ::= DEFAULT ":" <statement_list>;
+
+RETURN <expression> #25 | RETURN #25;
+<break_statement> ::= BREAK #49;
+<continue_statement> ::= CONTINUE #50;
+
+<input> ::= INPUT "(" <assignable> #26 ")";
+<output> ::= OUTPUT "(" <expression> #27 ")";
+
+// FUNC_DEF
+<subroutine_def> ::= <subroutine_def_type> "(" <subroutine_def_param_list> ")" <block> | <subroutine_def_type> "(" ")" <block>;
+<subroutine_def_type> ::= <data_type> ID #1 | <data_type> <array_declaration> ID #1 | VOID #2 ID #1;
+<subroutine_def_param_list> ::= <subroutine_def_param_list> "," <param_subroutine_def> #21 | <param_subroutine_def> #21;
+<param_subroutine_def> ::= <data_type> ID #1 | <data_type> ID #1 <array_declaration> | VOID #2 ID #1;
+
+<array_value> ::= "[" <array_params> "]";
+<array_params> ::= <array_params> "," <expression> #7 | <array_params> "," <array_value> #7 | <expression> #7 | <array_value> #7;
+
+
+// FUNC_CALL
+<func_call> ::= "(" <func_call_params> ")" | "(" ")";
+<func_call_params> ::= <func_call_params> "," <expression> #22 | <func_call_params> "," <array_value> #22 | <expression> #22 | <array_value> #22;
+
+
+<block> ::= "{" #23 <statement_list> "}" #24

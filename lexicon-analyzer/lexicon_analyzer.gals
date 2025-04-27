@@ -142,12 +142,13 @@ VAL_FALSE = ID : "false"
 <val_string>
 <val_boolean>
 <data_type>
-<array_declaration>
+<subroutine_def_array_declaration>
 <assignable>
 <array_access>
 <array_value>
-<params>
+<array_params>
 <func_call>
+<func_call_params>
 <while_loop>
 <assign_or_dec>
 <for_loop>
@@ -165,7 +166,7 @@ VAL_FALSE = ID : "false"
 <output>
 <subroutine_def>
 <subroutine_def_type>
-<param_list>
+<subroutine_def_param_list>
 <param_subroutine_def>
 <block>
 <no_semicolon>
@@ -189,67 +190,67 @@ VAL_FALSE = ID : "false"
 // Declarations
 <declaration> ::= <data_type> <dec_assign_list>;
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
-<dec_assign> ::= ID ASSIGNMENT <expression> | ID <array_access> ASSIGNMENT <array_value> | ID <array_access> | ID;
+<dec_assign> ::= ID #1 ASSIGNMENT <expression> #4 | ID #1 <array_access> ASSIGNMENT <array_value> #5 | ID #1 <array_access> | ID #1;
 
 // Assignments
-<assignment> ::= <assignable> <op_assign> <expression> | <assign_array>;
-<assign_array> ::= <assignable> <op_assign> <array_value>;
+<assignment> ::= <assignable> <op_assign> <expression> #4 | <assign_array>;
+<assign_array> ::= <assignable> ASSIGNMENT #11 <array_value> #5;
 
 // Expression
-<expression> ::= <expression> OR <exp2> | <exp2>;
-<exp2> ::= <exp2> AND <exp3> | <exp3>;
-<exp3> ::= <exp3> BIT_OR <exp4> | <exp4>;
-<exp4> ::= <exp4> BIT_XOR <exp5> | <exp5>;
-<exp5> ::= <exp5> BIT_AND <exp6> | <exp6>;
+<expression> ::= <expression> OR #18 <exp2> | <exp2>;
+<exp2> ::= <exp2> AND #18 <exp3> | <exp3>;
+<exp3> ::= <exp3> BIT_OR #17 <exp4> | <exp4>;
+<exp4> ::= <exp4> BIT_XOR #17 <exp5> | <exp5>;
+<exp5> ::= <exp5> BIT_AND #17 <exp6> | <exp6>;
 <exp6> ::= <exp6> <op_rel_low> <exp7> | <exp7>;
 <exp7> ::= <exp7> <op_rel_high> <exp8> | <exp8>;
 <exp8> ::= <exp8> <op_bitwise> <exp9> | <exp9>;
 <exp9> ::= <exp9> <op_arit_low> <exp10> | <exp10>;
 <exp10> ::= <exp10> <op_arit_high> <exp11> | <exp11>;
-<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable_func_call> | <exp12>;
+<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp12>;
 <exp12> ::= <assignable> <op_inc> | <val> | "(" <expression> ")";
 
 <val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
 <assignable_func_call> ::= <assignable> <func_call> | <assignable>;
 
 // Operators
-<op_assign> ::= ASSIGNMENT | ASSIGNMENT_ADD | ASSIGNMENT_SUB | ASSIGNMENT_MULT | ASSIGNMENT_DIVIDE | ASSIGNMENT_REMAIN;
-<op_rel_low> ::= EQ | NE;
-<op_rel_high> ::= GT | LT | GE | LE;
-<op_bitwise> ::= BIT_LSHIFT | BIT_RSHIFT;
-<op_arit_low> ::= PLUS | MINUS;
-<op_arit_high> ::= MULTIPLY | DIVIDE | REMAINDER;
-<op_neg> ::= MINUS | BIT_NOT | NOT;
-<op_inc> ::= INCREMENT | DECREMENT;
+<op_assign> ::= ASSIGNMENT #11 | ASSIGNMENT_ADD #13 | ASSIGNMENT_SUB #12 | ASSIGNMENT_MULT #12 | ASSIGNMENT_DIVIDE #12 | ASSIGNMENT_REMAIN #14;
+<op_rel_low> ::= EQ #19 | NE #19;
+<op_rel_high> ::= GT #15 | LT #15 | GE #15 | LE #15;
+<op_bitwise> ::= BIT_LSHIFT #17 | BIT_RSHIFT #17;
+<op_arit_low> ::= PLUS #16 | MINUS #15;
+<op_arit_high> ::= MULTIPLY #15 | DIVIDE #15 | REMAINDER #17;
+<op_neg> ::= MINUS #15 | BIT_NOT #17 | NOT #18;
+<op_inc> ::= INCREMENT #15 | DECREMENT #15;
 
 // Values and Function Calls
-<val_number> ::= VAL_BINARY | VAL_HEXADECIMAL | VAL_INTEGER | VAL_FLOAT | VAL_DOUBLE;
-<val_string> ::= VAL_CHAR | VAL_STRING;
-<val_boolean> ::= VAL_TRUE | VAL_FALSE;
+<val_number> ::= VAL_BINARY #31 | VAL_HEXADECIMAL #31 | VAL_INTEGER #31 | VAL_FLOAT #32 | VAL_DOUBLE #32;
+<val_string> ::= VAL_CHAR #33 | VAL_STRING #34;
+<val_boolean> ::= VAL_TRUE #35 | VAL_FALSE #35;
 
-<data_type> ::= INT | FLOAT | DOUBLE | CHAR | STRING | BOOLEAN;
-<array_declaration> ::= <array_declaration> "[" "]" | "[" "]";
+<data_type> ::= INT #2 | FLOAT #2 | DOUBLE #2 | CHAR #2 | STRING #2 | BOOLEAN #2;
 
-<assignable> ::= ID <array_access> "." <assignable> | ID <array_access> | ID "." <assignable> | ID;
-<array_access> ::= "[" <expression> "]" <array_access> | "[" <expression> "]";
+<assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
+<array_access> ::= "[" <expression> #3 "]" #8 <array_access> | "[" <expression> #3 "]" #8;
 
-<array_value> ::= "[" <params> "]";
-<params> ::= <params> "," <expression> | <params> "," <array_value> | <expression> | <array_value>;
+<array_value> ::= "[" <array_params> "]";
+<array_params> ::= <array_params> "," <expression> #7 | <array_params> "," <array_value> #7 | <expression> #7 | <array_value> #7;
 
 // Function Call
-<func_call> ::= "(" <params> ")" | "(" ")";
+<func_call> ::= "(" <func_call_params> ")" | "(" ")";
+<func_call_params> ::= <func_call_params> "," <expression> #22 | <func_call_params> "," <array_value> #22 | <expression> #22 | <array_value> #22;
 
 // Control Structures
-<while_loop> ::= WHILE "(" <expression> ")" <block>;
+<while_loop> ::= WHILE "(" <expression> #44 ")" <block>;
 <assign_or_dec> ::= <assignment> | <declaration>;
-<for_loop> ::= FOR "(" <assign_or_dec> ";" <expression> ";" <expression> ")" <block>;
-<do_while_loop> ::= DO <block> WHILE "(" <expression> ")" ";";
+<for_loop> ::= FOR "(" <assign_or_dec> #46 ";" <expression> #47 ";" <expression> #48 ")" <block>;
+<do_while_loop> ::= DO <block> WHILE "(" <expression> #45 ")" ";";
 
 <loop> ::= <while_loop> | <for_loop> | <do_while_loop>;
 
-<if_statement> ::= IF "(" <expression> ")" <block>
-                 | IF "(" <expression> ")" <block> ELSE <block>
-                 | IF "(" <expression> ")" <block> ELSE <if_statement>;
+<if_statement> ::= IF "(" <expression> #41 ")" <block>
+                 | IF "(" <expression> #41 ")" <block> ELSE <block>
+                 | IF "(" <expression> #41 ")" <block> ELSE <if_statement>;
 
 
 <switch_case> ::= SWITCH "(" <expression> ")" "{" <case_list> "}" | SWITCH "(" <expression> ")" "{" <case_list> <default_case> "}";
@@ -257,22 +258,23 @@ VAL_FALSE = ID : "false"
 <case_item> ::= CASE <expression> ":" <statement_list>;
 <default_case> ::= DEFAULT ":" <statement_list>;
 
-<return_statement> ::= RETURN <expression>;
-<break_statement> ::= BREAK;
-<continue_statement> ::= CONTINUE;
+<return_statement> ::= RETURN <expression> #25 | RETURN #25;
+<break_statement> ::= BREAK #49;
+<continue_statement> ::= CONTINUE #50;
 
 // I/O and Flow Control
-<input> ::= INPUT "(" <assignable> ")";
-<output> ::= OUTPUT "(" <expression> ")";
+<input> ::= INPUT "(" <assignable> #26 ")";
+<output> ::= OUTPUT "(" <expression> #27 ")";
 
 // Subroutines
-<subroutine_def> ::= <subroutine_def_type> "(" <param_list> ")" <block> | <subroutine_def_type> "(" ")" <block>;
-<subroutine_def_type> ::= <data_type> ID | <data_type> <array_declaration> ID | VOID ID;
-<param_list> ::= <param_list> "," <param_subroutine_def> | <param_subroutine_def>;
-<param_subroutine_def> ::= <data_type> ID | <data_type> ID <array_declaration> | VOID ID;
+<subroutine_def> ::= <subroutine_def_type> "(" <subroutine_def_param_list> ")" <block> | <subroutine_def_type> "(" ")" <block>;
+<subroutine_def_array_declaration> ::= <subroutine_def_array_declaration> "[" "]" #8 | "[" "]" #8;
+<subroutine_def_type> ::= <data_type> ID #1 | <data_type> <subroutine_def_array_declaration> ID #1 | VOID #2 ID #1;
+<subroutine_def_param_list> ::= <subroutine_def_param_list> "," <param_subroutine_def> #21 | <param_subroutine_def> #21;
+<param_subroutine_def> ::= <data_type> ID #1 | <data_type> ID #1 <subroutine_def_array_declaration> | VOID #2 ID #1;
 
 // Block & No Semicolon
-<block> ::= "{" <statement_list> "}";
+<block> ::= "{" #23 <statement_list> "}" #24 | "{" #23 "}" #24;
 <no_semicolon> ::= <loop>
             | <if_statement>
             | <switch_case>
