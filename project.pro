@@ -2,6 +2,7 @@
 
 QT += widgets
 CONFIG += c++17
+TARGET = basic_compiler
 
 RESOURCES += resources.qrc
 
