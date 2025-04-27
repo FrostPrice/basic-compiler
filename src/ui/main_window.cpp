@@ -1,4 +1,6 @@
 #include "main_window.hpp"
+#include "semantic_table.h"
+#include "semantic_table_model.hpp"
 #include "../gals/Lexical.h"
 #include "../gals/Semantic.h"
 #include "../gals/Syntactic.h"
@@ -9,11 +11,11 @@
 #include <QWidget>
 #include <QLabel>
 #include <QSplitter>
+#include <QTableView>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    // Set the window size
-    resize(1000, 700); // Width: 1000 px, Height: 700 px
+    resize(1200, 700);
 
     editor = new CodeEditor(this);
     editor->setMinimumHeight(40);
@@ -58,47 +60,54 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         }
     )");
 
-    QSplitter *verticalSplitter = new QSplitter(Qt::Vertical, this);
-    verticalSplitter->setStyleSheet(R"(
-        QSplitter::handle {
-            background-color: #403E41;
-            height: 4px;
+    // criar a tabela de semântica
+    tableView = new QTableView(this);
+    tableModel = new SemanticTableModel(this);
+    tableView->setModel(tableModel);
+    tableView->setStyleSheet(R"(
+        QTableView {
+            background-color: #2D2A2E;
+            color: #F8F8F2;
+            border: 1px solid #403E41;
+            gridline-color: #403E41;
         }
     )");
 
+    // Parte de cima: editor + botão + output empilhados verticalmente
+    QSplitter *verticalSplitter = new QSplitter(Qt::Vertical, this);
     verticalSplitter->addWidget(editor);
     verticalSplitter->addWidget(compileButton);
     verticalSplitter->addWidget(output);
 
-    // Prevent collapsing
-    verticalSplitter->setCollapsible(0, false); // Editor
-    verticalSplitter->setCollapsible(1, false); // Button
-    verticalSplitter->setCollapsible(2, false); // Output
+    verticalSplitter->setCollapsible(0, false);
+    verticalSplitter->setCollapsible(1, false);
+    verticalSplitter->setCollapsible(2, false);
 
-    // Control initial proportions
-    verticalSplitter->setStretchFactor(0, 8); // Editor
-    verticalSplitter->setStretchFactor(1, 1); // Button
-    verticalSplitter->setStretchFactor(2, 2); // Output
+    verticalSplitter->setStretchFactor(0, 8);
+    verticalSplitter->setStretchFactor(1, 1);
+    verticalSplitter->setStretchFactor(2, 2);
+
+    // Horizontal: verticalSplitter | tableView
+    QSplitter *horizontalSplitter = new QSplitter(Qt::Horizontal, this);
+    horizontalSplitter->addWidget(verticalSplitter);
+    horizontalSplitter->addWidget(tableView);
+
+    horizontalSplitter->setStretchFactor(0, 3);
+    horizontalSplitter->setStretchFactor(1, 2);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(verticalSplitter);
+    layout->addWidget(horizontalSplitter);
 
     QWidget *widget = new QWidget(this);
     widget->setLayout(layout);
     setCentralWidget(widget);
     widget->setStyleSheet("background-color: #1E1E1E;");
 
-    editor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    compileButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    output->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-    // Connect the button to the slot
     connect(compileButton, &QPushButton::clicked, this, &MainWindow::compileCode);
 }
 
 void MainWindow::compileCode()
 {
-    // Get the code from the editor
     QString code = editor->toPlainText();
 
     Lexical lex;
