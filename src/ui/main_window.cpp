@@ -1,5 +1,4 @@
 #include "main_window.hpp"
-#include "semantic_table.h"
 #include "semantic_table_model.hpp"
 #include "../gals/Lexical.h"
 #include "../gals/Semantic.h"
@@ -117,7 +116,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
             border: none;
             background: transparent;
         }
-    )");
+    )");    
 
     // Parte de cima: editor + botão + output empilhados verticalmente
     QSplitter *verticalSplitter = new QSplitter(Qt::Vertical, this);
