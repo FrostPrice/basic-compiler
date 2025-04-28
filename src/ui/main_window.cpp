@@ -12,6 +12,7 @@
 #include <QLabel>
 #include <QSplitter>
 #include <QTableView>
+#include <QHeaderView>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -64,6 +65,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tableView = new QTableView(this);
     tableModel = new SemanticTableModel(this);
     tableView->setModel(tableModel);
+    tableView->verticalHeader()->setStyleSheet(R"(
+        QHeaderView::section {
+            color: #75715E;
+        }
+    )");
     tableView->setStyleSheet(R"(
         QTableView {
             background-color: #2D2A2E;
