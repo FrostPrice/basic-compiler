@@ -13,8 +13,7 @@ SOURCES += src/main.cpp \
            src/gals/Lexical.cpp \
            src/gals/Semantic.cpp \
            src/gals/Syntactic.cpp \
-           src/ui/semantic_table_model.cpp \
-           src/ui/semantic_table.cpp \
+           src/ui/semantic_table_model.cpp
 
 HEADERS += src/ui/main_window.hpp \
            src/ui/code_editor.hpp \
@@ -27,5 +26,4 @@ HEADERS += src/ui/main_window.hpp \
            src/gals/Syntactic.h \
            src/gals/SyntacticError.h \
            src/gals/Token.h \
-           src/ui/semantic_table_model.hpp \
-           src/ui/semantic_table.h
+           src/ui/semantic_table_model.hpp
