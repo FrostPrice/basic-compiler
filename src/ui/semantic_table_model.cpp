@@ -1,16 +1,6 @@
 #include "semantic_table_model.hpp"
-#include "semantic_table.h"
-
 #include <vector>
-
-struct SemanticEntry {
-    std::string token;
-    std::string tipo;
-    int valor;
-};
-
-std::vector<SemanticEntry> semanticTable; // declara a tabela
-
+#include <QStringList>
 
 SemanticTableModel::SemanticTableModel(QObject *parent)
     : QStandardItemModel(parent)
@@ -18,7 +8,25 @@ SemanticTableModel::SemanticTableModel(QObject *parent)
     populateModel();
 }
 
+QStandardItem* createTableItem(const QString& text) { // criar os itens da tabela
+    QStandardItem* item = new QStandardItem(text);
+    item->setTextAlignment(Qt::AlignCenter);  // cenrtaliza o texto
+    return item;
+}
+
 void SemanticTableModel::populateModel() {
+    QStringList headers = { 
+        "Token", "Tipo", "Valor", "Marca", "Modelo"
+    };  // colunas da tabela
+    setHorizontalHeaderLabels(headers);
+
+    for (int col = 0; col < headers.size(); ++col) {
+        QStandardItem* headerItem = horizontalHeaderItem(col);  // pega o item do cabeçalho
+        if (headerItem) {
+            headerItem->setForeground(QBrush(QColor(255, 255, 255))); // cor branca
+        }
+    }
+
     // dados de exemplo por enquanto
     std::vector<QStringList> data = {
         {"token1", "INT", "10", "1", "1"},
@@ -32,12 +40,15 @@ void SemanticTableModel::populateModel() {
         {"token9", "FLOAT", "90.5", "9", "40"},
         {"token10", "INT", "100", "10", "45"}
     };
-      QList<QStandardItem*> rowItems;
-      rowItems.append(new QStandardItem(QString::fromStdString(entry.token)));
-      rowItems.append(new QStandardItem(QString::fromStdString(entry.tipo)));
-      rowItems.append(new QStandardItem(QString::number(entry.valor)));
 
-      appendRow(rowItems);
-  }
+    // cria as linhas da tabela
+    for (const auto& row : data) {
+        QList<QStandardItem*> rowItems;
+        
+        for (const auto& cellData : row) {
+            rowItems.append(createTableItem(cellData));
+        }
+
+        appendRow(rowItems);
+    }
 }
-
