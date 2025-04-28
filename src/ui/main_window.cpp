@@ -13,6 +13,7 @@
 #include <QSplitter>
 #include <QTableView>
 #include <QHeaderView>
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -73,9 +74,48 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tableView->setStyleSheet(R"(
         QTableView {
             background-color: #2D2A2E;
-            color: #F8F8F2;
-            border: 1px solid #403E41;
-            gridline-color: #403E41;
+            color: rgba(255, 255, 255, 0.69);
+            selection-background-color: rgb(110, 110, 110);
+            gridline-color:rgb(155, 155, 155);
+        }
+    )");
+    tableView->verticalScrollBar()->setStyleSheet(R"(
+        QScrollBar:vertical {
+            background: #2D2A2E;
+            width: 14px;
+            margin: 0px 0px 0px 0px;
+        }
+        QScrollBar::handle:vertical {
+            background: #75715E;
+            border-radius: 7px;
+        }
+        QScrollBar::add-line:vertical {
+            border: none;
+            background: transparent;
+        }
+        QScrollBar::sub-line:vertical {
+            border: none;
+            background: transparent;
+        }
+    )");
+    
+    tableView->horizontalScrollBar()->setStyleSheet(R"(
+        QScrollBar:horizontal {
+            background: #2D2A2E;
+            height: 15px;
+            margin: 0px 0px 0px 0px;
+        }
+        QScrollBar::handle:horizontal {
+            background: #75715E;
+            border-radius: 7px;
+        }
+        QScrollBar::add-line:horizontal {
+            border: none;
+            background: transparent;
+        }
+        QScrollBar::sub-line:horizontal {
+            border: none;
+            background: transparent;
         }
     )");
 
