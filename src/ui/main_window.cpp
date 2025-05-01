@@ -97,7 +97,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
             background: transparent;
         }
     )");
-    
+
     tableView->horizontalScrollBar()->setStyleSheet(R"(
         QScrollBar:horizontal {
             background: #2D2A2E;
@@ -116,7 +116,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
             border: none;
             background: transparent;
         }
-    )");    
+    )");
 
     // Parte de cima: editor + botão + output empilhados verticalmente
     QSplitter *verticalSplitter = new QSplitter(Qt::Vertical, this);
