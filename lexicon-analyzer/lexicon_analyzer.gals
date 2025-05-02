@@ -191,8 +191,8 @@ VAL_FALSE = ID : "false"
 // Declarations
 <declaration> ::= <data_type> <dec_assign_list>;
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
-<dec_assign> ::= ID #1 ASSIGNMENT <expression> #4 | ID #1 <array_dec> ASSIGNMENT <array> #5 | ID #1 <array_dec> | ID #1;
-<array_dec> ::= "[" <expression> #9 "]" #8 <array_access> | "[" <expression> #9 "]" #8;
+<dec_assign> ::= ID #1 #3 ASSIGNMENT <expression> #4 | ID #1 #3 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 #3 <array_dec> #5 | ID #1 #3;
+<array_dec> ::= <array_dec> "[" <expression> #6 "]" | "[" <expression> #6 "]";
 
 // Assignments
 <assignment> ::= <assignable> <op_assign> <expression> #4;
@@ -232,11 +232,11 @@ VAL_FALSE = ID : "false"
 <data_type> ::= INT #2 | FLOAT #2 | DOUBLE #2 | CHAR #2 | STRING #2 | BOOLEAN #2;
 
 <assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
-<array_access> ::= "[" <expression> #3 "]" #8 <array_access> | "[" <expression> #3 "]" #8;
+<array_access> ::= <array_access> "[" <expression> #54 "]" | "[" <expression> #54 "]";
 
-<array> ::= "[" <array_nested> "]" | "[" <array_values> "]";
-<array_nested> ::= <array_nested> "," <array> #7 | <array> #10;
-<array_values> ::= <array_values> "," <expression> #7 | <expression> #10;
+<array> ::= "[" #52 <array_nested> "]" | "[" #52 <array_values> "]";
+<array_nested> ::= <array_nested> "," <array> #53 | <array> #51;
+<array_values> ::= <array_values> "," <expression> #53 | <expression> #51;
 
 // Function Call
 <func_call> ::= "(" <func_call_params> ")" | "(" ")";
@@ -270,10 +270,10 @@ VAL_FALSE = ID : "false"
 
 // Subroutines
 <subroutine_def> ::= <subroutine_def_type> "(" <subroutine_def_param_list> ")" <block> | <subroutine_def_type> "(" ")" <block>;
-<subroutine_def_array_declaration> ::= <subroutine_def_array_declaration> "[" "]" #8 | "[" "]" #8;
+<subroutine_def_array_declaration> ::= <subroutine_def_array_declaration> "[" "]" #52 | "[" "]" #52;
 <subroutine_def_type> ::= <data_type> ID #1 | <data_type> <subroutine_def_array_declaration> ID #1 | VOID #2 ID #1;
 <subroutine_def_param_list> ::= <subroutine_def_param_list> "," <param_subroutine_def> #21 | <param_subroutine_def> #21;
-<param_subroutine_def> ::= <data_type> ID #1 | <data_type> ID #1 <subroutine_def_array_declaration> | VOID #2 ID #1;
+<param_subroutine_def> ::= <data_type> ID #1 #3 | <data_type> ID #1 #3 <subroutine_def_array_declaration>;
 
 // Block & No Semicolon
 <block> ::= "{" #23 <statement_list> "}" #24 | "{" #23 "}" #24;

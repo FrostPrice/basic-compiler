@@ -2,13 +2,11 @@ Action Number, Description
 // 1 - 10: declarations and assignments
 #1, ID, (Identifiers -> defined by the programmer)
 #2, TYPE, (Type of data -> used in declarations)
-#3, ARRAY ACCESS, (Expression to get array value)
+#3, VALIDATE ID FOR DECLARATION, (Validate ID for declaration)
 #4, ASSIGNMENT VALUE, (Assignment value)
 #5, ASSIGNMENT ARRAY, VALUE (Assignment value for arrays)
-#7, ARRAY VALUE, (Array value)
-#8, ARRAY DIMENSIONS, (Array dimensions)
-#9, ARRAY SIZE DECLARATION, (Array size declaration)
-#10, ARRAY DEPTH, (Array depth)
+#6, ARRAY SIZE DECLARATION, (Array size declaration)
+#7, ARRAY ASSIGNMENT VALUE, (Assignment value for arrays)
 
 // 11 - 20: operators and 
 #11, ASSIGN OP, (Assignment operator)
@@ -19,7 +17,7 @@ Action Number, Description
 #16, ADD OP, (Add operator), for numbers and strings
 #17, INTEGER OP, (Only integer operator), for integers
 #18, BOOLEAN OP, (boolean operator), for boolean values
-#19, EQ NE OP, (Equal and not equal operator), for numbers and strings
+#19, EQ NE OP, (Equal and not equal operator), for everything
 
 // 21 - 30: Functions, subroutines and blocks
 #21, FUNCTION_DEF_PARAMETER, (Function definition parameter)
@@ -48,6 +46,12 @@ Action Number, Description
 #48, FOR INCREMENT, (For loop increment)
 #49, BREAK, (Break statement)
 #50, CONTINUE, (Continue statement)
+
+// 51 - 60: arrays
+#51, ARRAY VALUE, (Array value)
+#52, ARRAY DEPTH IN, (Array depth in)
+#53, ARRAY DEPTH OUT, (Array depth out)
+#54, ARRAY ACCESS, (Expression to get array value)
 
 <dec_assign> ::= ID #1 ASSIGNMENT #11 <expression> #4 | ID #1 <array_access> ASSIGNMENT #11 <array_value> #5 | ID #1 <array_access> | ID #1;
 <array_dec> ::= "[" <expression> #9 "]" #8 <array_access> | "[" <expression> #9 "]" #8;
