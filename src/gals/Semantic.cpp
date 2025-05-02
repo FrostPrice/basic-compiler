@@ -67,30 +67,12 @@ void Semantic::executeAction(int action, const Token *token)
 
         break;
     }
-    case 3: // ARRAY ACCESS
+    case 3: // VALIDATE ID FOR DECLARATION
     {
-        // Push array size dimension
-        this->currentArrayDimension++;
-        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->pendingId);
-        if (isNumber(lexeme, false))
+        if (this->idAlreadyDeclared)
         {
-            int value = stoi(lexeme);
-
-            this->validateExistingSymbol(symbol);
-            this->validateSymbolClassification(symbol, SymbolTable::ARRAY);
-
-            int dimensions = symbol->arraySize.size();
-            if (this->currentArrayDimension >= dimensions || value >= symbol->arraySize[this->currentArrayDimension])
-            {
-                throw SemanticError("Array index out of bounds");
-            }
+            throw SemanticError("Identifier '" + this->currentSymbol->id + "' already declared");
         }
-        else if (!this->validateExpressionType(SemanticTable::INT))
-        {
-            throw SemanticError("Invalid array index");
-        }
-
-        symbol->isUsed = true;
         break;
     }
     case 4:
