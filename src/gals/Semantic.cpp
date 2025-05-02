@@ -367,6 +367,7 @@ void Semantic::executeAction(int action, const Token *token)
 
 void Semantic::reset()
 {
+    this->pendingClassification = SymbolTable::NONE;
     this->pendingType = SemanticTable::__NULL;
     this->pendingId.clear();
     this->arrayDepth = -1;
