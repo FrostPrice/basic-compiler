@@ -19,9 +19,13 @@ private:
     SymbolTable::SymbolClassification pendingClassification = SymbolTable::NONE; // Classification of the last identifier
     SemanticTable::Types pendingType = SemanticTable::__NULL;                    // Type of the last identifier
     string pendingId = "";                                                       // Identifier of the last identifier
+    vector<int> valueArraySizes;                                                 // Array dimensions of the declaration array value
+    stack<int> arrayLengthsStack;                                                // Array length of inner arrays in declaration array value
+    int arrayDepth = -1;                                                         // Array depth of the last identifier
     stack<int> operatorStack;                                                    // Stack for operators
     stack<int> idTypeStack;                                                      // Stack for identifier types
     bool idAlreadyDeclared = false;                                              // Flag to indicate if the identifier is already declared
+    // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
 
 public:
     SymbolTable symbolTable;

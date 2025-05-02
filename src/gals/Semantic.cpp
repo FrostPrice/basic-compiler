@@ -128,19 +128,20 @@ void Semantic::executeAction(int action, const Token *token)
         }
         break;
     }
-    case 8: // ARRAY DIMENSIONS
-        // Finalize array dimension info
-        break;
-    case 9: // ARRAY SIZE DECLARATION
-        // Array size declaration
-        break;
-    case 10: // ARRAY DEPTH
+    case 7: // ARRAY ASSIGNMENT VALUE
     {
-        this->valueArrayLength++;
-        vector<int>::iterator it = this->valueArrayDimensions.begin();
-        this->valueArrayDimensions.insert(it, this->valueArrayLength);
-        this->valueArrayLength = 0;
+        this->arrayDepth = -1;
+        this->valueArraySizes.clear();
+        for (int i = 0; i < this->currentSymbol->arraySize.size(); i++)
+        {
+            this->valueArraySizes.push_back(0);
+        }
         break;
+
+        while (!this->arrayLengthsStack.empty())
+        {
+            this->arrayLengthsStack.pop();
+        }
     }
     // * 11-20: Operators *
     case 11: // ASSIGN OP
@@ -297,7 +298,67 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     case 50: // CONTINUE
         break;
+    case 51: // ARRAY VALUE
+    {
+        cout << "stack top: " << this->arrayLengthsStack.top() << endl;
+        if (this->arrayLengthsStack.top() + 1 >= this->currentSymbol->arraySize[this->arrayDepth])
+            throw SemanticError("Array length exceeded 1");
 
+        if (this->arrayDepth > -1)
+        {
+            this->arrayLengthsStack.top()++;
+        }
+
+        break;
+    }
+    case 52: // ARRAY DEPTH IN
+    {
+        this->arrayDepth++;
+
+        if (this->arrayDepth >= this->currentSymbol->arraySize.size())
+        {
+            throw SemanticError("Array length exceeded 2 ");
+        }
+
+        this->arrayLengthsStack.push(0);
+        break;
+    }
+    case 53: // ARRAY DEPTH OUT
+        cout << "Array length: " << this->arrayLengthsStack.top() << endl;
+        if (this->arrayLengthsStack.top() >= this->currentSymbol->arraySize[this->arrayDepth])
+            throw SemanticError("Array length exceeded 3");
+
+        this->valueArraySizes[this->arrayDepth] = this->arrayLengthsStack.top()++;
+
+        this->arrayDepth--;
+        this->arrayLengthsStack.pop();
+        break;
+    case 54: // ARRAY ACCESS
+    {
+        // Push array size dimension
+        // this->currentArrayDimension++;
+        // SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->pendingId);
+        // if (isNumber(lexeme, false))
+        // {
+        //     int value = stoi(lexeme);
+
+        //     this->validateExistingSymbol(symbol);
+        //     this->validateSymbolClassification(symbol, SymbolTable::ARRAY);
+
+        //     int dimensions = symbol->arraySize.size();
+        //     if (this->currentArrayDimension >= dimensions || value >= symbol->arraySize[this->currentArrayDimension])
+        //     {
+        //         throw SemanticError("Array index out of bounds");
+        //     }
+        // }
+        // else if (!this->validateExpressionType(SemanticTable::INT))
+        // {
+        //     throw SemanticError("Invalid array index");
+        // }
+
+        // symbol->isUsed = true;
+        break;
+    }
     default:
         cout << "Ação não reconhecida: " << action << endl;
         break;
@@ -308,7 +369,8 @@ void Semantic::reset()
 {
     this->pendingType = SemanticTable::__NULL;
     this->pendingId.clear();
-    this->symbolArrayDimensions.clear();
+    this->arrayDepth = -1;
+    // this->isRawValue = false;
 
     while (!this->operatorStack.empty())
         this->operatorStack.pop();
