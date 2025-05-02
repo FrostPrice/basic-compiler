@@ -112,12 +112,8 @@ public:
                  << ", Symbol Classification: " << symbol.symbolClassification
                  << ", Is Initialized: " << boolalpha << symbol.isInitialized
                  << ", Is Used: " << boolalpha << symbol.isUsed
-                 << ", Array Size: ";
+                 << ", Array Size: " << this->getArraySizeString(symbol.arraySize);
 
-            for (int &size : symbol.arraySize)
-            {
-                cout << size << " ";
-            }
             cout << "\n-------------\n";
         }
     }
@@ -139,6 +135,16 @@ private:
         }
 
         return false; // Scope is not valid
+    }
+
+    string getArraySizeString(vector<int> arraySize)
+    {
+        string sizeString = "";
+        for (int size : arraySize)
+        {
+            sizeString += "[" + (size == -1 ? "exp" : to_string(size)) + "]";
+        }
+        return sizeString;
     }
 };
 
