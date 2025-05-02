@@ -12,7 +12,7 @@ class SymbolTable
 {
     // Public variables
 public:
-    stack<int> expressionStack; // Expression to manage scopes
+    stack<SemanticTable::Types> expressionStack; // Expression to manage scopes
 
     enum SymbolClassification
     {
