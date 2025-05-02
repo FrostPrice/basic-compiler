@@ -17,6 +17,10 @@ class Semantic
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr;                            // Current symbol being processed
     SymbolTable::SymbolClassification pendingClassification = SymbolTable::NONE; // Classification of the last identifier
+    SemanticTable::Types pendingType = SemanticTable::__NULL;                    // Type of the last identifier
+    string pendingId = "";                                                       // Identifier of the last identifier
+    stack<int> operatorStack;                                                    // Stack for operators
+    stack<int> idTypeStack;                                                      // Stack for identifier types
     bool idAlreadyDeclared = false;                                              // Flag to indicate if the identifier is already declared
 
 public:
