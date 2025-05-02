@@ -166,6 +166,7 @@ void MainWindow::compileCode()
         syn.parse(&lex, &sem);
         output->setTextColor(Qt::green);
         output->setText("Compiled successfully!");
+        sem.symbolTable.printTable(); // Print the symbol table for debugging
     }
     catch (LexicalError err)
     {

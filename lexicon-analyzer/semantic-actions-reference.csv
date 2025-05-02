@@ -2,11 +2,13 @@ Action Number, Description
 // 1 - 10: declarations and assignments
 #1, ID, (Identifiers -> defined by the programmer)
 #2, TYPE, (Type of data -> used in declarations)
-#3, ARRAY LENGTH, (Array length)
+#3, ARRAY ACCESS, (Expression to get array value)
 #4, ASSIGNMENT VALUE, (Assignment value)
 #5, ASSIGNMENT ARRAY, VALUE (Assignment value for arrays)
 #7, ARRAY VALUE, (Array value)
 #8, ARRAY DIMENSIONS, (Array dimensions)
+#9, ARRAY SIZE DECLARATION, (Array size declaration)
+#10, ARRAY DEPTH, (Array depth)
 
 // 11 - 20: operators and 
 #11, ASSIGN OP, (Assignment operator)
@@ -48,6 +50,7 @@ Action Number, Description
 #50, CONTINUE, (Continue statement)
 
 <dec_assign> ::= ID #1 ASSIGNMENT #11 <expression> #4 | ID #1 <array_access> ASSIGNMENT #11 <array_value> #5 | ID #1 <array_access> | ID #1;
+<array_dec> ::= "[" <expression> #9 "]" #8 <array_access> | "[" <expression> #9 "]" #8;
 
 <assignment> ::= <assignable> <op_assign> <expression> #4 | <assign_array>;
 <assign_array> ::= <assignable> ASSIGNMENT #11 <array_value> #5;

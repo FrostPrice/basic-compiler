@@ -4,17 +4,20 @@
 class SemanticTable
 {
 private:
+    // stack<int> scope;
+
 public:
     enum Types
     {
+        __NULL = -1,
         INT = 0,
         FLOAT = 1,
         DOUBLE = 2,
         CHAR = 3,
         STRING = 4,
-        BOOL = 5
+        BOOL = 5,
     };
-    enum Operations
+    enum OperationsBinary
     {
         SUM = 0,
         SUBTRACTION = 1,
@@ -22,11 +25,16 @@ public:
         DIVISION = 3,
         REMAINDER = 4,
         LOGICAL = 5,
-        NEG = 6,
-        RELATION_LOW = 7,
-        RELATION_HIGH = 8,
-        NOT = 9,
-        BITWISE = 10
+        RELATION_LOW = 6,
+        RELATION_HIGH = 7,
+        BITWISE = 8
+    };
+    enum OperationsUnary
+    {
+        NEG = 0,
+        INCREMENT = 1,
+        NOT = 2,
+        BITWISE_NOT = 3
     };
     enum Status
     {
@@ -35,21 +43,34 @@ public:
         OK = 1
     };
 
-    // TIPO DE RETORNO DAS EXPRESSOES ENTRE TIPOS
-    // 5 x 5 X 10  = TIPO X TIPO X OPER
-    static int const expTable[6][6][11];
+    // Return type of binary expressions
+    // 6 x 6 x 9 = Type X Type X Operation
+    static int const binaryExpTable[6][6][9];
 
-    // atribuicoes compativeis
-    // 5 x 5 = TIPO X TIPO
+    // Return type of unary expressions
+    // 6 x 5 = Type X Operation
+    static int const unaryExpTable[6][4];
+
+    // Compatible atribuitions
+    // 6 x 6 = Type X Type
     static int const atribTable[6][6];
 
-    static int resultType(int TP1, int TP2, int OP)
+    static int unaryResultType(int TP1, int OP)
+    {
+        if (TP1 < 0 || OP < 0)
+        {
+            return ERR;
+        }
+        return unaryExpTable[TP1][OP];
+    }
+
+    static int resultBinaryType(int TP1, int TP2, int OP)
     {
         if (TP1 < 0 || TP2 < 0 || OP < 0)
         {
             return ERR;
         }
-        return (expTable[TP1][TP2][OP]);
+        return binaryExpTable[TP1][TP2][OP];
     }
 
     static int atribType(int TP1, int TP2)
@@ -58,273 +79,10 @@ public:
         {
             return ERR;
         }
-        return (atribTable[TP1][TP2]);
+        return atribTable[TP1][TP2];
     }
 
-    //    SemanticTable();
+    // SemanticTable();
 };
 
-int const SemanticTable::expTable[6][6][11] =
-    {/*                INT                  */ /*                 FLOAT               */ /*                 CHAR                */ /*               STRING                */ /*                 BOOL                */
-                                                                                                                                                                             /*     SUM,SUB,MUL,DIV,REL,MOD,POT,SQT,AND,OR_ , SUM,SUB,MUL,DIV,REL,MOD,POT,SQT,AND,OR_ , SUM,SUB,MUL,DIV,REL,MOD,POT,SQT,AND,OR_ , SUM,SUB,MUL,DIV,REL,MOD,POT,SQT,AND,OR_ , SUM,SUB,MUL,DIV,REL,MOD,POT,SQT,AND,OR_     */
-     /*INT   */ {{INT, INT, INT, FLOAT, BOOL, INT, INT, FLOAT, ERR, ERR}, {FLOAT, FLOAT, FLOAT, FLOAT, BOOL, ERR, FLOAT, FLOAT, ERR, ERR}, {ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR}, {ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR}, {ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR}},
-     /*FLOAT */ {{
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 }},
-     /*CHAR  */ {{
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 }},
-     /*STRING*/ {{
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 }},
-     /*BOOL  */ {{
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 },
-                 {
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                     ,
-                 }}};
-
-int const SemanticTable::atribTable[5][5] =
-    {/* INT FLO CHA STR BOO  */
-     /*INT*/ {OK, WAR, ERR, ERR, ERR},
-     /*FLO*/ {
-         ,
-         ,
-         ,
-         ,
-     },
-     /*CHA*/ {
-         ,
-         ,
-         ,
-         ,
-     },
-     /*STR*/ {
-         ,
-         ,
-         ,
-         ,
-     },
-     /*BOO*/ {
-         ,
-         ,
-         ,
-         ,
-     }};
-}
-;
-
 #endif // SEMANTIC_TABLE_H
-
-SemanticTable::SemanticTable(/* args */)
-{
-}
-
-SemanticTable::~SemanticTable()
-{
-}
