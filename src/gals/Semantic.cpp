@@ -99,7 +99,7 @@ void Semantic::executeAction(int action, const Token *token)
         else
         {
             // Check if the symbol is already declared in the current scope
-            validateDuplicateSymbolInSameScope(matchedSymbol, this->pendingId, this->symbolTable.currentScope);
+            validateDuplicateSymbolInSameScope(matchedSymbol);
 
             // Check type compatibility
             validateVariableType(matchedSymbol);
@@ -348,7 +348,7 @@ void Semantic::validateSymbolClassification(SymbolTable::SymbolInfo *symbol, Sym
     }
 }
 
-void Semantic::validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *symbol, string id, int scope)
+void Semantic::validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *symbol)
 {
 
     if (symbol->scope == this->symbolTable.currentScope)

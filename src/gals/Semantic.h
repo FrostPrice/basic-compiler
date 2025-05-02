@@ -34,7 +34,7 @@ public:
     void validateExistingSymbol(SymbolTable::SymbolInfo *symbol);
     void validateSymbolClassification(SymbolTable::SymbolInfo *symbol, SymbolTable::SymbolClassification classification);
     void validateVariableType(SymbolTable::SymbolInfo *matchedSymbol);
-    void validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *symbol, string id, int scope);
+    void validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *symbol);
     void validateExitScope(bool isValid);
 };
 
