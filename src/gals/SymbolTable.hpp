@@ -16,6 +16,7 @@ public:
 
     enum SymbolClassification
     {
+        NONE = -1,
         VARIABLE,
         ARRAY,
         FUNCTION,

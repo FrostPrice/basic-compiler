@@ -15,15 +15,7 @@ using namespace std;
 class Semantic
 {
 private:
-    SymbolTable::SymbolClassification pendingClassification; // Classification of the last identifier
-    SemanticTable::Types pendingType;                        // Type of the last identifier
-    string pendingId = "";                                   // Identifier of the last identifier
-    vector<int> symbolArrayDimensions;                       // Array dimensions of the last identifier
-    vector<int> valueArrayDimensions;                        // Array dimensions of the declaration array value
-    int valueArrayLength;                                    // Array length of inner arrays in declaration array value
-    int currentArrayDimension = -1;                          // Current array dimension
-    stack<int> operatorStack;                                // Stack for operators
-    stack<int> idTypeStack;                                  // Stack for identifier types
+    SymbolTable::SymbolClassification pendingClassification = SymbolTable::NONE; // Classification of the last identifier
 
 public:
     SymbolTable symbolTable;
