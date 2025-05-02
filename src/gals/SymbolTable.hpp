@@ -32,6 +32,9 @@ public:
         bool isInitialized = false; // true if the variable is initialized (has value)
         bool isUsed = false;        // true if the variable is used
         vector<int> arraySize;      // Array size of each dimension
+
+        SymbolInfo() {}
+        SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
     };
     int currentScope = 0; // Current scope level
 
