@@ -15,7 +15,9 @@ using namespace std;
 class Semantic
 {
 private:
+    SymbolTable::SymbolInfo *currentSymbol = nullptr;                            // Current symbol being processed
     SymbolTable::SymbolClassification pendingClassification = SymbolTable::NONE; // Classification of the last identifier
+    bool idAlreadyDeclared = false;                                              // Flag to indicate if the identifier is already declared
 
 public:
     SymbolTable symbolTable;

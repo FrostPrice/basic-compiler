@@ -34,9 +34,22 @@ void Semantic::executeAction(int action, const Token *token)
     {
         // * 1-10: Declarations and assignments *
     case 1: // ID
-        this->pendingId = lexeme;
+    {
+        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(lexeme);
+        if (symbol == nullptr)
+        {
+            this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, this->pendingType, this->symbolTable.currentScope);
+            this->idAlreadyDeclared = false;
+        }
+        else
+        {
+            this->currentSymbol = symbol;
+            this->idAlreadyDeclared = true;
+        }
 
+        this->pendingId = lexeme;
         break;
+    }
     case 2: // TYPE
     {
         if (lexeme == "int")
