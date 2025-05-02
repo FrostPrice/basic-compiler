@@ -106,12 +106,26 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 5: // ASSIGNMENT ARRAY VALUE
     {
+        this->currentSymbol->isInitialized = true;
+        this->currentSymbol->symbolClassification = SymbolTable::ARRAY;
 
+        this->symbolTable.addSymbol(*this->currentSymbol);
         break;
     }
-    case 7: // ARRAY VALUE
+    case 6: // ARRAY SIZE DECLARATION
     {
-        this->valueArrayLength++;
+        if (/*this->isRawValue && */ lexeme != "0" && isNumber(lexeme, false))
+        {
+            this->currentSymbol->arraySize.push_back(stoi(lexeme));
+        }
+        else if (this->validateExpressionType(SemanticTable::INT))
+        {
+            this->currentSymbol->arraySize.push_back(-1);
+        }
+        else
+        {
+            throw SemanticError("Invalid array size");
+        }
         break;
     }
     case 8: // ARRAY DIMENSIONS
