@@ -234,9 +234,9 @@ VAL_FALSE = ID : "false"
 <assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
 <array_access> ::= <array_access> "[" <expression> #54 "]" | "[" <expression> #54 "]";
 
-<array> ::= "[" #52 <array_nested> "]" | "[" #52 <array_values> "]";
-<array_nested> ::= <array_nested> "," <array> #53 | <array> #51;
-<array_values> ::= <array_values> "," <expression> #53 | <expression> #51;
+<array> ::= "[" #52 <array_nested> "]" #53 | "[" #52 <array_values> "]" #53;
+<array_nested> ::= <array_nested> "," <array> #51 | <array> #51;
+<array_values> ::= <array_values> "," <expression> #51 | <expression> #51;
 
 // Function Call
 <func_call> ::= "(" <func_call_params> ")" | "(" ")";

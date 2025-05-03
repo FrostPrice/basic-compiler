@@ -300,15 +300,8 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     case 51: // ARRAY VALUE
     {
-        cout << "stack top: " << this->arrayLengthsStack.top() << endl;
-        if (this->arrayLengthsStack.top() + 1 >= this->currentSymbol->arraySize[this->arrayDepth])
-            throw SemanticError("Array length exceeded 1");
-
-        if (this->arrayDepth > -1)
-        {
-            this->arrayLengthsStack.top()++;
-        }
-
+        // TODO validate exp type
+        this->arrayLengthsStack.top()++;
         break;
     }
     case 52: // ARRAY DEPTH IN
@@ -317,22 +310,24 @@ void Semantic::executeAction(int action, const Token *token)
 
         if (this->arrayDepth >= this->currentSymbol->arraySize.size())
         {
-            throw SemanticError("Array length exceeded 2 ");
+            throw SemanticError("Array length exceeded");
         }
 
         this->arrayLengthsStack.push(0);
         break;
     }
     case 53: // ARRAY DEPTH OUT
-        cout << "Array length: " << this->arrayLengthsStack.top() << endl;
-        if (this->arrayLengthsStack.top() >= this->currentSymbol->arraySize[this->arrayDepth])
-            throw SemanticError("Array length exceeded 3");
+    {
+        int arraySize = this->currentSymbol->arraySize[this->arrayDepth];
+        if (this->arrayLengthsStack.top() > arraySize && arraySize != -1)
+            throw SemanticError("Array length exceeded");
 
-        this->valueArraySizes[this->arrayDepth] = this->arrayLengthsStack.top()++;
+        this->valueArraySizes[this->arrayDepth] = this->arrayLengthsStack.top();
 
         this->arrayDepth--;
         this->arrayLengthsStack.pop();
         break;
+    }
     case 54: // ARRAY ACCESS
     {
         // Push array size dimension
