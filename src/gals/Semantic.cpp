@@ -107,6 +107,14 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 5: // ASSIGNMENT ARRAY VALUE
     {
+        for (int i = 0; i < this->currentSymbol->arraySize.size(); i++)
+        {
+            int arraySize = this->currentSymbol->arraySize[i];
+            if (arraySize != this->valueArraySizes[i] && arraySize != -1)
+            {
+                throw SemanticError("Array size mismatch: expected " + to_string(arraySize) + " but got " + to_string(this->valueArraySizes[i]));
+            }
+        }
         this->currentSymbol->isInitialized = true;
         this->currentSymbol->symbolClassification = SymbolTable::ARRAY;
 
