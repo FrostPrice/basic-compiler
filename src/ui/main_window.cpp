@@ -158,14 +158,28 @@ void MainWindow::compileCode()
     Lexical lex;
     Syntactic syn;
     Semantic sem;
+    sem.warnings.clear(); // Clear previous warnings
 
     lex.setInput(code.toStdString().c_str());
 
     try
     {
         syn.parse(&lex, &sem);
-        output->setTextColor(Qt::green);
-        output->setText("Compiled successfully!");
+
+        // Show warnings if any
+        QString resultText;
+        if (!sem.warnings.empty())
+        {
+            for (const string &warning : sem.warnings)
+            {
+                resultText += "<span style='color:orange;'>" + QString::fromStdString(warning) + "</span><br>";
+            }
+            resultText += "<br>";
+        }
+
+        resultText += "<span style='color:lightgreen;'>Compiled successfully!</span>";
+
+        output->setHtml(resultText);
         sem.symbolTable.printTable(); // Print the symbol table for debugging
     }
     catch (LexicalError err)

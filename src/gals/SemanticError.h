@@ -57,6 +57,16 @@ public:
   {
     return "Expression stack is empty";
   }
+
+  static std::string NonNumericOperator()
+  {
+    throw "Arithmetic operator requires numeric operands";
+  }
+
+  static std::string oneOperatorForBinaryExpression()
+  {
+    return "Binary expression requires two operands";
+  }
 };
 
 #endif

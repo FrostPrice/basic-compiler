@@ -77,14 +77,14 @@ void Semantic::executeAction(int action, const Token *token)
         // Declare variable if not found
         if (matchedSymbol == nullptr)
         {
+            // Check type compatibility
+            validateExpressionType(this->currentSymbol->dataType);
             this->currentSymbol->isInitialized = true; // Mark as initialized
         }
-        else
+        else // assign value to variable
         {
-            // assign value to variable
-
             // Check type compatibility
-            // validateExpressionType(currentSymbol->dataType);
+            validateExpressionType(matchedSymbol->dataType);
             matchedSymbol->isInitialized = true; // Mark as initialized
         }
 
@@ -151,12 +151,24 @@ void Semantic::executeAction(int action, const Token *token)
     case 14: // REMAINDER ASSIGN OP
         // Handle %= for integers
         break;
-    case 15: // NUMBER OP
+    case 15:
+    { // NUMBER OP
         // Handle +, -, *, /, etc.
         break;
-    case 16: // ADD OP
-        // Handle + for numbers or strings
+    }
+    case 16:
+    { // (Add operator), for numbers and strings
+
+        validateOneOfTypes({
+            SemanticTable::Types::INT,
+            SemanticTable::Types::FLOAT,
+            SemanticTable::Types::DOUBLE,
+            SemanticTable::Types::STRING,
+        });
+        this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+
         break;
+    }
     case 17: // INTEGER OP
         // Handle bitwise ops or % (only integers)
         break;
@@ -239,49 +251,47 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 27: // OUTPUT
     {
-        // Print value
-        if (idTypeStack.empty())
-        {
-            throw SemanticError("Cannot print: no expression found");
-        }
-
-        int expressionType = this->idTypeStack.top();
-        this->idTypeStack.pop();
-
-        if (this->currentSymbol && !this->currentSymbol->isInitialized)
-        {
-            throw SemanticError("Variable '" + this->currentSymbol->id + "' used in output is not initialized");
-        }
+        validateOneOfTypes({SemanticTable::STRING, SemanticTable::CHAR});
 
         break;
     }
     // * 31-40: Primitive values *
-    case 31: // INT VALUE
+    case 31:
+    { // INT VALUE
         // Push int value to stack
-        this->symbolTable.expressionStack.push(SemanticTable::INT);
+        this->symbolTable.pushType(SemanticTable::INT, lexeme);
         break;
+    }
     case 32:
     { // DECIMAL VALUE
         // Push float/double value to stack
         if (lexeme[lexeme.length() - 1] == 'f')
-            this->symbolTable.expressionStack.push(SemanticTable::FLOAT);
+        {
+            this->symbolTable.pushType(SemanticTable::FLOAT, lexeme);
+        }
         else
-            this->symbolTable.expressionStack.push(SemanticTable::DOUBLE);
-
+        {
+            this->symbolTable.pushType(SemanticTable::DOUBLE, lexeme);
+        }
         break;
     }
     case 33: // CHAR VALUE
-        // Push char value
-        this->symbolTable.expressionStack.push(SemanticTable::CHAR);
+    {        // Push char value
+        this->symbolTable.pushType(SemanticTable::CHAR, lexeme);
         break;
-    case 34: // STRING VALUE
+    }
+    case 34:
+    { // STRING VALUE
         // Push string literal
-        this->symbolTable.expressionStack.push(SemanticTable::STRING);
+        this->symbolTable.pushType(SemanticTable::STRING, lexeme);
         break;
-    case 35: // BOOLEAN VALUE
-        // Push boolean literal
-        this->symbolTable.expressionStack.push(SemanticTable::BOOL);
+    }
+    case 35:
+    { // BOOLEAN VALUE
+      // Push boolean literal
+        this->symbolTable.pushType(SemanticTable::BOOL, lexeme);
         break;
+    }
 
     // * 41-50: Conditionals and loops *
     case 41: // IF CONDITION

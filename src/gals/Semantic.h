@@ -20,12 +20,18 @@ private:
     vector<int> valueArraySizes;  // Array dimensions of the declaration array value
     stack<int> arrayLengthsStack; // Array length of inner arrays in declaration array value
     int arrayDepth = -1;          // Array depth of the last identifier
-    stack<int> operatorStack;     // Stack for operators
-    stack<int> idTypeStack;       // Stack for identifier types
-                                  // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
+
+    // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
 
 public:
+    vector<string> warnings; // Warnings generated during semantic analysis
+    void reportWarning(const string &msg)
+    {
+        warnings.push_back(msg);
+    }
+
     SymbolTable symbolTable;
+
     void resetControllVariables()
     {
         if (this->currentSymbol != nullptr)
@@ -35,11 +41,8 @@ public:
 
         this->currentSymbol = new SymbolTable::SymbolInfo();
 
-        while (!this->operatorStack.empty())
-            this->operatorStack.pop();
-
-        while (!this->idTypeStack.empty())
-            this->operatorStack.pop();
+        while (!this->symbolTable.expressionStack.empty())
+            this->symbolTable.expressionStack.pop();
     }
 
     void executeAction(int action, const Token *token);
@@ -52,12 +55,21 @@ public:
             throw SemanticError(SemanticError::ExpressionStackEmpty());
         }
 
-        int actualType = this->symbolTable.expressionStack.top();
+        SymbolTable::ExpressionsEntry currentValue = this->symbolTable.expressionStack.top();
         this->symbolTable.expressionStack.pop();
 
-        if (actualType != expectedType)
+        int compat = SemanticTable::atribType(expectedType, currentValue.entryType);
+        if (compat == SemanticTable::ERR)
         {
-            throw SemanticError(SemanticError::TypeMismatch(expectedType, static_cast<SemanticTable::Types>(actualType)));
+            throw SemanticError(SemanticError::TypeMismatch(expectedType, static_cast<SemanticTable::Types>(currentValue.entryType)));
+        }
+
+        if (compat == SemanticTable::WAR)
+        {
+            this->reportWarning("Warning: possible data loss when assigning value of type " +
+                                to_string(currentValue.entryType) +
+                                " to variable of type " +
+                                to_string(expectedType));
         }
     }
 
@@ -109,6 +121,32 @@ public:
         {
             throw SemanticError(SemanticError::InputNonVariable(currentSymbol->id));
         }
+    }
+
+    bool validateIsNumericOperator(SemanticTable::Types type)
+    {
+        return type == SemanticTable::Types::INT || type == SemanticTable::Types::FLOAT || type == SemanticTable::Types::DOUBLE;
+    }
+
+    void validateOneOfTypes(std::initializer_list<SemanticTable::Types> types)
+    {
+
+        if (symbolTable.expressionStack.empty())
+            throw SemanticError(SemanticError::ExpressionStackEmpty());
+
+        SymbolTable::ExpressionsEntry top = symbolTable.expressionStack.top();
+
+        for (SemanticTable::Types t : types)
+        {
+            if (SemanticTable::atribType(t, top.entryType) != SemanticTable::ERR)
+            {
+                symbolTable.expressionStack.pop();
+                return; // Valid type
+            }
+        }
+
+        throw SemanticError("Expression type '" + to_string(top.entryType) +
+                            "' not allowed here.");
     }
 };
 
