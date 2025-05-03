@@ -69,7 +69,8 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 3: // VALIDATE ID FOR DECLARATION
     {
-        if (this->idAlreadyDeclared)
+        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(lexeme);
+        if (symbol != nullptr)
         {
             throw SemanticError("Identifier '" + this->currentSymbol->id + "' already declared");
         }
