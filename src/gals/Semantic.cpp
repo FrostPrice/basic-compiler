@@ -47,7 +47,6 @@ void Semantic::executeAction(int action, const Token *token)
             this->idAlreadyDeclared = true;
         }
 
-        this->pendingId = lexeme;
         break;
     }
     case 2: // TYPE
@@ -123,11 +122,12 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 6: // ARRAY SIZE DECLARATION
     {
+        // TODO validate array size for negative values
         if (/*this->isRawValue && */ lexeme != "0" && isNumber(lexeme, false))
         {
             this->currentSymbol->arraySize.push_back(stoi(lexeme));
         }
-        else if (this->validateExpressionType(SemanticTable::INT))
+        else if (/*this->validateExpressionType(SemanticTable::INT)*/ true)
         {
             this->currentSymbol->arraySize.push_back(-1);
         }
@@ -185,7 +185,7 @@ void Semantic::executeAction(int action, const Token *token)
     case 21:
     { // FUNCTION_DEF_PARAMETER
         // Save function parameter type/name
-        SymbolTable::SymbolInfo *currentSymbol = this->symbolTable.getSymbol(this->pendingId);
+        SymbolTable::SymbolInfo *currentSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
         currentSymbol->symbolClassification = SymbolTable::PARAM;
 
         break;
@@ -193,13 +193,13 @@ void Semantic::executeAction(int action, const Token *token)
     case 22:
     { // FUNCTION_CALL_PARAMETER
         // Push function call parameter
-        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getSymbol(this->pendingId);
+        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
         if (functionSymbol == nullptr)
-            throw SemanticError("Function '" + this->pendingId + "' not found");
+            throw SemanticError("Function '" + this->currentSymbol->id + "' not found");
 
         if (functionSymbol->symbolClassification != SymbolTable::FUNCTION)
-            throw SemanticError("Symbol '" + this->pendingId + "' is not a function");
+            throw SemanticError("Symbol '" + this->currentSymbol->id + "' is not a function");
 
         SemanticTable::Types expectedType = functionSymbol->dataType;
 
@@ -208,51 +208,66 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     }
     case 23:
-        // BLOCK_INIT
+    { // BLOCK_INIT
         // Enter a new scope
         this->symbolTable.enterScope();
         cout << "Entered new scope" << this->symbolTable.currentScope << endl;
         break;
+    }
 
     case 24:
-        // BLOCK_END
+    { // BLOCK_END
         // Exit current scope
-        if (symbolTable.currentScope > 0)
+        this->symbolTable.exitScope();
+
+        break;
+    }
+    case 25:
+    { // RETURN
+        // Handle return type checking
+        SymbolTable::SymbolInfo *currentScopeSymbol = this->symbolTable.getCurrentScope();
+
+        validateReturnStatementScope(currentScopeSymbol);
+
+        SemanticTable::Types expectedReturnType = currentScopeSymbol->dataType;
+
+        validateExpressionType(expectedReturnType);
+
+        break;
+    }
+    case 26:
+    { // INPUT
+      // Read value from user
+        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
+
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->isInitialized);
+
+        validateIsVariable(matchedSymbol);
+
+        validateSymbolClassification(matchedSymbol, SymbolTable::VARIABLE);
+
+        this->currentSymbol->isInitialized = true;
+
+        break;
+    }
+    case 27: // OUTPUT
+    {
+        // Print value
+        if (idTypeStack.empty())
         {
-            this->symbolTable.exitScope();
-            cout << "Exited scope" << this->symbolTable.currentScope << endl;
+            throw SemanticError("Cannot print: no expression found");
         }
 
-        validateExitScope(this->symbolTable.exitScope());
+        int expressionType = this->idTypeStack.top();
+        this->idTypeStack.pop();
+
+        if (this->currentSymbol && !this->currentSymbol->isInitialized)
+        {
+            throw SemanticError("Variable '" + this->currentSymbol->id + "' used in output is not initialized");
+        }
+
         break;
-
-    case 25: // RETURN
-        // Handle return type checking
-        // SymbolTable::SymbolInfo *currentFunction = this->symbolTable.getCurrentFunction();
-
-        // Validar se estamos dentro de uma função
-        // if (currentFunction == nullptr)
-        // {
-        //     throw SemanticError("Return statement outside of a function");
-        // }
-
-        // // Obter o tipo de retorno esperado da função
-        // SemanticTable::Types expectedReturnType = currentFunction->dataType;
-
-        // // Validar o tipo da expressão retornada
-        // if (!this->validateExpressionType(expectedReturnType))
-        // {
-        //     throw SemanticError("Type mismatch in return statement: expected '" +
-        //                         to_string(expectedReturnType) + "'");
-        // }
-        break;
-    case 26: // INPUT
-        // Read value from user
-        break;
-    case 27: // OUTPUT
-        // Print value
-        break;
-
+    }
     // * 31-40: Primitive values *
     case 31: // INT VALUE
         // Push int value to stack

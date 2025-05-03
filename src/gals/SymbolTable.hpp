@@ -53,8 +53,8 @@ public:
 
     void enterScope()
     {
-        scopeStack.push(currentScope);
         currentScope++;
+        scopeStack.push(currentScope);
     };
 
     bool exitScope()
@@ -99,6 +99,19 @@ public:
     {
         return symbolTable;
     }
+
+    SymbolInfo *getCurrentScope()
+    {
+        for (SymbolInfo &symbol : symbolTable)
+        {
+            if (symbol.symbolClassification == FUNCTION && isInValidScope(symbol.scope))
+            {
+                cout << "Found symbol: " << symbol.id << endl;
+                return &symbol; // Return the symbol if found in the current scope
+            }
+        }
+        return nullptr; // Symbol not found
+    };
 
     // * Used only for debugging
     void printTable()
