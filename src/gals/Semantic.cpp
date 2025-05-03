@@ -362,11 +362,12 @@ void Semantic::executeAction(int action, const Token *token)
 
 void Semantic::reset()
 {
-    this->pendingClassification = SymbolTable::NONE;
-    this->pendingType = SemanticTable::__NULL;
-    this->pendingId.clear();
-    this->arrayDepth = -1;
-    // this->isRawValue = false;
+    if (this->currentSymbol != nullptr)
+    {
+        delete this->currentSymbol;
+    }
+
+    this->currentSymbol = new SymbolTable::SymbolInfo();
 
     while (!this->operatorStack.empty())
         this->operatorStack.pop();
