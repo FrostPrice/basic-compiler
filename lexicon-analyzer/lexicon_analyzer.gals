@@ -191,7 +191,7 @@ VAL_FALSE = ID : "false"
 // Declarations
 <declaration> ::= <data_type> <dec_assign_list>;
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
-<dec_assign> ::= ID #1 #3 ASSIGNMENT <expression> #4 | ID #1 #3 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 #3 <array_dec> #5 | ID #1 #3;
+<dec_assign> ::= ID #1 ASSIGNMENT <expression> #4 | ID #1 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 <array_dec> #5 | ID #1;
 <array_dec> ::= <array_dec> "[" <expression> #6 "]" | "[" <expression> #6 "]";
 
 // Assignments
@@ -273,7 +273,7 @@ VAL_FALSE = ID : "false"
 <subroutine_def_array_declaration> ::= <subroutine_def_array_declaration> "[" "]" #52 | "[" "]" #52;
 <subroutine_def_type> ::= <data_type> ID #1 | <data_type> <subroutine_def_array_declaration> ID #1 | VOID #2 ID #1;
 <subroutine_def_param_list> ::= <subroutine_def_param_list> "," <param_subroutine_def> #21 | <param_subroutine_def> #21;
-<param_subroutine_def> ::= <data_type> ID #1 #3 | <data_type> ID #1 #3 <subroutine_def_array_declaration>;
+<param_subroutine_def> ::= <data_type> ID #1 | <data_type> ID #1 <subroutine_def_array_declaration>;
 
 // Block & No Semicolon
 <block> ::= "{" #23 <statement_list> "}" #24 | "{" #23 "}" #24;

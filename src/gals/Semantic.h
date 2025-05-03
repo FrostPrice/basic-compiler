@@ -17,16 +17,12 @@ class Semantic
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr; // Current symbol being processed
 
-    // TODO: Validar se todas essas variaveis de controle são realmente necessárias e podem ser trocadas pelo currentSymbol
-    SymbolTable::SymbolClassification pendingClassification = SymbolTable::NONE; // Classification of the last identifier
-    SemanticTable::Types pendingType = SemanticTable::__NULL;                    // Type of the last identifier
-    vector<int> valueArraySizes;                                                 // Array dimensions of the declaration array value
-    stack<int> arrayLengthsStack;                                                // Array length of inner arrays in declaration array value
-    int arrayDepth = -1;                                                         // Array depth of the last identifier
-    stack<int> operatorStack;                                                    // Stack for operators
-    stack<int> idTypeStack;                                                      // Stack for identifier types
-    bool idAlreadyDeclared = false;                                              // Flag to indicate if the identifier is already declared
-    // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
+    vector<int> valueArraySizes;  // Array dimensions of the declaration array value
+    stack<int> arrayLengthsStack; // Array length of inner arrays in declaration array value
+    int arrayDepth = -1;          // Array depth of the last identifier
+    stack<int> operatorStack;     // Stack for operators
+    stack<int> idTypeStack;       // Stack for identifier types
+                                  // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
 
 public:
     SymbolTable symbolTable;
@@ -81,20 +77,14 @@ public:
         }
     }
 
-    void validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *matchedSymbol)
+    bool validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *matchedSymbol)
     {
         if (matchedSymbol->scope == this->currentSymbol->scope)
         {
             throw SemanticError(SemanticError::DuplicateSymbol(matchedSymbol->id));
         }
-    }
 
-    void validateVariableType(SymbolTable::SymbolInfo *matchedSymbol)
-    {
-        if (matchedSymbol->dataType != this->currentSymbol->dataType)
-        {
-            throw SemanticError(SemanticError::TypeAssignmentMismatch(matchedSymbol->id, matchedSymbol->dataType));
-        }
+        return true; // No duplicate symbol in the same scope
     }
 
     void validateReturnStatementScope(SymbolTable::SymbolInfo *currentScopeSymbol)

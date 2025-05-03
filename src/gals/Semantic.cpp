@@ -35,70 +35,56 @@ void Semantic::executeAction(int action, const Token *token)
         // * 1-10: Declarations and assignments *
     case 1: // ID
     {
-        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(lexeme);
-        if (symbol == nullptr)
-        {
-            this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, this->pendingType, this->symbolTable.getCurrentScope());
-            // TODO: Verificar se essa forma de criar o SymbolInfo eh melhor, ler comentario do case 2
-            // ! this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, SemanticTable::Types::__NULL, this->symbolTable.currentScope);
+        this->currentSymbol->id = lexeme;
 
-            this->idAlreadyDeclared = false;
-        }
-        else
+        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(lexeme);
+
+        if (matchedSymbol != nullptr)
         {
-            this->currentSymbol = symbol;
-            this->idAlreadyDeclared = true;
+            // If the symbol is found, check if it's in the same scope
+            if (validateDuplicateSymbolInSameScope(matchedSymbol)) // TODO: Talvez mudar essa funcao para dentro do getSymbol
+            {
+                this->symbolTable.addSymbol(*currentSymbol);
+            }
         }
+        this->symbolTable.addSymbol(*currentSymbol);
 
         break;
     }
     case 2: // TYPE
     {
-        // TODO: ! Talvez seja melhor criar o SymbolInfo aqui e depois adicionar na tabela, ja que a definição de todas as variaveis/funções/etc inicia com o tipo
-        // ! Assim pode-se remover todas essas variaveis de controle e deixar apenas o currentSymbol
+        this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, SemanticTable::Types::__NULL, this->symbolTable.getCurrentScope());
+
         if (lexeme == "int")
-            this->pendingType = SemanticTable::INT;
+            this->currentSymbol->dataType = SemanticTable::INT;
         else if (lexeme == "float")
-            this->pendingType = SemanticTable::FLOAT;
+            this->currentSymbol->dataType = SemanticTable::FLOAT;
         else if (lexeme == "double")
-            this->pendingType = SemanticTable::DOUBLE;
+            this->currentSymbol->dataType = SemanticTable::DOUBLE;
         else if (lexeme == "char")
-            this->pendingType = SemanticTable::CHAR;
+            this->currentSymbol->dataType = SemanticTable::CHAR;
         else if (lexeme == "string")
-            this->pendingType = SemanticTable::STRING;
+            this->currentSymbol->dataType = SemanticTable::STRING;
         else if (lexeme == "bool")
-            this->pendingType = SemanticTable::BOOL;
+            this->currentSymbol->dataType = SemanticTable::BOOL;
 
-        break;
-    }
-    // TODO: Verificar se realmente precisa desse case/acao, ja que o ID pode ser tratado/validado no case 1, ou pode ser feito direto no case 4
-    case 3: // VALIDATE ID FOR DECLARATION
-    {
-        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(lexeme);
-
-        if (symbol != nullptr)
-            validateDuplicateSymbolInSameScope(symbol);
         break;
     }
     case 4:
     { // ASSIGNMENT VALUE
-        // Assignment to a variable
         SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
+        // Declare variable if not found
         if (matchedSymbol == nullptr)
         {
             this->currentSymbol->isInitialized = true; // Mark as initialized
-            this->currentSymbol->symbolClassification = this->currentSymbol->symbolClassification;
-
-            this->symbolTable.addSymbol(*currentSymbol);
         }
         else
         {
-            validateDuplicateSymbolInSameScope(matchedSymbol);
+            // assign value to variable
 
             // Check type compatibility
-            validateVariableType(matchedSymbol);
-
+            // validateExpressionType(currentSymbol->dataType);
             matchedSymbol->isInitialized = true; // Mark as initialized
         }
 
@@ -211,7 +197,6 @@ void Semantic::executeAction(int action, const Token *token)
     { // BLOCK_INIT
         // Enter a new scope
         int scope = this->symbolTable.enterScope();
-        cout << "Entering scope: " << scope << endl;
         this->currentSymbol->scope = scope;
         break;
     }

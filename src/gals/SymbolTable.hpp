@@ -53,7 +53,7 @@ public:
     // Getters and Setters
     int getCurrentScope()
     {
-        return currentScope;
+        return scopeStack.top();
     };
 
     int enterScope()
@@ -93,11 +93,9 @@ public:
     {
         for (SymbolInfo &symbol : symbolTable)
         {
-
             // TODO: Talvez deixar essa verificacao para os casos que nao seja funcao
             if (symbol.id == id && isInValidScope(symbol.scope))
             {
-                cout << "Found symbol: " << symbol.id << endl;
                 return &symbol; // Return the symbol if found in the current scope
             }
         }
