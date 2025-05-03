@@ -38,7 +38,10 @@ void Semantic::executeAction(int action, const Token *token)
         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(lexeme);
         if (symbol == nullptr)
         {
-            this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, this->pendingType, this->symbolTable.currentScope);
+            this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, this->pendingType, this->symbolTable.getCurrentScope());
+            // TODO: Verificar se essa forma de criar o SymbolInfo eh melhor, ler comentario do case 2
+            // ! this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, SemanticTable::Types::__NULL, this->symbolTable.currentScope);
+
             this->idAlreadyDeclared = false;
         }
         else
@@ -51,6 +54,8 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 2: // TYPE
     {
+        // TODO: ! Talvez seja melhor criar o SymbolInfo aqui e depois adicionar na tabela, ja que a definição de todas as variaveis/funções/etc inicia com o tipo
+        // ! Assim pode-se remover todas essas variaveis de controle e deixar apenas o currentSymbol
         if (lexeme == "int")
             this->pendingType = SemanticTable::INT;
         else if (lexeme == "float")
@@ -66,34 +71,29 @@ void Semantic::executeAction(int action, const Token *token)
 
         break;
     }
+    // TODO: Verificar se realmente precisa desse case/acao, ja que o ID pode ser tratado/validado no case 1, ou pode ser feito direto no case 4
     case 3: // VALIDATE ID FOR DECLARATION
     {
         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(lexeme);
+
         if (symbol != nullptr)
-        {
-            throw SemanticError("Identifier '" + this->currentSymbol->id + "' already declared");
-        }
+            validateDuplicateSymbolInSameScope(symbol);
         break;
     }
     case 4:
     { // ASSIGNMENT VALUE
         // Assignment to a variable
-        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->pendingId);
+        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
         if (matchedSymbol == nullptr)
         {
-            SymbolTable::SymbolInfo newSymbol;
-            newSymbol.id = this->pendingId;
-            newSymbol.dataType = this->pendingType;
-            newSymbol.scope = this->symbolTable.currentScope;
-            newSymbol.isInitialized = true; // Mark as initialized
-            newSymbol.symbolClassification = pendingClassification;
+            this->currentSymbol->isInitialized = true; // Mark as initialized
+            this->currentSymbol->symbolClassification = this->currentSymbol->symbolClassification;
 
-            this->symbolTable.addSymbol(newSymbol);
+            this->symbolTable.addSymbol(*currentSymbol);
         }
         else
         {
-            // Check if the symbol is already declared in the current scope
             validateDuplicateSymbolInSameScope(matchedSymbol);
 
             // Check type compatibility
@@ -210,22 +210,24 @@ void Semantic::executeAction(int action, const Token *token)
     case 23:
     { // BLOCK_INIT
         // Enter a new scope
-        this->symbolTable.enterScope();
-        cout << "Entered new scope" << this->symbolTable.currentScope << endl;
+        int scope = this->symbolTable.enterScope();
+        cout << "Entering scope: " << scope << endl;
+        this->currentSymbol->scope = scope;
         break;
     }
 
     case 24:
     { // BLOCK_END
         // Exit current scope
-        this->symbolTable.exitScope();
+        int scope = this->symbolTable.exitScope();
+        this->currentSymbol->scope = scope;
 
         break;
     }
     case 25:
     { // RETURN
         // Handle return type checking
-        SymbolTable::SymbolInfo *currentScopeSymbol = this->symbolTable.getCurrentScope();
+        SymbolTable::SymbolInfo *currentScopeSymbol = this->symbolTable.getFunctionScope();
 
         validateReturnStatementScope(currentScopeSymbol);
 
@@ -381,95 +383,6 @@ void Semantic::executeAction(int action, const Token *token)
     default:
         cout << "Ação não reconhecida: " << action << endl;
         break;
-    }
-}
-
-void Semantic::reset()
-{
-    if (this->currentSymbol != nullptr)
-    {
-        delete this->currentSymbol;
-    }
-
-    this->currentSymbol = new SymbolTable::SymbolInfo();
-
-    while (!this->operatorStack.empty())
-        this->operatorStack.pop();
-
-    while (!this->idTypeStack.empty())
-        this->operatorStack.pop();
-}
-
-void Semantic::validateExpressionType(SemanticTable::Types expectedType)
-{
-    if (this->symbolTable.expressionStack.empty())
-    {
-        throw SemanticError("Expression stack is empty");
-    }
-
-    int actualType = this->symbolTable.expressionStack.top();
-    this->symbolTable.expressionStack.pop();
-
-    if (actualType != expectedType)
-    {
-        throw SemanticError("Type mismatch: expected '" + to_string(expectedType) + "' got '" + to_string(actualType) + "'");
-    }
-}
-
-void Semantic::validateExistingSymbol(SymbolTable::SymbolInfo *symbol)
-{
-    if (symbol == nullptr)
-    {
-        throw SemanticError("Symbol '" + symbol->id + "' not found");
-    }
-}
-
-void Semantic::validateSymbolClassification(SymbolTable::SymbolInfo *symbol, SymbolTable::SymbolClassification classification)
-{
-    if (symbol->symbolClassification != classification)
-    {
-        throw SemanticError("Symbol '" + symbol->id + "' is not of the expected classification");
-    }
-}
-
-void Semantic::validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *matchedSymbol)
-{
-    if (matchedSymbol->scope == this->currentSymbol->scope)
-    {
-        throw SemanticError("Symbol '" + matchedSymbol->id + "' already exists");
-    }
-}
-
-void Semantic::validateVariableType(SymbolTable::SymbolInfo *matchedSymbol)
-{
-    // TODO: Expressions
-    if (matchedSymbol->dataType != this->pendingType)
-    {
-        throw SemanticError("Type mismatch: cannot assign '" + matchedSymbol->id + "' to variable '" + matchedSymbol->id + "' of type '" + to_string(matchedSymbol->dataType) + "'");
-    }
-}
-
-void Semantic::validateReturnStatementScope(SymbolTable::SymbolInfo *currentScopeSymbol)
-{
-    if (currentScopeSymbol == nullptr)
-    {
-        throw SemanticError("Return statement outside of a function");
-    }
-}
-
-void Semantic::validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol, bool isDeclared)
-{
-    if (isDeclared)
-    {
-        throw SemanticError("Input target '" + currentSymbol->id + "' is not declared");
-    }
-}
-
-void Semantic::validateIsVariable(SymbolTable::SymbolInfo *currentSymbol)
-{
-    if (currentSymbol->symbolClassification != SymbolTable::VARIABLE)
-    {
-        throw SemanticError("Cannot input into non-variable '" + currentSymbol->id + "'");
     }
 }
 

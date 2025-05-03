@@ -26,7 +26,7 @@ public:
     struct SymbolInfo
     {
         string id;
-        SemanticTable::Types dataType; // 0: INT, 1: FLOAT, 2: DOUBLE, 3: CHAR, 4: STRING, 5: BOOL (From SemanticTable)
+        SemanticTable::Types dataType; // -1: __NULL, 0: INT, 1: FLOAT, 2: DOUBLE, 3: CHAR, 4: STRING, 5: BOOL (From SemanticTable)
         int scope;                     // 0: global, n: local
         SymbolClassification symbolClassification;
         bool isInitialized = false; // true if the variable is initialized (has value)
@@ -36,35 +36,42 @@ public:
         SymbolInfo() {}
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
     };
-    int currentScope = 0; // Current scope level
 
     // Private variables
 private:
+    int currentScope = 0;           // Current scope level for the symbol table
     vector<SymbolInfo> symbolTable; // Vector to store all symbols
     stack<int> scopeStack;          // Stack to manage scopes
 
     // Public methods
-
 public:
     SymbolTable()
     {
         scopeStack.push(0);
     };
 
-    void enterScope()
+    // Getters and Setters
+    int getCurrentScope()
+    {
+        return currentScope;
+    };
+
+    int enterScope()
     {
         currentScope++;
         scopeStack.push(currentScope);
+        return currentScope; // Entered new scope
     };
 
-    bool exitScope()
+    int exitScope()
     {
         if (scopeStack.size() > 1)
         {
+            int tempScope = scopeStack.top();
             scopeStack.pop();
-            return true; // exited scope
+            return tempScope; // exited scope
         }
-        return false;
+        return 0; // Global scope
     }
 
     bool addSymbol(SymbolInfo &newSymbol)
@@ -72,7 +79,7 @@ public:
         // Check if the symbol already exists in the current scope
         for (SymbolInfo &symbol : symbolTable)
         {
-            if (symbol.id == newSymbol.id && symbol.scope == currentScope)
+            if (symbol.id == newSymbol.id && symbol.scope == newSymbol.scope)
             {
                 return false; // Symbol already exists in this scope
             }
@@ -86,6 +93,8 @@ public:
     {
         for (SymbolInfo &symbol : symbolTable)
         {
+
+            // TODO: Talvez deixar essa verificacao para os casos que nao seja funcao
             if (symbol.id == id && isInValidScope(symbol.scope))
             {
                 cout << "Found symbol: " << symbol.id << endl;
@@ -100,13 +109,13 @@ public:
         return symbolTable;
     }
 
-    SymbolInfo *getCurrentScope()
+    SymbolInfo *getFunctionScope()
     {
         for (SymbolInfo &symbol : symbolTable)
         {
             if (symbol.symbolClassification == FUNCTION && isInValidScope(symbol.scope))
             {
-                cout << "Found symbol: " << symbol.id << endl;
+                cout << "Found function: " << symbol.id << " in scope: " << symbol.scope << endl;
                 return &symbol; // Return the symbol if found in the current scope
             }
         }
