@@ -376,7 +376,7 @@ void Semantic::reset()
         this->operatorStack.pop();
 }
 
-bool Semantic::validateExpressionType(SemanticTable::Types expectedType)
+void Semantic::validateExpressionType(SemanticTable::Types expectedType)
 {
     if (this->symbolTable.expressionStack.empty())
     {
@@ -388,15 +388,7 @@ bool Semantic::validateExpressionType(SemanticTable::Types expectedType)
 
     if (actualType != expectedType)
     {
-        throw SemanticError("Type mismatch: expected '" + to_string(expectedType) + "'  got '" + to_string(actualType) + "'");
-    }
-}
-
-void Semantic::validateExitScope(bool isValid)
-{
-    if (!isValid)
-    {
-        throw SemanticError("Cannot exit global scope");
+        throw SemanticError("Type mismatch: expected '" + to_string(expectedType) + "' got '" + to_string(actualType) + "'");
     }
 }
 
@@ -404,7 +396,7 @@ void Semantic::validateExistingSymbol(SymbolTable::SymbolInfo *symbol)
 {
     if (symbol == nullptr)
     {
-        throw SemanticError("Symbol '" + this->pendingId + "' not found");
+        throw SemanticError("Symbol '" + symbol->id + "' not found");
     }
 }
 
@@ -412,24 +404,48 @@ void Semantic::validateSymbolClassification(SymbolTable::SymbolInfo *symbol, Sym
 {
     if (symbol->symbolClassification != classification)
     {
-        throw SemanticError("Symbol '" + this->pendingId + "' is not of the expected classification");
+        throw SemanticError("Symbol '" + symbol->id + "' is not of the expected classification");
     }
 }
 
-void Semantic::validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *symbol)
+void Semantic::validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *matchedSymbol)
 {
-
-    if (symbol->scope == this->symbolTable.currentScope)
+    if (matchedSymbol->scope == this->currentSymbol->scope)
     {
-        throw SemanticError("Symbol '" + this->pendingId + "' already exists");
+        throw SemanticError("Symbol '" + matchedSymbol->id + "' already exists");
     }
 }
 
 void Semantic::validateVariableType(SymbolTable::SymbolInfo *matchedSymbol)
 {
+    // TODO: Expressions
     if (matchedSymbol->dataType != this->pendingType)
     {
-        throw SemanticError("Type mismatch: cannot assign '" + this->pendingId + "' to variable '" + this->pendingId + "' of type '" + to_string(matchedSymbol->dataType) + "'");
+        throw SemanticError("Type mismatch: cannot assign '" + matchedSymbol->id + "' to variable '" + matchedSymbol->id + "' of type '" + to_string(matchedSymbol->dataType) + "'");
+    }
+}
+
+void Semantic::validateReturnStatementScope(SymbolTable::SymbolInfo *currentScopeSymbol)
+{
+    if (currentScopeSymbol == nullptr)
+    {
+        throw SemanticError("Return statement outside of a function");
+    }
+}
+
+void Semantic::validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol, bool isDeclared)
+{
+    if (isDeclared)
+    {
+        throw SemanticError("Input target '" + currentSymbol->id + "' is not declared");
+    }
+}
+
+void Semantic::validateIsVariable(SymbolTable::SymbolInfo *currentSymbol)
+{
+    if (currentSymbol->symbolClassification != SymbolTable::VARIABLE)
+    {
+        throw SemanticError("Cannot input into non-variable '" + currentSymbol->id + "'");
     }
 }
 
