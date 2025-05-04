@@ -42,12 +42,9 @@ void Semantic::executeAction(int action, const Token *token)
         if (matchedSymbol != nullptr)
         {
             // Check if the symbol is already declared in the current scope
-            validateDuplicateSymbolInSameScope(matchedSymbol);
-
+            validateIfVariableIsDeclared(matchedSymbol);
             return;
         }
-        this->currentSymbol->isDeclared = true;
-        this->symbolTable.addSymbol(*currentSymbol);
 
         break;
     }
@@ -81,6 +78,8 @@ void Semantic::executeAction(int action, const Token *token)
             validateExpressionType(this->currentSymbol->dataType);
             this->currentSymbol->isInitialized = true; // Mark as initialized
             this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
+            this->currentSymbol->isDeclared = true; // Mark as declared
+            this->symbolTable.addSymbol(*currentSymbol);
         }
         else // assign value to variable
         {
@@ -91,15 +90,15 @@ void Semantic::executeAction(int action, const Token *token)
                 validateExpressionType(this->currentSymbol->dataType);
                 this->currentSymbol->isInitialized = true; // Mark as initialized
                 this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
+                this->symbolTable.addSymbol(*currentSymbol);
             }
             else
             {
-                validateIfVariableIsDeclared(matchedSymbol);
-
                 // Check type compatibility
                 validateExpressionType(matchedSymbol->dataType);
                 matchedSymbol->isInitialized = true; // Mark as initialized
                 matchedSymbol->symbolClassification = SymbolTable::VARIABLE;
+                matchedSymbol->isUsed = true; // Mark as declared
             }
         }
 
