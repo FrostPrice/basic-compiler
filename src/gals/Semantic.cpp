@@ -61,6 +61,7 @@ void Semantic::executeAction(int action, const Token *token)
             // USAGE or ASSIGNMENT — fetch from any valid scope
             currentSymbol = symbolTable.getSymbol(lexeme);
             validateIfVariableIsDeclared(currentSymbol);
+            this->currentSymbol->isUsed = true; // Mark as used
         }
 
         break;
@@ -99,7 +100,6 @@ void Semantic::executeAction(int action, const Token *token)
         cout << "IS INITIALIZED: " << this->currentSymbol->isInitialized << endl;
         this->currentSymbol->isInitialized = true;
         this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
-        this->currentSymbol->isUsed = true;
         cout << "IS INITIALIZED: " << this->currentSymbol->isInitialized << endl;
 
         break;
