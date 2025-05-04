@@ -139,6 +139,10 @@ public:
         throw SemanticError("Expression type '" + to_string(top.entryType) +
                             "' not allowed here.");
     }
+
+    void validateFunctionArgumentCount(SymbolTable::SymbolInfo *functionSymbol, int actualCount)
+    {
+        }
 };
 
 #endif

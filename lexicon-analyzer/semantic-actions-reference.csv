@@ -27,6 +27,7 @@ Action Number, Description
 #25, RETURN, (Return statement)
 #26, INPUT, (Input function)
 #27, OUTPUT, (Output function)
+#28, FUNCTION_DEF, (Function definition)
 
 // 31 - 40: primitive values
 #31, INT VALUE, (Integer values)
