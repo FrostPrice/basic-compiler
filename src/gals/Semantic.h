@@ -17,6 +17,10 @@ class Semantic
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr; // Current symbol being processed
 
+    SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
+    bool isDeclarating = false;                                      // Flag to indicate if the identifier is being declared
+    int declarationScope = -1;                                       // Scope of the declaration
+
     vector<int> valueArraySizes;  // Array dimensions of the declaration array value
     stack<int> arrayLengthsStack; // Array length of inner arrays in declaration array value
     int arrayDepth = -1;          // Array depth of the last identifier
@@ -96,7 +100,7 @@ public:
 
     void validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol)
     {
-        if (!currentSymbol->isDeclared)
+        if (!currentSymbol)
         {
             throw SemanticError(SemanticError::SymbolUndeclared(currentSymbol->id));
         }

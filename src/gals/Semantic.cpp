@@ -35,72 +35,72 @@ void Semantic::executeAction(int action, const Token *token)
         // * 1-10: Declarations and assignments *
     case 1: // ID
     {
-        this->currentSymbol->id = lexeme;
-
-        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
-
-        if (matchedSymbol != nullptr)
+        if (this->isDeclarating)
         {
-            // Check if the symbol is already declared in the current scope
-            validateIfVariableIsDeclared(matchedSymbol);
-            return;
+            // DECLARATION — create the symbol
+            this->currentSymbol = new SymbolTable::SymbolInfo(
+                lexeme,                // id
+                this->pendingType,     // type
+                this->declarationScope // scope
+            );
+
+            SymbolTable::SymbolInfo *alreadyDeclared =
+                symbolTable.getSymbolInCurrentScope(this->currentSymbol->id);
+
+            if (alreadyDeclared != nullptr)
+            {
+                validateDuplicateSymbolInSameScope(alreadyDeclared);
+            }
+
+            this->currentSymbol->symbolClassification =
+                SymbolTable::VARIABLE; // Set symbol classification
+            this->currentSymbol = this->symbolTable.addSymbol(*this->currentSymbol);
+        }
+        else
+        {
+            // USAGE or ASSIGNMENT — fetch from any valid scope
+            currentSymbol = symbolTable.getSymbol(lexeme);
+            validateIfVariableIsDeclared(currentSymbol);
         }
 
         break;
     }
     case 2: // TYPE
     {
-        this->currentSymbol = new SymbolTable::SymbolInfo(lexeme, SemanticTable::Types::__NULL, this->symbolTable.getCurrentScope());
+        this->isDeclarating = true;
+        this->declarationScope = symbolTable.getCurrentScope();
 
         if (lexeme == "int")
-            this->currentSymbol->dataType = SemanticTable::INT;
+            this->pendingType = SemanticTable::INT;
         else if (lexeme == "float")
-            this->currentSymbol->dataType = SemanticTable::FLOAT;
+            this->pendingType = SemanticTable::FLOAT;
         else if (lexeme == "double")
-            this->currentSymbol->dataType = SemanticTable::DOUBLE;
+            this->pendingType = SemanticTable::DOUBLE;
         else if (lexeme == "char")
-            this->currentSymbol->dataType = SemanticTable::CHAR;
+            this->pendingType = SemanticTable::CHAR;
         else if (lexeme == "string")
-            this->currentSymbol->dataType = SemanticTable::STRING;
+            this->pendingType = SemanticTable::STRING;
         else if (lexeme == "bool")
-            this->currentSymbol->dataType = SemanticTable::BOOL;
+            this->pendingType = SemanticTable::BOOL;
 
+        break;
+    }
+    case 3: // DECLARATION
+    {
+        this->isDeclarating = false;
+        this->declarationScope = -1;
         break;
     }
     case 4:
     { // ASSIGNMENT VALUE
-        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
-
-        // Declare variable if not found
-        if (matchedSymbol == nullptr)
-        {
-            // Check type compatibility
-            validateExpressionType(this->currentSymbol->dataType);
-            this->currentSymbol->isInitialized = true; // Mark as initialized
-            this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
-            this->currentSymbol->isDeclared = true; // Mark as declared
-            this->symbolTable.addSymbol(*currentSymbol);
-        }
-        else // assign value to variable
-        {
-            // Declare variable if a variable of the same name is found in a different scope
-            if (matchedSymbol->scope != this->currentSymbol->scope)
-            {
-                // Check type compatibility
-                validateExpressionType(this->currentSymbol->dataType);
-                this->currentSymbol->isInitialized = true; // Mark as initialized
-                this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
-                this->symbolTable.addSymbol(*currentSymbol);
-            }
-            else
-            {
-                // Check type compatibility
-                validateExpressionType(matchedSymbol->dataType);
-                matchedSymbol->isInitialized = true; // Mark as initialized
-                matchedSymbol->symbolClassification = SymbolTable::VARIABLE;
-                matchedSymbol->isUsed = true; // Mark as declared
-            }
-        }
+        validateIfVariableIsDeclared(this->currentSymbol);
+        // assign value to variable
+        validateExpressionType(this->currentSymbol->dataType);
+        cout << "IS INITIALIZED: " << this->currentSymbol->isInitialized << endl;
+        this->currentSymbol->isInitialized = true;
+        this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
+        this->currentSymbol->isUsed = true;
+        cout << "IS INITIALIZED: " << this->currentSymbol->isInitialized << endl;
 
         break;
     }
@@ -359,7 +359,6 @@ void Semantic::executeAction(int action, const Token *token)
     { // BLOCK_INIT
         // Enter a new scope
         int scope = this->symbolTable.enterScope();
-        this->currentSymbol->scope = scope;
         break;
     }
 
@@ -367,7 +366,6 @@ void Semantic::executeAction(int action, const Token *token)
     { // BLOCK_END
         // Exit current scope
         int scope = this->symbolTable.exitScope();
-        this->currentSymbol->scope = scope;
 
         break;
     }

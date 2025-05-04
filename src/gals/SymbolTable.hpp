@@ -6,6 +6,8 @@
 #include <vector>
 #include <stack>
 
+#include "SemanticTable.hpp"
+
 using namespace std;
 
 class SymbolTable
@@ -109,19 +111,19 @@ public:
         return 0; // Global scope
     }
 
-    bool addSymbol(SymbolInfo &newSymbol)
+    SymbolTable::SymbolInfo *addSymbol(SymbolInfo &newSymbol)
     {
         // Check if the symbol already exists in the current scope
         for (SymbolInfo &symbol : symbolTable)
         {
             if (symbol.id == newSymbol.id && symbol.scope == newSymbol.scope)
             {
-                return false; // Symbol already exists in this scope
+                return nullptr; // Symbol already exists in this scope
             }
         }
 
         symbolTable.push_back(newSymbol);
-        return true; // Symbol added successfully
+        return &symbolTable.back(); // Symbol added successfully
     }
 
     SymbolInfo *getSymbol(string id)
@@ -135,6 +137,18 @@ public:
             }
         }
         return nullptr; // Symbol not found
+    }
+
+    SymbolInfo *getSymbolInCurrentScope(const std::string &id)
+    {
+        for (SymbolInfo &symbol : symbolTable)
+        {
+            if (symbol.id == id && symbol.scope == getCurrentScope())
+            {
+                return &symbol;
+            }
+        }
+        return nullptr;
     }
 
     vector<SymbolInfo> getAllSymbols()
