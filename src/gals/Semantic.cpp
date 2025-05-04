@@ -97,10 +97,8 @@ void Semantic::executeAction(int action, const Token *token)
         validateIfVariableIsDeclared(this->currentSymbol);
         // assign value to variable
         validateExpressionType(this->currentSymbol->dataType);
-        cout << "IS INITIALIZED: " << this->currentSymbol->isInitialized << endl;
         this->currentSymbol->isInitialized = true;
         this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
-        cout << "IS INITIALIZED: " << this->currentSymbol->isInitialized << endl;
 
         break;
     }
