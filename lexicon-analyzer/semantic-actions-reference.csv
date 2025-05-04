@@ -2,7 +2,7 @@ Action Number, Description
 // 1 - 10: declarations and assignments
 #1, ID, (Identifiers -> defined by the programmer)
 #2, TYPE, (Type of data -> used in declarations)
-#3, VALIDATE ID FOR DECLARATION, (Validate ID for declaration)
+#3, DECLARATION, (Declaration without assignment)
 #4, ASSIGNMENT VALUE, (Assignment value)
 #5, ASSIGNMENT ARRAY, VALUE (Assignment value for arrays)
 #6, ARRAY SIZE DECLARATION, (Array size declaration)
