@@ -27,6 +27,7 @@ public:
         SemanticTable::Types dataType; // -1: __NULL, 0: INT, 1: FLOAT, 2: DOUBLE, 3: CHAR, 4: STRING, 5: BOOL (From SemanticTable)
         int scope;                     // 0: global, n: local
         SymbolClassification symbolClassification;
+        bool isDeclared = false;    // true if the variable is declared
         bool isInitialized = false; // true if the variable is initialized (has value)
         bool isUsed = false;        // true if the variable is used
         vector<int> arraySize;      // Array size of each dimension
@@ -160,10 +161,58 @@ public:
         cout << "\n----- Symbol Table -----\n";
         for (SymbolInfo symbol : symbolTable)
         {
+            string dataType;
+            if (symbol.dataType == SemanticTable::Types::__NULL)
+            {
+                dataType = "NULL";
+            }
+            else if (symbol.dataType == SemanticTable::INT)
+            {
+                dataType = "INT";
+            }
+            else if (symbol.dataType == SemanticTable::FLOAT)
+            {
+                dataType = "FLOAT";
+            }
+            else if (symbol.dataType == SemanticTable::DOUBLE)
+            {
+                dataType = "DOUBLE";
+            }
+            else if (symbol.dataType == SemanticTable::CHAR)
+            {
+                dataType = "CHAR";
+            }
+            else if (symbol.dataType == SemanticTable::STRING)
+            {
+                dataType = "STRING";
+            }
+            else if (symbol.dataType == SemanticTable::BOOL)
+            {
+                dataType = "BOOL";
+            }
+
+            string symbolClassification;
+            if (symbol.symbolClassification == FUNCTION)
+            {
+                symbolClassification = "Function";
+            }
+            else if (symbol.symbolClassification == VARIABLE)
+            {
+                symbolClassification = "Variable";
+            }
+            else if (symbol.symbolClassification == ARRAY)
+            {
+                symbolClassification = "Array";
+            }
+            else if (symbol.symbolClassification == PARAM)
+            {
+                symbolClassification = "Parameter";
+            }
+
             cout << "ID: " << symbol.id
-                 << ", Data Type: " << symbol.dataType
+                 << ", Data Type: " << dataType
                  << ", Scope: " << symbol.scope
-                 << ", Symbol Classification: " << symbol.symbolClassification
+                 << ", Symbol Classification: " << symbolClassification
                  << ", Is Initialized: " << boolalpha << symbol.isInitialized
                  << ", Is Used: " << boolalpha << symbol.isUsed
                  << ", Array Size: " << this->getArraySizeString(symbol.arraySize);

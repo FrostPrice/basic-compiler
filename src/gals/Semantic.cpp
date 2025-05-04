@@ -37,16 +37,16 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->currentSymbol->id = lexeme;
 
-        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(lexeme);
+        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
         if (matchedSymbol != nullptr)
         {
-            // If the symbol is found, check if it's in the same scope
-            if (validateDuplicateSymbolInSameScope(matchedSymbol)) // TODO: Talvez mudar essa funcao para dentro do getSymbol
-            {
-                this->symbolTable.addSymbol(*currentSymbol);
-            }
+            // Check if the symbol is already declared in the current scope
+            validateDuplicateSymbolInSameScope(matchedSymbol);
+
+            return;
         }
+        this->currentSymbol->isDeclared = true;
         this->symbolTable.addSymbol(*currentSymbol);
 
         break;
@@ -80,12 +80,27 @@ void Semantic::executeAction(int action, const Token *token)
             // Check type compatibility
             validateExpressionType(this->currentSymbol->dataType);
             this->currentSymbol->isInitialized = true; // Mark as initialized
+            this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
         }
         else // assign value to variable
         {
-            // Check type compatibility
-            validateExpressionType(matchedSymbol->dataType);
-            matchedSymbol->isInitialized = true; // Mark as initialized
+            // Declare variable if a variable of the same name is found in a different scope
+            if (matchedSymbol->scope != this->currentSymbol->scope)
+            {
+                // Check type compatibility
+                validateExpressionType(this->currentSymbol->dataType);
+                this->currentSymbol->isInitialized = true; // Mark as initialized
+                this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
+            }
+            else
+            {
+                validateIfVariableIsDeclared(matchedSymbol);
+
+                // Check type compatibility
+                validateExpressionType(matchedSymbol->dataType);
+                matchedSymbol->isInitialized = true; // Mark as initialized
+                matchedSymbol->symbolClassification = SymbolTable::VARIABLE;
+            }
         }
 
         break;
@@ -139,26 +154,101 @@ void Semantic::executeAction(int action, const Token *token)
         }
     }
     // * 11-20: Operators *
+    // TODO: COMO FAZER ESSAS EXPRESSOES DE ASSIGNMENT (+=, -=, etc)?
     case 11: // ASSIGN OP
+    {
 
-        break;
-    case 12: // ARITHMETICAL ASSIGN OP
-        // Handle +=, -=, *=, etc. for numbers
-        break;
-    case 13: // ADD ASSIGN OP
-        // Handle += for strings or numbers
-        break;
-    case 14: // REMAINDER ASSIGN OP
-        // Handle %= for integers
-        break;
-    case 15:
-    { // NUMBER OP
-        // Handle +, -, *, /, etc.
         break;
     }
-    case 16:
-    { // (Add operator), for numbers and strings
+    case 12: // ARITHMETICAL ASSIGN OP (only for numbers)
 
+    {
+        break;
+    }
+    case 13: // ADD ASSIGN OP (for strings or numbers)
+        // validateOneOfTypes({
+        //     SemanticTable::Types::INT,
+        //     SemanticTable::Types::FLOAT,
+        //     SemanticTable::Types::DOUBLE,
+        //     SemanticTable::Types::STRING,
+        // });
+
+        // ! Precisamos adicionar esse operador na tabela de simbolos?
+        // ! Ou ele sera um rel_low ou rel_high?
+        // this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::ASSIGNMENT_ADD);
+
+        break;
+    case 14: // REMAINDER ASSIGN OP (for integers)
+        // Handle %= for integers
+        // validateOneOfTypes({
+        //     SemanticTable::Types::INT,
+        // });
+
+        // ! Precisamos adicionar esse operador na tabela de simbolos?
+        // ! Ou ele sera um rel_low ou rel_high?
+        // this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::ASSIGNMENT_REMAINDER);
+
+        break;
+    case 15:
+    { // NUMBER OP (for numbers)
+        validateOneOfTypes({
+            SemanticTable::Types::INT,
+            SemanticTable::Types::FLOAT,
+            SemanticTable::Types::DOUBLE,
+        });
+
+        // Arithmetic operations
+        if (lexeme == "+")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+        }
+        else if (lexeme == "-")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+        }
+        else if (lexeme == "*")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION);
+        }
+        else if (lexeme == "/")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::DIVISION);
+        }
+        // Comparisson operations
+        else if (lexeme == "<")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+        }
+        else if (lexeme == "<=")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+        }
+        else if (lexeme == ">")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+        }
+        else if (lexeme == ">=")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+        }
+        else if (lexeme == "--")
+        {
+            this->symbolTable.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+        }
+        else if (lexeme == "++")
+        {
+            this->symbolTable.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+        }
+        else
+        {
+            throw SemanticError("Invalid operator: " + lexeme);
+        }
+        // TODO: Tem mais operacoes aqui?
+
+        break;
+    }
+    case 16: // ADD OP (for numbers and strings)
+    {
         validateOneOfTypes({
             SemanticTable::Types::INT,
             SemanticTable::Types::FLOAT,
@@ -169,14 +259,75 @@ void Semantic::executeAction(int action, const Token *token)
 
         break;
     }
-    case 17: // INTEGER OP
-        // Handle bitwise ops or % (only integers)
+    case 17: // INTEGER OP (Bitwise and remainder, only for integers)
+        validateOneOfTypes({
+            SemanticTable::Types::INT,
+        });
+
+        if (lexeme == "&")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+        }
+        else if (lexeme == "|")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+        }
+        else if (lexeme == "^")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+        }
+        else if (lexeme == "~")
+        {
+            this->symbolTable.pushUnaryOp(SemanticTable::OperationsUnary::BITWISE_NOT);
+        }
+        else if (lexeme == "<<")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+        }
+        else if (lexeme == ">>")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+        }
+        else if (lexeme == "%")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER);
+        }
+        else // Fallback em caso de esquecermos alguma operacao
+        {
+            throw SemanticError("Invalid operator: " + lexeme);
+        }
+        // TODO: Tem mais operacoes aqui?
+
         break;
-    case 18: // BOOLEAN OP
-        // Handle &&, ||, !
+    case 18: // BOOLEAN OP (for booleans)
+        validateOneOfTypes({
+            SemanticTable::Types::BOOL,
+        });
+
+        if (lexeme == "&&" || lexeme == "||")
+        {
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::LOGICAL);
+        }
+        else if (lexeme == "!")
+        {
+            this->symbolTable.pushUnaryOp(SemanticTable::OperationsUnary::NOT);
+        }
+        else
+        {
+            throw SemanticError("Invalid boolean operator: " + lexeme);
+        }
         break;
-    case 19: // EQ NE OP
-        // == or != for numbers or strings
+    case 19: // EQ NE OP (For everything)
+        validateOneOfTypes({
+            SemanticTable::Types::INT,
+            SemanticTable::Types::FLOAT,
+            SemanticTable::Types::DOUBLE,
+            SemanticTable::Types::STRING,
+            SemanticTable::Types::BOOL,
+        });
+
+        this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_LOW);
+
         break;
 
     // * 21-30: Functions, blocks, I/O *
@@ -239,7 +390,7 @@ void Semantic::executeAction(int action, const Token *token)
       // Read value from user
         SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
-        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->isInitialized);
+        validateIfVariableIsDeclared(matchedSymbol);
 
         validateIsVariable(matchedSymbol);
 

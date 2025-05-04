@@ -50,11 +50,6 @@ public:
     // Validation methods
     void validateExpressionType(SemanticTable::Types expectedType)
     {
-        if (this->symbolTable.expressionStack.empty())
-        {
-            throw SemanticError(SemanticError::ExpressionStackEmpty());
-        }
-
         SymbolTable::ExpressionsEntry currentValue = this->symbolTable.expressionStack.top();
         this->symbolTable.expressionStack.pop();
 
@@ -70,14 +65,6 @@ public:
                                 to_string(currentValue.entryType) +
                                 " to variable of type " +
                                 to_string(expectedType));
-        }
-    }
-
-    void validateExistingSymbol(SymbolTable::SymbolInfo *symbol)
-    {
-        if (symbol == nullptr)
-        {
-            throw SemanticError(SemanticError::SymbolNotFound("unknown")); // If id unknown
         }
     }
 
@@ -107,11 +94,11 @@ public:
         }
     }
 
-    void validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol, bool isDeclared)
+    void validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol)
     {
-        if (isDeclared)
+        if (!currentSymbol->isDeclared)
         {
-            throw SemanticError(SemanticError::InputUndeclared(currentSymbol->id));
+            throw SemanticError(SemanticError::SymbolUndeclared(currentSymbol->id));
         }
     }
 

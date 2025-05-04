@@ -18,11 +18,6 @@ public:
     return "Type mismatch: expected '" + std::to_string(expected) + "' but got '" + std::to_string(actual) + "'";
   }
 
-  static std::string SymbolNotFound(const std::string &id)
-  {
-    return "Symbol '" + id + "' not found";
-  }
-
   static std::string SymbolNotOfClassification(const std::string &id)
   {
     return "Symbol '" + id + "' is not of the expected classification";
@@ -43,9 +38,9 @@ public:
     return "Return statement outside of a function";
   }
 
-  static std::string InputUndeclared(const std::string &id)
+  static std::string SymbolUndeclared(const std::string &id)
   {
-    return "Input target '" + id + "' is not declared";
+    return "Variable '" + id + "' is not declared";
   }
 
   static std::string InputNonVariable(const std::string &id)

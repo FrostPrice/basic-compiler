@@ -32,7 +32,7 @@ public:
     enum OperationsUnary
     {
         NEG = 0,
-        INCREMENT = 1,
+        INCREMENT = 1, // Increment and decrement
         NOT = 2,
         BITWISE_NOT = 3
     };
