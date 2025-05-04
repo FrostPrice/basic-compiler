@@ -98,11 +98,11 @@ public:
         }
     }
 
-    void validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol)
+    void validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol, string id)
     {
         if (!currentSymbol)
         {
-            throw SemanticError(SemanticError::SymbolUndeclared(currentSymbol->id));
+            throw SemanticError(SemanticError::SymbolUndeclared(id));
         }
     }
 

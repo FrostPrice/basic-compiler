@@ -60,7 +60,7 @@ void Semantic::executeAction(int action, const Token *token)
         {
             // USAGE or ASSIGNMENT — fetch from any valid scope
             currentSymbol = symbolTable.getSymbol(lexeme);
-            validateIfVariableIsDeclared(currentSymbol);
+            validateIfVariableIsDeclared(currentSymbol, lexeme);
             this->currentSymbol->isUsed = true; // Mark as used
         }
 
@@ -94,7 +94,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 4:
     { // ASSIGNMENT VALUE
-        validateIfVariableIsDeclared(this->currentSymbol);
+        validateIfVariableIsDeclared(this->currentSymbol, lexeme);
         // assign value to variable
         validateExpressionType(this->currentSymbol->dataType);
         this->currentSymbol->isInitialized = true;
@@ -163,18 +163,27 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     }
     case 13: // ADD ASSIGN OP (for strings or numbers)
-        // validateOneOfTypes({
-        //     SemanticTable::Types::INT,
-        //     SemanticTable::Types::FLOAT,
-        //     SemanticTable::Types::DOUBLE,
-        //     SemanticTable::Types::STRING,
-        // });
+
+    {
+        if (lexeme == "+=")
+        {
+            this->symbolTable.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
+            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+                SemanticTable::Types::STRING,
+            });
+        }
 
         // ! Precisamos adicionar esse operador na tabela de simbolos?
         // ! Ou ele sera um rel_low ou rel_high?
         // this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::ASSIGNMENT_ADD);
 
         break;
+    }
     case 14: // REMAINDER ASSIGN OP (for integers)
         // Handle %= for integers
         // validateOneOfTypes({
@@ -385,7 +394,7 @@ void Semantic::executeAction(int action, const Token *token)
       // Read value from user
         SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
-        validateIfVariableIsDeclared(matchedSymbol);
+        validateIfVariableIsDeclared(matchedSymbol, lexeme);
 
         validateIsVariable(matchedSymbol);
 
