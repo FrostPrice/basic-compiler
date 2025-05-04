@@ -159,6 +159,7 @@ void MainWindow::compileCode()
     Syntactic syn;
     Semantic sem;
     sem.warnings.clear(); // Clear previous warnings
+    tableModel->clear();  // Reset the table model
 
     lex.setInput(code.toStdString().c_str());
 
@@ -188,8 +189,10 @@ void MainWindow::compileCode()
 
         resultText += "<span style='color:lightgreen;'>Compiled successfully!</span>";
 
+        tableModel->populateModel(sem.symbolTable.getAllSymbols());
+
+        // sem.symbolTable.printTable(); // Print the symbol table for debugging
         output->setHtml(resultText);
-        sem.symbolTable.printTable(); // Print the symbol table for debugging
     }
     catch (LexicalError err)
     {
