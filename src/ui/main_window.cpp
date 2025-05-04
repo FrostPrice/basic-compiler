@@ -166,6 +166,15 @@ void MainWindow::compileCode()
     {
         syn.parse(&lex, &sem);
 
+        // Check if a symbol was no used
+        for (const auto &symbol : sem.symbolTable.getAllSymbols())
+        {
+            if (!symbol.isUsed)
+            {
+                sem.warnings.push_back("Warning: Variable '" + symbol.id + "' declared but not used.");
+            }
+        }
+
         // Show warnings if any
         QString resultText;
         if (!sem.warnings.empty())
