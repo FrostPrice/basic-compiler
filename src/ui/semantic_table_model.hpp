@@ -46,6 +46,8 @@ private:
             return "Function";
         case SymbolTable::ARRAY:
             return "Array";
+        case SymbolTable::PARAM:
+            return "Parameter";
         default:
             return "Unknown";
         }
