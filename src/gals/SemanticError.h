@@ -42,7 +42,7 @@ public:
 
   static string SymbolUndeclared(const string &id)
   {
-    return "Variable '" + id + "' is not declared";
+    return "Symbol '" + id + "' is not declared";
   }
 
   static string InputNonVariable(const string &id)
@@ -68,6 +68,11 @@ public:
   static string WrongArgumentCount(const string &id, int expected, int actual)
   {
     return "Function '" + id + "' expects " + to_string(expected) + " argument(s), but got " + to_string(actual);
+  }
+
+  static string InvalidValueForArrayLength()
+  {
+    return "Invalid value for array length";
   }
 
   static string typeToString(SemanticTable::Types type)

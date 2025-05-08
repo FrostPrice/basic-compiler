@@ -29,7 +29,6 @@ public:
         SemanticTable::Types dataType; // -1: __NULL, 0: INT, 1: FLOAT, 2: DOUBLE, 3: CHAR, 4: STRING, 5: BOOL (From SemanticTable)
         int scope;                     // 0: global, n: local
         SymbolClassification symbolClassification;
-        bool isDeclared = false;    // true if the variable is declared
         bool isInitialized = false; // true if the variable is initialized (has value)
         bool isUsed = false;        // true if the variable is used
         vector<int> arraySize;      // Array size of each dimension
@@ -128,10 +127,10 @@ public:
 
     SymbolInfo *getSymbol(string id)
     {
-        for (SymbolInfo &symbol : symbolTable)
+        for (auto it = symbolTable.rbegin(); it != symbolTable.rend(); ++it)
         {
-            // TODO: Talvez deixar essa verificacao para os casos que nao seja funcao
-            if (symbol.id == id && isInValidScope(symbol.scope))
+            SymbolInfo &symbol = *it;
+            if (it->id == id && isInValidScope(it->scope))
             {
                 return &symbol; // Return the symbol if found in the current scope
             }
@@ -139,11 +138,11 @@ public:
         return nullptr; // Symbol not found
     }
 
-    SymbolInfo *getSymbolInCurrentScope(const std::string &id)
+    SymbolInfo *getSymbolInScope(const std::string &id, int currentScope)
     {
         for (SymbolInfo &symbol : symbolTable)
         {
-            if (symbol.id == id && symbol.scope == getCurrentScope())
+            if (symbol.id == id && symbol.scope == currentScope)
             {
                 return &symbol;
             }

@@ -18,8 +18,6 @@ private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr; // Current symbol being processed
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
-    bool isDeclarating = false;                                      // Flag to indicate if the identifier is being declared
-    int declarationScope = -1;                                       // Scope of the declaration
 
     vector<int> valueArraySizes;  // Array dimensions of the declaration array value
     stack<int> arrayLengthsStack; // Array length of inner arrays in declaration array value
@@ -60,7 +58,7 @@ public:
         int compat = SemanticTable::atribType(expectedType, currentValue.entryType);
         if (compat == SemanticTable::ERR)
         {
-            throw SemanticError(SemanticError::TypeMismatch(expectedType, static_cast<SemanticTable::Types>(currentValue.entryType)));
+            throw SemanticError(SemanticError::TypeMismatch(expectedType, currentValue.entryType));
         }
 
         if (compat == SemanticTable::WAR)
@@ -142,7 +140,7 @@ public:
 
     void validateFunctionArgumentCount(SymbolTable::SymbolInfo *functionSymbol, int actualCount)
     {
-        }
+    }
 };
 
 #endif

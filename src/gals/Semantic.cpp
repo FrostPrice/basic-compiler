@@ -35,43 +35,16 @@ void Semantic::executeAction(int action, const Token *token)
         // * 1-10: Declarations and assignments *
     case 1: // ID
     {
-        if (this->isDeclarating)
-        {
-            // DECLARATION — create the symbol
-            this->currentSymbol = new SymbolTable::SymbolInfo(
-                lexeme,                // id
-                this->pendingType,     // type
-                this->declarationScope // scope
-            );
-
-            SymbolTable::SymbolInfo *alreadyDeclared =
-                symbolTable.getSymbolInCurrentScope(this->currentSymbol->id);
-
-            if (alreadyDeclared != nullptr)
-            {
-                if (alreadyDeclared->symbolClassification == SymbolTable::PARAM)
-                    return;
-
-                validateDuplicateSymbolInSameScope(alreadyDeclared);
-            }
-
-            this->currentSymbol = this->symbolTable.addSymbol(*this->currentSymbol);
-        }
-        else
-        {
-            // USAGE or ASSIGNMENT — fetch from any valid scope
-            currentSymbol = symbolTable.getSymbol(lexeme);
-            validateIfVariableIsDeclared(currentSymbol, lexeme);
-            this->currentSymbol->isUsed = true; // Mark as used
-        }
+        this->currentSymbol = new SymbolTable::SymbolInfo(
+            lexeme,                             // id
+            this->pendingType,                  // type
+            this->symbolTable.getCurrentScope() // scope
+        );
 
         break;
     }
     case 2: // TYPE
     {
-        this->isDeclarating = true;
-        this->declarationScope = symbolTable.getCurrentScope();
-
         if (lexeme == "int")
             this->pendingType = SemanticTable::INT;
         else if (lexeme == "float")
@@ -89,17 +62,28 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 3: // DECLARATION
     {
-        this->isDeclarating = false;
-        this->declarationScope = -1;
+        SymbolTable::SymbolInfo *alreadyDeclared =
+            symbolTable.getSymbolInScope(this->currentSymbol->id, this->symbolTable.getCurrentScope());
+
+        if (alreadyDeclared != nullptr)
+        {
+            validateDuplicateSymbolInSameScope(alreadyDeclared);
+        }
+
+        this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
+        this->currentSymbol = this->symbolTable.addSymbol(*this->currentSymbol);
+
         break;
     }
     case 4:
     { // ASSIGNMENT VALUE
-        validateIfVariableIsDeclared(this->currentSymbol, lexeme);
-        // assign value to variable
-        validateExpressionType(this->currentSymbol->dataType);
-        this->currentSymbol->isInitialized = true;
-        this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
+        SymbolTable::SymbolInfo *matchedSymbol =
+            symbolTable.getSymbol(this->currentSymbol->id);
+
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+        validateExpressionType(matchedSymbol->dataType);
+        matchedSymbol->isInitialized = true;
+        matchedSymbol->symbolClassification = SymbolTable::VARIABLE;
 
         break;
     }
@@ -121,19 +105,33 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 6: // ARRAY SIZE DECLARATION
     {
-        // TODO validate array size for negative values
-        if (/*this->isRawValue && */ lexeme != "0" && isNumber(lexeme, false))
+
+        if (this->symbolTable.expressionStack.size() == 1)
         {
-            this->currentSymbol->arraySize.push_back(stoi(lexeme));
-        }
-        else if (/*this->validateExpressionType(SemanticTable::INT)*/ true)
-        {
-            this->currentSymbol->arraySize.push_back(-1);
+            SymbolTable::ExpressionsEntry entry = this->symbolTable.expressionStack.top();
+
+            if (entry.entryType == SemanticTable::INT)
+            {
+                int value = stoi(entry.value);
+
+                if (value < 1)
+                {
+                    throw SemanticError(SemanticError::InvalidValueForArrayLength());
+                }
+
+                this->currentSymbol->arraySize.push_back(stoi(lexeme));
+            }
+            else
+            {
+                throw SemanticError(SemanticError::InvalidValueForArrayLength());
+            }
         }
         else
         {
-            throw SemanticError("Invalid array size");
+            validateExpressionType(SemanticTable::INT);
+            this->currentSymbol->arraySize.push_back(-1);
         }
+
         break;
     }
     case 7: // ARRAY ASSIGNMENT VALUE
@@ -332,7 +330,6 @@ void Semantic::executeAction(int action, const Token *token)
         {
             throw SemanticError("Invalid operator: " + lexeme);
         }
-        // TODO: Tem mais operacoes aqui?
 
         break;
     case 18: // BOOLEAN OP (for booleans)
@@ -369,21 +366,30 @@ void Semantic::executeAction(int action, const Token *token)
     // * 21-30: Functions, blocks, I/O *
     case 21: // FUNCTION_DEF_PARAMETER
     {
+        int newScope = this->symbolTable.getCurrentScope() + 1; // Predict the next scope
+        this->currentSymbol->scope = newScope;
+
+        SymbolTable::SymbolInfo *matchedSymbol =
+            symbolTable.getSymbolInScope(this->currentSymbol->id, newScope);
+
+        if (matchedSymbol != nullptr)
+        {
+
+            validateDuplicateSymbolInSameScope(matchedSymbol);
+        }
+
         this->currentSymbol->symbolClassification = SymbolTable::PARAM;
-        this->currentSymbol->scope = this->symbolTable.getCurrentScope() + 1;
         this->currentSymbol->isInitialized = true;
+        this->symbolTable.addSymbol(*this->currentSymbol);
 
         break;
     }
     case 22: // FUNCTION_CALL_PARAMETER
     {
+        // Check the amount of parameters in the FUNC DEF, and compare with the FUNC CALL
+        // Also, check if the types are compatible
+
         SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
-
-        if (functionSymbol == nullptr)
-            throw SemanticError("Function '" + this->currentSymbol->id + "' not found");
-
-        if (functionSymbol->symbolClassification != SymbolTable::FUNCTION)
-            throw SemanticError("Symbol '" + this->currentSymbol->id + "' is not a function");
 
         SemanticTable::Types expectedType = functionSymbol->dataType;
 
@@ -394,12 +400,14 @@ void Semantic::executeAction(int action, const Token *token)
     case 23: // BLOCK_INIT
     {
         this->symbolTable.enterScope();
+
         break;
     }
 
     case 24: // BLOCK_END
     {
         this->symbolTable.exitScope();
+
         break;
     }
     case 25: // RETURN
@@ -436,8 +444,17 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 28: // FUNCTION DEF
     {
+        SymbolTable::SymbolInfo *matchedSymbol =
+            symbolTable.getSymbolInScope(this->currentSymbol->id, this->symbolTable.getCurrentScope());
+
+        if (matchedSymbol != nullptr)
+        {
+            validateDuplicateSymbolInSameScope(matchedSymbol);
+        }
+
         this->currentSymbol->symbolClassification = SymbolTable::FUNCTION;
-        this->isDeclarating = false;
+        this->currentSymbol->isInitialized = true;
+        this->symbolTable.addSymbol(*this->currentSymbol);
 
         break;
     }
@@ -498,7 +515,8 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     case 51: // ARRAY VALUE
     {
-        // TODO validate exp type
+        if (this->arrayDepth == this->currentSymbol->arraySize.size() - 1)
+            validateExpressionType(this->pendingType);
         this->arrayLengthsStack.top()++;
         break;
     }
