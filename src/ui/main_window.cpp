@@ -158,15 +158,41 @@ void MainWindow::compileCode()
     Lexical lex;
     Syntactic syn;
     Semantic sem;
+    sem.warnings.clear(); // Clear previous warnings
+    tableModel->clear();  // Reset the table model
 
     lex.setInput(code.toStdString().c_str());
 
     try
     {
         syn.parse(&lex, &sem);
-        output->setTextColor(Qt::green);
-        output->setText("Compiled successfully!");
-        sem.symbolTable.printTable(); // Print the symbol table for debugging
+
+        // Check if a symbol was no used
+        for (const auto &symbol : sem.symbolTable.getAllSymbols())
+        {
+            if (!symbol.isUsed)
+            {
+                sem.warnings.push_back("Warning: Variable '" + symbol.id + "' declared but not used.");
+            }
+        }
+
+        // Show warnings if any
+        QString resultText;
+        if (!sem.warnings.empty())
+        {
+            for (const string &warning : sem.warnings)
+            {
+                resultText += "<span style='color:orange;'>" + QString::fromStdString(warning) + "</span><br>";
+            }
+            resultText += "<br>";
+        }
+
+        resultText += "<span style='color:lightgreen;'>Compiled successfully!</span>";
+
+        tableModel->populateModel(sem.symbolTable.getAllSymbols());
+
+        // sem.symbolTable.printTable(); // Print the symbol table for debugging
+        output->setHtml(resultText);
     }
     catch (LexicalError err)
     {

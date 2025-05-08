@@ -6,14 +6,14 @@
 #include <vector>
 #include <stack>
 
+#include "SemanticTable.hpp"
+
 using namespace std;
 
 class SymbolTable
 {
     // Public variables
 public:
-    stack<SemanticTable::Types> expressionStack; // Expression to manage scopes
-
     enum SymbolClassification
     {
         NONE = -1,
@@ -37,6 +37,15 @@ public:
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
     };
 
+    struct ExpressionsEntry
+    {
+        SemanticTable::Types entryType = SemanticTable::Types::__NULL; // Type of the entry
+        SemanticTable::OperationsBinary binaryOperation;               // Binary operation
+        SemanticTable::OperationsUnary unaryOperation;                 // Unary operation
+        string value;
+    };
+    stack<ExpressionsEntry> expressionStack; // Stack to manage expressions
+
     // Private variables
 private:
     int currentScope = 0;           // Current scope level for the symbol table
@@ -53,9 +62,36 @@ public:
     // Getters and Setters
     int getCurrentScope()
     {
-        return currentScope;
+        return scopeStack.top();
     };
 
+    // Expression stack
+    // Pushes a type onto the expression stack
+    void pushType(SemanticTable::Types type, const string &value)
+    {
+        ExpressionsEntry entry;
+        entry.entryType = type;
+        entry.value = value;
+        expressionStack.push(entry);
+    }
+
+    // Pushes a pending binary operator onto the expression stack
+    void pushBinaryOp(SemanticTable::OperationsBinary op)
+    {
+        ExpressionsEntry entry;
+        entry.binaryOperation = op;
+        expressionStack.push(entry);
+    }
+
+    // Pushes a pending unary operator
+    void pushUnaryOp(SemanticTable::OperationsUnary op)
+    {
+        ExpressionsEntry entry;
+        entry.unaryOperation = op;
+        expressionStack.push(entry);
+    }
+
+    // Scope
     int enterScope()
     {
         currentScope++;
@@ -74,34 +110,44 @@ public:
         return 0; // Global scope
     }
 
-    bool addSymbol(SymbolInfo &newSymbol)
+    SymbolTable::SymbolInfo *addSymbol(SymbolInfo &newSymbol)
     {
         // Check if the symbol already exists in the current scope
         for (SymbolInfo &symbol : symbolTable)
         {
             if (symbol.id == newSymbol.id && symbol.scope == newSymbol.scope)
             {
-                return false; // Symbol already exists in this scope
+                return nullptr; // Symbol already exists in this scope
             }
         }
 
         symbolTable.push_back(newSymbol);
-        return true; // Symbol added successfully
+        return &symbolTable.back(); // Symbol added successfully
     }
 
     SymbolInfo *getSymbol(string id)
     {
-        for (SymbolInfo &symbol : symbolTable)
+        for (auto it = symbolTable.rbegin(); it != symbolTable.rend(); ++it)
         {
-
-            // TODO: Talvez deixar essa verificacao para os casos que nao seja funcao
-            if (symbol.id == id && isInValidScope(symbol.scope))
+            SymbolInfo &symbol = *it;
+            if (it->id == id && isInValidScope(it->scope))
             {
-                cout << "Found symbol: " << symbol.id << endl;
                 return &symbol; // Return the symbol if found in the current scope
             }
         }
         return nullptr; // Symbol not found
+    }
+
+    SymbolInfo *getSymbolInScope(const std::string &id, int currentScope)
+    {
+        for (SymbolInfo &symbol : symbolTable)
+        {
+            if (symbol.id == id && symbol.scope == currentScope)
+            {
+                return &symbol;
+            }
+        }
+        return nullptr;
     }
 
     vector<SymbolInfo> getAllSymbols()
@@ -128,10 +174,58 @@ public:
         cout << "\n----- Symbol Table -----\n";
         for (SymbolInfo symbol : symbolTable)
         {
+            string dataType;
+            if (symbol.dataType == SemanticTable::Types::__NULL)
+            {
+                dataType = "NULL";
+            }
+            else if (symbol.dataType == SemanticTable::INT)
+            {
+                dataType = "INT";
+            }
+            else if (symbol.dataType == SemanticTable::FLOAT)
+            {
+                dataType = "FLOAT";
+            }
+            else if (symbol.dataType == SemanticTable::DOUBLE)
+            {
+                dataType = "DOUBLE";
+            }
+            else if (symbol.dataType == SemanticTable::CHAR)
+            {
+                dataType = "CHAR";
+            }
+            else if (symbol.dataType == SemanticTable::STRING)
+            {
+                dataType = "STRING";
+            }
+            else if (symbol.dataType == SemanticTable::BOOL)
+            {
+                dataType = "BOOL";
+            }
+
+            string symbolClassification;
+            if (symbol.symbolClassification == FUNCTION)
+            {
+                symbolClassification = "Function";
+            }
+            else if (symbol.symbolClassification == VARIABLE)
+            {
+                symbolClassification = "Variable";
+            }
+            else if (symbol.symbolClassification == ARRAY)
+            {
+                symbolClassification = "Array";
+            }
+            else if (symbol.symbolClassification == PARAM)
+            {
+                symbolClassification = "Parameter";
+            }
+
             cout << "ID: " << symbol.id
-                 << ", Data Type: " << symbol.dataType
+                 << ", Data Type: " << dataType
                  << ", Scope: " << symbol.scope
-                 << ", Symbol Classification: " << symbol.symbolClassification
+                 << ", Symbol Classification: " << symbolClassification
                  << ", Is Initialized: " << boolalpha << symbol.isInitialized
                  << ", Is Used: " << boolalpha << symbol.isUsed
                  << ", Array Size: " << this->getArraySizeString(symbol.arraySize);

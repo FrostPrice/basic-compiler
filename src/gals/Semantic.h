@@ -17,19 +17,23 @@ class Semantic
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr; // Current symbol being processed
 
-    // TODO: Validar se todas essas variaveis de controle são realmente necessárias e podem ser trocadas pelo currentSymbol
-    SymbolTable::SymbolClassification pendingClassification = SymbolTable::NONE; // Classification of the last identifier
-    SemanticTable::Types pendingType = SemanticTable::__NULL;                    // Type of the last identifier
-    vector<int> valueArraySizes;                                                 // Array dimensions of the declaration array value
-    stack<int> arrayLengthsStack;                                                // Array length of inner arrays in declaration array value
-    int arrayDepth = -1;                                                         // Array depth of the last identifier
-    stack<int> operatorStack;                                                    // Stack for operators
-    stack<int> idTypeStack;                                                      // Stack for identifier types
-    bool idAlreadyDeclared = false;                                              // Flag to indicate if the identifier is already declared
+    SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
+
+    vector<int> valueArraySizes;  // Array dimensions of the declaration array value
+    stack<int> arrayLengthsStack; // Array length of inner arrays in declaration array value
+    int arrayDepth = -1;          // Array depth of the last identifier
+
     // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
 
 public:
+    vector<string> warnings; // Warnings generated during semantic analysis
+    void reportWarning(const string &msg)
+    {
+        warnings.push_back(msg);
+    }
+
     SymbolTable symbolTable;
+
     void resetControllVariables()
     {
         if (this->currentSymbol != nullptr)
@@ -39,11 +43,8 @@ public:
 
         this->currentSymbol = new SymbolTable::SymbolInfo();
 
-        while (!this->operatorStack.empty())
-            this->operatorStack.pop();
-
-        while (!this->idTypeStack.empty())
-            this->operatorStack.pop();
+        while (!this->symbolTable.expressionStack.empty())
+            this->symbolTable.expressionStack.pop();
     }
 
     void executeAction(int action, const Token *token);
@@ -51,25 +52,21 @@ public:
     // Validation methods
     void validateExpressionType(SemanticTable::Types expectedType)
     {
-        if (this->symbolTable.expressionStack.empty())
-        {
-            throw SemanticError(SemanticError::ExpressionStackEmpty());
-        }
-
-        int actualType = this->symbolTable.expressionStack.top();
+        SymbolTable::ExpressionsEntry currentValue = this->symbolTable.expressionStack.top();
         this->symbolTable.expressionStack.pop();
 
-        if (actualType != expectedType)
+        int compat = SemanticTable::atribType(expectedType, currentValue.entryType);
+        if (compat == SemanticTable::ERR)
         {
-            throw SemanticError(SemanticError::TypeMismatch(expectedType, static_cast<SemanticTable::Types>(actualType)));
+            throw SemanticError(SemanticError::TypeMismatch(expectedType, currentValue.entryType));
         }
-    }
 
-    void validateExistingSymbol(SymbolTable::SymbolInfo *symbol)
-    {
-        if (symbol == nullptr)
+        if (compat == SemanticTable::WAR)
         {
-            throw SemanticError(SemanticError::SymbolNotFound("unknown")); // If id unknown
+            this->reportWarning("Warning: possible data loss when assigning value of type " +
+                                to_string(currentValue.entryType) +
+                                " to variable of type " +
+                                to_string(expectedType));
         }
     }
 
@@ -81,20 +78,14 @@ public:
         }
     }
 
-    void validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *matchedSymbol)
+    bool validateDuplicateSymbolInSameScope(SymbolTable::SymbolInfo *matchedSymbol)
     {
         if (matchedSymbol->scope == this->currentSymbol->scope)
         {
             throw SemanticError(SemanticError::DuplicateSymbol(matchedSymbol->id));
         }
-    }
 
-    void validateVariableType(SymbolTable::SymbolInfo *matchedSymbol)
-    {
-        if (matchedSymbol->dataType != this->currentSymbol->dataType)
-        {
-            throw SemanticError(SemanticError::TypeAssignmentMismatch(matchedSymbol->id, matchedSymbol->dataType));
-        }
+        return true; // No duplicate symbol in the same scope
     }
 
     void validateReturnStatementScope(SymbolTable::SymbolInfo *currentScopeSymbol)
@@ -105,11 +96,11 @@ public:
         }
     }
 
-    void validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol, bool isDeclared)
+    void validateIfVariableIsDeclared(SymbolTable::SymbolInfo *currentSymbol, string id)
     {
-        if (isDeclared)
+        if (!currentSymbol)
         {
-            throw SemanticError(SemanticError::InputUndeclared(currentSymbol->id));
+            throw SemanticError(SemanticError::SymbolUndeclared(id));
         }
     }
 
@@ -119,6 +110,36 @@ public:
         {
             throw SemanticError(SemanticError::InputNonVariable(currentSymbol->id));
         }
+    }
+
+    bool validateIsNumericOperator(SemanticTable::Types type)
+    {
+        return type == SemanticTable::Types::INT || type == SemanticTable::Types::FLOAT || type == SemanticTable::Types::DOUBLE;
+    }
+
+    void validateOneOfTypes(std::initializer_list<SemanticTable::Types> types)
+    {
+
+        if (symbolTable.expressionStack.empty())
+            throw SemanticError(SemanticError::ExpressionStackEmpty());
+
+        SymbolTable::ExpressionsEntry top = symbolTable.expressionStack.top();
+
+        for (SemanticTable::Types t : types)
+        {
+            if (SemanticTable::atribType(t, top.entryType) != SemanticTable::ERR)
+            {
+                symbolTable.expressionStack.pop();
+                return; // Valid type
+            }
+        }
+
+        throw SemanticError("Expression type '" + to_string(top.entryType) +
+                            "' not allowed here.");
+    }
+
+    void validateFunctionArgumentCount(SymbolTable::SymbolInfo *functionSymbol, int actualCount)
+    {
     }
 };
 

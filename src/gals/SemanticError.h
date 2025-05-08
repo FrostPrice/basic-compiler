@@ -6,56 +6,91 @@
 
 #include <string>
 
+using namespace std;
+
 class SemanticError : public AnalysisError
 {
 public:
-  SemanticError(const std::string &msg, int position = -1)
+  SemanticError(const string &msg, int position = -1)
       : AnalysisError(msg, position) {}
 
   // Static helpers for common errors
-  static std::string TypeMismatch(SemanticTable::Types expected, SemanticTable::Types actual)
+  static string TypeMismatch(SemanticTable::Types expected, SemanticTable::Types actual)
   {
-    return "Type mismatch: expected '" + std::to_string(expected) + "' but got '" + std::to_string(actual) + "'";
+    return "Type mismatch: expected '" + typeToString(expected) + "' but got '" + typeToString(actual) + "'";
   }
 
-  static std::string SymbolNotFound(const std::string &id)
-  {
-    return "Symbol '" + id + "' not found";
-  }
-
-  static std::string SymbolNotOfClassification(const std::string &id)
+  static string SymbolNotOfClassification(const string &id)
   {
     return "Symbol '" + id + "' is not of the expected classification";
   }
 
-  static std::string DuplicateSymbol(const std::string &id)
+  static string DuplicateSymbol(const string &id)
   {
     return "Symbol '" + id + "' already exists in this scope";
   }
 
-  static std::string TypeAssignmentMismatch(const std::string &id, SemanticTable::Types expected)
+  static string TypeAssignmentMismatch(const string &id, SemanticTable::Types expected)
   {
-    return "Type mismatch: cannot assign to variable '" + id + "' of type '" + std::to_string(expected) + "'";
+    return "Type mismatch: cannot assign to variable '" + id + "' of type '" + to_string(expected) + "'";
   }
 
-  static std::string ReturnOutsideFunction()
+  static string ReturnOutsideFunction()
   {
     return "Return statement outside of a function";
   }
 
-  static std::string InputUndeclared(const std::string &id)
+  static string SymbolUndeclared(const string &id)
   {
-    return "Input target '" + id + "' is not declared";
+    return "Symbol '" + id + "' is not declared";
   }
 
-  static std::string InputNonVariable(const std::string &id)
+  static string InputNonVariable(const string &id)
   {
     return "Cannot input into non-variable '" + id + "'";
   }
 
-  static std::string ExpressionStackEmpty()
+  static string ExpressionStackEmpty()
   {
     return "Expression stack is empty";
+  }
+
+  static string NonNumericOperator()
+  {
+    return "Arithmetic operator requires numeric operands";
+  }
+
+  static string oneOperatorForBinaryExpression()
+  {
+    return "Binary expression requires two operands";
+  }
+
+  static string WrongArgumentCount(const string &id, int expected, int actual)
+  {
+    return "Function '" + id + "' expects " + to_string(expected) + " argument(s), but got " + to_string(actual);
+  }
+
+  static string InvalidValueForArrayLength()
+  {
+    return "Invalid value for array length";
+  }
+
+  static string typeToString(SemanticTable::Types type)
+  {
+    if (type == SemanticTable::Types::__NULL)
+      return "__NULL";
+    else if (type == SemanticTable::Types::INT)
+      return "INT";
+    else if (type == SemanticTable::Types::FLOAT)
+      return "FLOAT";
+    else if (type == SemanticTable::Types::DOUBLE)
+      return "DOUBLE";
+    else if (type == SemanticTable::Types::CHAR)
+      return "CHAR";
+    else if (type == SemanticTable::Types::STRING)
+      return "STRING";
+    else if (type == SemanticTable::Types::BOOL)
+      return "BOOL";
   }
 };
 
