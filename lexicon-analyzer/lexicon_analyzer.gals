@@ -189,9 +189,9 @@ VAL_FALSE = ID : "false"
 <comments> ::= SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT;
 
 // Declarations
-<declaration> ::= <data_type> <dec_assign_list> #3;
-<dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign>;
-<dec_assign> ::= ID #1 ASSIGNMENT <expression> #4 | ID #1 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 <array_dec> #5 | ID #1;
+<declaration> ::= <data_type> <dec_assign_list>;
+<dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign> ;
+<dec_assign> ::= ID #1 ASSIGNMENT <expression> #3 #4 | ID #1 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 <array_dec> #5 | ID #1 #3;
 <array_dec> ::= <array_dec> "[" <expression> #6 "]" | "[" <expression> #6 "]";
 
 // Assignments
