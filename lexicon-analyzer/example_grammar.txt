@@ -8,8 +8,8 @@ void printSomething(int value) {
 
 int main() {
     a = 5;
-    b[2] = [1, 2, 3];
     c = a + b[2] * (10 - 3);
+    int d[2] = [1, 2];
     
     if (c > 10) {
         print("Greater than 10");
