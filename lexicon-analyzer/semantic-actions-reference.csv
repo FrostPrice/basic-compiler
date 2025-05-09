@@ -7,6 +7,7 @@ Action Number, Description
 #5, ASSIGNMENT ARRAY, VALUE (Assignment value for arrays)
 #6, ARRAY SIZE DECLARATION, (Array size declaration)
 #7, ARRAY ASSIGNMENT VALUE, (Assignment value for arrays)
+#8, DECLARATION ARRAY, (Declaration of an array)
 
 // 11 - 20: operators and 
 #11, ASSIGN OP, (Assignment operator)
@@ -68,6 +69,8 @@ Action Number, Description
 <exp3> ::= <exp3> BIT_OR #17 <exp4> | <exp4>;
 <exp4> ::= <exp4> BIT_XOR #17 <exp5> | <exp5>;
 <exp5> ::= <exp5> BIT_AND #17 <exp6> | <exp6>;
+
+<assignable_func_call> ::= <assignable> #36 <func_call> | <assignable> #36;
 
 <op_assign> ::= ASSIGNMENT #11 | ASSIGNMENT_ADD #13 | ASSIGNMENT_SUB #12 | ASSIGNMENT_MULT #12 | ASSIGNMENT_DIVIDE #12 | ASSIGNMENT_REMAIN #14;
 <op_rel_low> ::= EQ #19 | NE #19;

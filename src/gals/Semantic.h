@@ -16,10 +16,11 @@ class Semantic
 {
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr; // Current symbol being processed
+    SymbolTable::SymbolInfo *arrayDeclarationSymbol = nullptr; // Current symbol being processed
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
-    vector<int> valueArraySizes;  // Array dimensions of the declaration array value
+    vector<vector<int>> valueArraySizes;  // Array dimensions of the declaration array value
     stack<int> arrayLengthsStack; // Array length of inner arrays in declaration array value
     int arrayDepth = -1;          // Array depth of the last identifier
 

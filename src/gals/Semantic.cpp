@@ -89,37 +89,37 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 5: // ASSIGNMENT ARRAY VALUE
     {
-        for (int i = 0; i < this->currentSymbol->arraySize.size(); i++)
+        if (this->valueArraySizes.size())
         {
-            int arraySize = this->currentSymbol->arraySize[i];
-            if (arraySize != this->valueArraySizes[i] && arraySize != -1)
+            for (int i = 0; i < this->arrayDeclarationSymbol->arraySize.size(); i++)
             {
-                throw SemanticError("Array size mismatch: expected " + to_string(arraySize) + " but got " + to_string(this->valueArraySizes[i]));
+                int symbolArraySize = this->arrayDeclarationSymbol->arraySize[i];
+                for (int arraySize : this->valueArraySizes[i]) {
+                    if (symbolArraySize != arraySize && symbolArraySize != -1)
+                    {
+                        throw SemanticError("Array size mismatch: expected " + to_string(symbolArraySize) + " but got " + to_string(arraySize));
+                    }
+                }
             }
         }
-        this->currentSymbol->isInitialized = true;
-        this->currentSymbol->symbolClassification = SymbolTable::ARRAY;
 
-        this->symbolTable.addSymbol(*this->currentSymbol);
+        this->arrayDeclarationSymbol->isInitialized = true;
+        this->arrayDeclarationSymbol->symbolClassification = SymbolTable::ARRAY;
+
+        this->symbolTable.addSymbol(*this->arrayDeclarationSymbol);
         break;
     }
     case 6: // ARRAY SIZE DECLARATION
     {
-
         if (this->symbolTable.expressionStack.size() == 1)
         {
             SymbolTable::ExpressionsEntry entry = this->symbolTable.expressionStack.top();
-
             if (entry.entryType == SemanticTable::INT)
             {
-                int value = stoi(entry.value);
-
-                if (value < 1)
-                {
-                    throw SemanticError(SemanticError::InvalidValueForArrayLength());
-                }
-
-                this->currentSymbol->arraySize.push_back(stoi(lexeme));
+                int value = isNumber(entry.value, false) ? stoi(entry.value) : -1;
+                                
+                this->arrayDeclarationSymbol->arraySize.push_back(value);
+                this->symbolTable.expressionStack.pop();
             }
             else
             {
@@ -129,7 +129,7 @@ void Semantic::executeAction(int action, const Token *token)
         else
         {
             validateExpressionType(SemanticTable::INT);
-            this->currentSymbol->arraySize.push_back(-1);
+            this->arrayDeclarationSymbol->arraySize.push_back(-1);
         }
 
         break;
@@ -138,9 +138,9 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth = -1;
         this->valueArraySizes.clear();
-        for (int i = 0; i < this->currentSymbol->arraySize.size(); i++)
+        for (int i = 0; i < this->arrayDeclarationSymbol->arraySize.size(); i++)
         {
-            this->valueArraySizes.push_back(0);
+            this->valueArraySizes.push_back(vector<int>());
         }
         break;
 
@@ -148,6 +148,20 @@ void Semantic::executeAction(int action, const Token *token)
         {
             this->arrayLengthsStack.pop();
         }
+    }
+    case 8:
+    {
+        SymbolTable::SymbolInfo *alreadyDeclared =
+            symbolTable.getSymbolInScope(this->currentSymbol->id, this->symbolTable.getCurrentScope());
+
+        if (alreadyDeclared != nullptr)
+        {
+            validateDuplicateSymbolInSameScope(alreadyDeclared);
+        }
+
+        this->arrayDeclarationSymbol = this->currentSymbol;
+
+        break;
     }
     // * 11-20: Operators *
     // TODO: COMO FAZER ESSAS EXPRESSOES DE ASSIGNMENT (+=, -=, etc)?
@@ -531,7 +545,7 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     case 51: // ARRAY VALUE
     {
-        if (this->arrayDepth == this->currentSymbol->arraySize.size() - 1)
+        if (this->arrayDepth == this->arrayDeclarationSymbol->arraySize.size() - 1)
             validateExpressionType(this->pendingType);
         this->arrayLengthsStack.top()++;
         break;
@@ -540,7 +554,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth++;
 
-        if (this->arrayDepth >= this->currentSymbol->arraySize.size())
+        if (this->arrayDepth >= this->arrayDeclarationSymbol->arraySize.size())
         {
             throw SemanticError("Array length exceeded");
         }
@@ -550,11 +564,11 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 53: // ARRAY DEPTH OUT
     {
-        int arraySize = this->currentSymbol->arraySize[this->arrayDepth];
+        int arraySize = this->arrayDeclarationSymbol->arraySize[this->arrayDepth];
         if (this->arrayLengthsStack.top() > arraySize && arraySize != -1)
             throw SemanticError("Array length exceeded");
 
-        this->valueArraySizes[this->arrayDepth] = this->arrayLengthsStack.top();
+        this->valueArraySizes[this->arrayDepth].push_back(this->arrayLengthsStack.top());
 
         this->arrayDepth--;
         this->arrayLengthsStack.pop();
