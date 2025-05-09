@@ -172,7 +172,8 @@ void MainWindow::compileCode()
         {
             if (!symbol.isUsed)
             {
-                sem.warnings.push_back("Warning: Variable '" + symbol.id + "' declared but not used.");
+                // TODO: Change the 'Symbol' for the classification of the symbol
+                sem.warnings.push_back("Warning: Symbol '" + symbol.id + "' declared but not used.");
             }
         }
 
