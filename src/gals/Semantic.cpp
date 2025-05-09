@@ -35,7 +35,8 @@ void Semantic::executeAction(int action, const Token *token)
         // * 1-10: Declarations and assignments *
     case 1: // ID
     {
-        delete this->currentSymbol;
+        // ! QUANDO DELETA O CURRENT SYMBOL AQUI, AS ATRIBUICOES "int a,b;" NAO FUNCIONAM
+        // delete this->currentSymbol;
         this->currentSymbol = new SymbolTable::SymbolInfo(
             lexeme,                             // id
             this->pendingType,                  // type
