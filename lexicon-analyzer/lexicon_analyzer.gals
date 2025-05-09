@@ -239,7 +239,7 @@ VAL_FALSE = ID : "false"
 <array_values> ::= <array_values> "," <expression> #51 | <expression> #51;
 
 // Function Call
-<func_call> ::= "(" <func_call_params> ")" | "(" ")";
+<func_call> ::=  "(" <func_call_params> ")" #29 | "(" ")" #29;
 <func_call_params> ::= <func_call_params> "," <expression> #22 | <func_call_params> "," <array> #22 | <expression> #22 | <array> #22;
 
 // Control Structures

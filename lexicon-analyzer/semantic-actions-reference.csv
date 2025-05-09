@@ -29,6 +29,7 @@ Action Number, Description
 #26, INPUT, (Input function)
 #27, OUTPUT, (Output function)
 #28, FUNCTION_DEF, (Function definition)
+#29, FUNCTION_CALL, (Function call)
 
 // 31 - 40: primitive values
 #31, INT VALUE, (Integer values)
