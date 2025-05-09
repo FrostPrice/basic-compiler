@@ -32,6 +32,7 @@ public:
         bool isInitialized = false; // true if the variable is initialized (has value)
         bool isUsed = false;        // true if the variable is used
         vector<int> arraySize;      // Array size of each dimension
+        int functionParams = -1;    // Number of parameters in the function
 
         SymbolInfo() {}
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
@@ -155,10 +156,23 @@ public:
         return symbolTable;
     }
 
-    SymbolInfo *getFunctionScope()
+    SymbolInfo *getFunctionSymbol(string id)
     {
         for (SymbolInfo &symbol : symbolTable)
         {
+            if (symbol.id == id && symbol.symbolClassification == FUNCTION)
+            {
+                return &symbol; // Return the symbol if found in the current scope
+            }
+        }
+        return nullptr; // Symbol not found
+    };
+
+    SymbolInfo *getFunctionInScope()
+    {
+        for (auto it = symbolTable.rbegin(); it != symbolTable.rend(); ++it)
+        {
+            SymbolInfo &symbol = *it;
             if (symbol.symbolClassification == FUNCTION && isInValidScope(symbol.scope))
             {
                 cout << "Found function: " << symbol.id << " in scope: " << symbol.scope << endl;

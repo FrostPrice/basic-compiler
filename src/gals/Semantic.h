@@ -15,14 +15,15 @@ using namespace std;
 class Semantic
 {
 private:
-    SymbolTable::SymbolInfo *currentSymbol = nullptr; // Current symbol being processed
+    SymbolTable::SymbolInfo *currentSymbol = nullptr;          // Current symbol being processed
     SymbolTable::SymbolInfo *arrayDeclarationSymbol = nullptr; // Current symbol being processed
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
-    vector<vector<int>> valueArraySizes;  // Array dimensions of the declaration array value
-    stack<int> arrayLengthsStack; // Array length of inner arrays in declaration array value
-    int arrayDepth = -1;          // Array depth of the last identifier
+    vector<vector<int>> valueArraySizes; // Array dimensions of the declaration array value
+    stack<int> arrayLengthsStack;        // Array length of inner arrays in declaration array value
+    int arrayDepth = -1;                 // Array depth of the last identifier
+    int parametersCountInFuncCall = 0;   // Number of parameters in the function call
 
     // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
 
@@ -139,8 +140,15 @@ public:
                             "' not allowed here.");
     }
 
-    void validateFunctionArgumentCount(SymbolTable::SymbolInfo *functionSymbol, int actualCount)
+    void validateFunctionParamCount(SymbolTable::SymbolInfo *functionSymbol)
     {
+        if (functionSymbol->functionParams != parametersCountInFuncCall)
+        {
+            throw SemanticError(SemanticError::WrongArgumentCount(
+                functionSymbol->id,
+                functionSymbol->functionParams,
+                parametersCountInFuncCall));
+        }
     }
 };
 
