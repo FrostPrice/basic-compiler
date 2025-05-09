@@ -44,6 +44,11 @@ public:
   {
     return "Symbol '" + id + "' is not declared";
   }
+  
+  static string SymbolNotInitialized(const string &id)
+  {
+    return "Symbol '" + id + "' was not initialized";
+  }
 
   static string InputNonVariable(const string &id)
   {

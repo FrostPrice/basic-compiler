@@ -491,6 +491,22 @@ void Semantic::executeAction(int action, const Token *token)
         this->symbolTable.pushType(SemanticTable::BOOL, lexeme);
         break;
     }
+    case 36: // SYMBOL VALUE
+    {
+        SymbolTable::SymbolInfo* symbol = this->symbolTable.getSymbol(this->currentSymbol->id);
+        if (symbol == nullptr)
+        {
+            throw SemanticError(SemanticError::SymbolUndeclared(this->currentSymbol->id));
+        }
+        else if (!symbol->isInitialized)
+        {
+            throw SemanticError(SemanticError::SymbolNotInitialized(this->currentSymbol->id));
+        }
+
+        symbol->isUsed = true;
+        this->symbolTable.pushType(symbol->dataType, lexeme);
+        break;
+    }
 
     // * 41-50: Conditionals and loops *
     case 41: // IF CONDITION

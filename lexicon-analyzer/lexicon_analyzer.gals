@@ -212,7 +212,7 @@ VAL_FALSE = ID : "false"
 <exp12> ::= <assignable> <op_inc> | <val> | "(" <expression> ")";
 
 <val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
-<assignable_func_call> ::= <assignable> <func_call> | <assignable>;
+<assignable_func_call> ::= <assignable> #36 <func_call> | <assignable> #36;
 
 // Operators
 <op_assign> ::= ASSIGNMENT #11 | ASSIGNMENT_ADD #13 | ASSIGNMENT_SUB #12 | ASSIGNMENT_MULT #12 | ASSIGNMENT_DIVIDE #12 | ASSIGNMENT_REMAIN #14;
