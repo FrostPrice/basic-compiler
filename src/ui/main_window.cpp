@@ -155,6 +155,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     compileShortcut->setKey(Qt::CTRL + Qt::Key_Return);
 
     connect(compileShortcut, &QShortcut::activated, this, &MainWindow::compileCode);
+
+    QShortcut *symbolTableShortcut = new QShortcut(this);
+    symbolTableShortcut->setKey(Qt::CTRL + Qt::Key_T);
+    connect(symbolTableShortcut, &QShortcut::activated, this, [this]()
+            { tableView->setVisible(!tableView->isVisible()); });
 }
 
 void MainWindow::compileCode()
