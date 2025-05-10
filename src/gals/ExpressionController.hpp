@@ -1,0 +1,51 @@
+#ifndef EXPRESSION_CONTROLLER_HPP
+#define EXPRESSION_CONTROLLER_HPP
+
+#include <stack>
+#include <variant>
+
+#include "SymbolTable.hpp"
+
+using namespace std;
+
+using Operations = variant<SemanticTable::OperationsBinary, SemanticTable::OperationsUnary>;
+
+class ExpressionController
+{
+public:
+    struct ExpressionsEntry
+    {
+        SemanticTable::Types entryType = SemanticTable::Types::__NULL; // Type of the entry
+        SemanticTable::OperationsBinary binaryOperation;               // Binary operation
+        SemanticTable::OperationsUnary unaryOperation;                 // Unary operation
+        string value;
+    };
+
+    stack<ExpressionsEntry> expressionStack; // Stack to manage expressions
+
+    void pushType(SemanticTable::Types type, const string &value)
+    {
+        ExpressionsEntry entry;
+        entry.entryType = type;
+        entry.value = value;
+        expressionStack.push(entry);
+    }
+
+    // Pushes a pending binary operator onto the expression stack
+    void pushBinaryOp(SemanticTable::OperationsBinary op)
+    {
+        ExpressionsEntry entry;
+        entry.binaryOperation = op;
+        expressionStack.push(entry);
+    }
+
+    // Pushes a pending unary operator
+    void pushUnaryOp(SemanticTable::OperationsUnary op)
+    {
+        ExpressionsEntry entry;
+        entry.unaryOperation = op;
+        expressionStack.push(entry);
+    }
+};
+
+#endif EXPRESSION_CONTROLLER_HPP

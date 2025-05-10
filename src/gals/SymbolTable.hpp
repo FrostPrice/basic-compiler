@@ -38,15 +38,6 @@ public:
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
     };
 
-    struct ExpressionsEntry
-    {
-        SemanticTable::Types entryType = SemanticTable::Types::__NULL; // Type of the entry
-        SemanticTable::OperationsBinary binaryOperation;               // Binary operation
-        SemanticTable::OperationsUnary unaryOperation;                 // Unary operation
-        string value;
-    };
-    stack<ExpressionsEntry> expressionStack; // Stack to manage expressions
-
     // Private variables
 private:
     int currentScope = 0;           // Current scope level for the symbol table
@@ -65,32 +56,6 @@ public:
     {
         return scopeStack.top();
     };
-
-    // Expression stack
-    // Pushes a type onto the expression stack
-    void pushType(SemanticTable::Types type, const string &value)
-    {
-        ExpressionsEntry entry;
-        entry.entryType = type;
-        entry.value = value;
-        expressionStack.push(entry);
-    }
-
-    // Pushes a pending binary operator onto the expression stack
-    void pushBinaryOp(SemanticTable::OperationsBinary op)
-    {
-        ExpressionsEntry entry;
-        entry.binaryOperation = op;
-        expressionStack.push(entry);
-    }
-
-    // Pushes a pending unary operator
-    void pushUnaryOp(SemanticTable::OperationsUnary op)
-    {
-        ExpressionsEntry entry;
-        entry.unaryOperation = op;
-        expressionStack.push(entry);
-    }
 
     // Scope
     int enterScope()

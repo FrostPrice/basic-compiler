@@ -19,6 +19,7 @@ SOURCES += src/main.cpp \
 HEADERS += src/ui/main_window.hpp \
            src/ui/code_editor.hpp \
            src/gals/AnalysisError.h \
+           src/gals/ExpressionController.hpp \
            src/gals/Constants.h \
            src/gals/Lexical.h \
            src/gals/LexicalError.h \

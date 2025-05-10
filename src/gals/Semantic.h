@@ -6,6 +6,7 @@
 #include <stack>
 #include <optional>
 
+#include "ExpressionController.hpp"
 #include "Token.h"
 #include "SemanticError.h"
 #include "SemanticTable.hpp"
@@ -18,6 +19,8 @@ class Semantic
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr;     // Current symbol being processed
     SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Current symbol being processed
+
+    ExpressionController expressionController; // Expression object to manage expressions
 
     stack<tuple<SymbolTable::SymbolInfo *, int>> symbolEvaluateStack; // Stack to manage symbols in expressions
 
@@ -51,8 +54,8 @@ public:
 
         this->currentSymbol = new SymbolTable::SymbolInfo();
 
-        while (!this->symbolTable.expressionStack.empty())
-            this->symbolTable.expressionStack.pop();
+        while (!this->expressionController.expressionStack.empty())
+            this->expressionController.expressionStack.pop();
     }
 
     void executeAction(int action, const Token *token);
@@ -60,8 +63,8 @@ public:
     // Validation methods
     void validateExpressionType(SemanticTable::Types expectedType)
     {
-        SymbolTable::ExpressionsEntry currentValue = this->symbolTable.expressionStack.top();
-        this->symbolTable.expressionStack.pop();
+        ExpressionController::ExpressionsEntry currentValue = this->expressionController.expressionStack.top();
+        this->expressionController.expressionStack.pop();
 
         int compat = SemanticTable::atribType(expectedType, currentValue.entryType);
         if (compat == SemanticTable::ERR)
@@ -79,23 +82,23 @@ public:
     }
     SemanticTable::Types validateGeneralExpression(SemanticTable::Types expectedType)
     {
-        if (symbolTable.expressionStack.empty())
+        if (expressionController.expressionStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
 
-        size_t stackSize = symbolTable.expressionStack.size();
+        size_t stackSize = expressionController.expressionStack.size();
 
         SemanticTable::Types resultType = SemanticTable::Types::__NULL;
 
         if (stackSize >= 3) // Try binary: operand1, op, operand2
         {
-            SymbolTable::ExpressionsEntry right = symbolTable.expressionStack.top();
-            symbolTable.expressionStack.pop();
+            ExpressionController::ExpressionsEntry right = expressionController.expressionStack.top();
+            expressionController.expressionStack.pop();
 
-            SymbolTable::ExpressionsEntry operation = symbolTable.expressionStack.top();
-            symbolTable.expressionStack.pop();
+            ExpressionController::ExpressionsEntry operation = expressionController.expressionStack.top();
+            expressionController.expressionStack.pop();
 
-            SymbolTable::ExpressionsEntry left = symbolTable.expressionStack.top();
-            symbolTable.expressionStack.pop();
+            ExpressionController::ExpressionsEntry left = expressionController.expressionStack.top();
+            expressionController.expressionStack.pop();
 
             if (left.entryType == SemanticTable::Types::__NULL || right.entryType == SemanticTable::Types::__NULL)
             {
@@ -119,11 +122,11 @@ public:
         }
         else if (stackSize >= 2) // Try unary: op, operand
         {
-            SymbolTable::ExpressionsEntry operand = symbolTable.expressionStack.top();
-            symbolTable.expressionStack.pop();
+            ExpressionController::ExpressionsEntry operand = expressionController.expressionStack.top();
+            expressionController.expressionStack.pop();
 
-            SymbolTable::ExpressionsEntry operation = symbolTable.expressionStack.top();
-            symbolTable.expressionStack.pop();
+            ExpressionController::ExpressionsEntry operation = expressionController.expressionStack.top();
+            expressionController.expressionStack.pop();
 
             int result = SemanticTable::unaryResultType(operand.entryType, operation.unaryOperation);
 
@@ -161,26 +164,26 @@ public:
     }
     SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false)
     {
-        if (symbolTable.expressionStack.empty())
+        if (expressionController.expressionStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
 
-        std::stack<SymbolTable::ExpressionsEntry> reverseStack;
+        std::stack<ExpressionController::ExpressionsEntry> reverseStack;
 
-        while (!symbolTable.expressionStack.empty())
+        while (!expressionController.expressionStack.empty())
         {
-            reverseStack.push(symbolTable.expressionStack.top());
-            symbolTable.expressionStack.pop();
+            reverseStack.push(expressionController.expressionStack.top());
+            expressionController.expressionStack.pop();
         }
 
-        SymbolTable::ExpressionsEntry result;
+        ExpressionController::ExpressionsEntry result;
 
         while (reverseStack.size() >= 3)
         {
-            SymbolTable::ExpressionsEntry right = reverseStack.top();
+            ExpressionController::ExpressionsEntry right = reverseStack.top();
             reverseStack.pop();
-            SymbolTable::ExpressionsEntry op = reverseStack.top();
+            ExpressionController::ExpressionsEntry op = reverseStack.top();
             reverseStack.pop();
-            SymbolTable::ExpressionsEntry left = reverseStack.top();
+            ExpressionController::ExpressionsEntry left = reverseStack.top();
             reverseStack.pop();
 
             int typeResult = SemanticTable::resultBinaryType(left.entryType, right.entryType, op.binaryOperation);
@@ -198,9 +201,9 @@ public:
 
         if (reverseStack.size() == 2)
         {
-            SymbolTable::ExpressionsEntry operand = reverseStack.top();
+            ExpressionController::ExpressionsEntry operand = reverseStack.top();
             reverseStack.pop();
-            SymbolTable::ExpressionsEntry op = reverseStack.top();
+            ExpressionController::ExpressionsEntry op = reverseStack.top();
             reverseStack.pop();
 
             int typeResult = SemanticTable::unaryResultType(operand.entryType, op.unaryOperation);
@@ -287,13 +290,13 @@ public:
 
     void validateOneOfTypes(std::initializer_list<SemanticTable::Types> types)
     {
-        if (symbolTable.expressionStack.empty())
+        if (expressionController.expressionStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
 
         // Make a copy of the expression stack
-        std::stack<SymbolTable::ExpressionsEntry> copyStack = symbolTable.expressionStack;
+        std::stack<ExpressionController::ExpressionsEntry> copyStack = expressionController.expressionStack;
 
-        SymbolTable::ExpressionsEntry top = copyStack.top();
+        ExpressionController::ExpressionsEntry top = copyStack.top();
 
         for (SemanticTable::Types t : types)
         {
