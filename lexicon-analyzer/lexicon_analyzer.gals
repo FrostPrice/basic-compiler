@@ -142,6 +142,7 @@ VAL_FALSE = ID : "false"
 <val_string>
 <val_boolean>
 <data_type>
+//<assignable>
 <assignable>
 <array_access>
 <array>
@@ -191,7 +192,7 @@ VAL_FALSE = ID : "false"
 // Declarations
 <declaration> ::= <data_type> <dec_assign_list>;
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign> ;
-<dec_assign> ::= ID #1 ASSIGNMENT <expression> #3 #4 | ID #1 #8 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 #8 <array_dec> #5 | ID #1 #3;
+<dec_assign> ::= ID #1 #8 ASSIGNMENT <expression> #3 #4 | ID #1 #8 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 #8 <array_dec> #5 | ID #1 #3;
 <array_dec> ::= <array_dec> "[" <expression> #6 "]" | "[" <expression> #6 "]";
 
 // Assignments
@@ -212,7 +213,7 @@ VAL_FALSE = ID : "false"
 <exp12> ::= <assignable> <op_inc> | <val> | "(" <expression> ")";
 
 <val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
-<assignable_func_call> ::= <assignable> #36 <func_call> | <assignable> #36;
+<assignable_func_call> ::= <assignable> #37 <func_call> | <assignable> #36;
 
 // Operators
 <op_assign> ::= ASSIGNMENT #11 | ASSIGNMENT_ADD #13 | ASSIGNMENT_SUB #12 | ASSIGNMENT_MULT #12 | ASSIGNMENT_DIVIDE #12 | ASSIGNMENT_REMAIN #14;
@@ -231,7 +232,8 @@ VAL_FALSE = ID : "false"
 
 <data_type> ::= INT #2 | FLOAT #2 | DOUBLE #2 | CHAR #2 | STRING #2 | BOOLEAN #2;
 
-<assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
+//<assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
+<assignable> ::= ID #1 <array_access> | ID #1;
 <array_access> ::= <array_access> "[" <expression> #54 "]" | "[" <expression> #54 "]";
 
 <array> ::= "[" #52 <array_nested> "]" #53 | "[" #52 <array_values> "]" #53;

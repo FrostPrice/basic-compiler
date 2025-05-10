@@ -38,6 +38,7 @@ Action Number, Description
 #34, STRING VALUE, (String values)
 #35, BOOLEAN VALUE, (Boolean values)
 #36, SYMBOL VALUE, (Symbol values)
+#37, FUNCTION RETURN VALUE, (Function values)
 
 // 41 - 50: conditionals and loops
 #41, IF CONDITION, (If condition)

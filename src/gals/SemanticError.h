@@ -80,6 +80,10 @@ public:
         return "Invalid value for array length";
     }
 
+    static string FunctionNotCalled(const string &id)
+    {
+        return "Function '" + id + "' was not called";
+    }
 
     static string typeToString(SemanticTable::Types type)
     {

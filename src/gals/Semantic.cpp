@@ -566,9 +566,27 @@ void Semantic::executeAction(int action, const Token *token)
         {
             throw SemanticError(SemanticError::SymbolNotInitialized(this->currentSymbol->id));
         }
+        else if (symbol->symbolClassification == SymbolTable::FUNCTION)
+        {
+            throw SemanticError(SemanticError::FunctionNotCalled(this->currentSymbol->id));
+        }
 
         symbol->isUsed = true;
         this->symbolTable.pushType(symbol->dataType, lexeme);
+        break;
+    }
+    case 37: // FUNCTION RETURN VALUE
+    {
+        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
+
+        if (functionSymbol == nullptr)
+        {
+            throw SemanticError("Function not found in scope");
+        }
+
+        functionSymbol->isUsed = true;
+        this->symbolTable.pushType(functionSymbol->dataType, lexeme);
+
         break;
     }
 
