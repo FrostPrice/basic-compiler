@@ -83,9 +83,9 @@ void Semantic::executeAction(int action, const Token *token)
     case 4:
     { // ASSIGNMENT VALUE
         SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->declarationSymbol->id);
+            symbolTable.getSymbol(this->currentSymbol->id);
 
-        validateIfVariableIsDeclared(matchedSymbol, this->declarationSymbol->id);
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
         validateExpressionType(matchedSymbol->dataType);
         matchedSymbol->isInitialized = true;
 
@@ -179,13 +179,16 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     }
     // * 11-20: Operators *
-    // TODO: COMO FAZER ESSAS EXPRESSOES DE ASSIGNMENT (+=, -=, etc)?
-    // ! PRECISA DESSE ASSIGNEMNT, tendo em vista que o operador de atribuicao eh o '=' ?
-    // case 11: // ASSIGN OP
-    // {
+    case 11: // ASSIGN OP
+    {
+        SymbolTable::SymbolInfo *matchedSymbol =
+            symbolTable.getSymbol(this->currentSymbol->id);
 
-    //     break;
-    // }
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+        matchedSymbol->isInitialized = true;
+
+        break;
+    }
     case 12: // ARITHMETICAL ASSIGN OP (only for numbers)
     {
         // a -= 2; -> a = a - 2;
@@ -253,47 +256,81 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 15:
     { // NUMBER OP (for numbers)
-        validateOneOfTypes({
-            SemanticTable::Types::INT,
-            SemanticTable::Types::FLOAT,
-            SemanticTable::Types::DOUBLE,
-        });
-
         // Arithmetic operations
         if (lexeme == "+")
         {
-            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
+            symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
         }
         else if (lexeme == "-")
         {
-            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
+            symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
         }
         else if (lexeme == "*")
         {
-            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION);
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
+            symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION);
         }
         else if (lexeme == "/")
         {
-            this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::DIVISION);
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
+            symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::DIVISION);
         }
         // Comparisson operations
         else if (lexeme == "<")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
             this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
         }
         else if (lexeme == "<=")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
             this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
         }
         else if (lexeme == ">")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
             this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
         }
         else if (lexeme == ">=")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
             this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
         }
-        // Increment and decrement operations
+        // Increment and decrement operations (Don't validate, since the value appears after)
         else if (lexeme == "--")
         {
             this->symbolTable.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
@@ -306,7 +343,6 @@ void Semantic::executeAction(int action, const Token *token)
         {
             throw SemanticError("Invalid operator: " + lexeme);
         }
-        // TODO: Tem mais operacoes aqui?
 
         break;
     }
@@ -362,10 +398,6 @@ void Semantic::executeAction(int action, const Token *token)
 
         break;
     case 18: // BOOLEAN OP (for booleans)
-        validateOneOfTypes({
-            SemanticTable::Types::BOOL,
-        });
-
         if (lexeme == "&&" || lexeme == "||")
         {
             this->symbolTable.pushBinaryOp(SemanticTable::OperationsBinary::LOGICAL);
@@ -509,6 +541,12 @@ void Semantic::executeAction(int action, const Token *token)
                             SemanticTable::INT, SemanticTable::FLOAT,
                             SemanticTable::DOUBLE, SemanticTable::BOOL});
 
+        SemanticTable::Types result = reduceExpressionAndGetType();
+        if (result != SemanticTable::STRING && result != SemanticTable::CHAR && result != SemanticTable::INT && result != SemanticTable::FLOAT && result != SemanticTable::DOUBLE && result != SemanticTable::BOOL)
+        {
+            throw SemanticError("Invalid type in output expression");
+        }
+
         break;
     }
     case 28: // FUNCTION DEF
@@ -619,25 +657,85 @@ void Semantic::executeAction(int action, const Token *token)
 
     // * 41-50: Conditionals and loops *
     case 41: // IF CONDITION
+    {
+        validateGeneralExpression(SemanticTable::Types::BOOL);
+
         break;
+    }
     case 42: // SWITCH EXPRESSION
+    {
+        validateOneOfTypes({
+            SemanticTable::Types::INT,
+            SemanticTable::Types::FLOAT,
+            SemanticTable::Types::DOUBLE,
+            SemanticTable::Types::CHAR,
+            SemanticTable::Types::STRING,
+            SemanticTable::Types::BOOL,
+        });
+
+        this->switchResultType = reduceExpressionAndGetType();
+
         break;
+    }
     case 43: // CASE VALUE
+    {
+        validateExpressionType(this->switchResultType);
+
         break;
+    }
     case 44: // WHILE CONDITION
+    {
+        reduceExpressionAndGetType();
+
+        loopDepth++; // Entering a loop
+
         break;
+    }
     case 45: // DO WHILE CONDITION
+    {
+        reduceExpressionAndGetType();
+        loopDepth++; // Entering a loop
         break;
+    }
     case 46: // FOR ASSIGNMENT OR DECLARATION
+    {
+        loopDepth++;
         break;
+    }
     case 47: // FOR CONDITION
+    {
+        std::cout << "Stack size before FOR condition: " << symbolTable.expressionStack.size() << std::endl;
+
+        auto copy = symbolTable.expressionStack;
+        while (!copy.empty())
+        {
+            std::cout << "  Stack entry type: " << copy.top().entryType << std::endl;
+            copy.pop();
+        }
+
+        SemanticTable::Types condType = reduceExpressionAndGetType();
+        if (condType != SemanticTable::Types::BOOL && condType != SemanticTable::Types::INT)
+            throw SemanticError("Invalid FOR condition expression type.");
         break;
+    }
     case 48: // FOR INCREMENT
+    {
+        reduceExpressionAndGetType();
         break;
+    }
     case 49: // BREAK
+    {
+        if (loopDepth == 0 && switchDepth == 0)
+            throw SemanticError("BREAK used outside of a loop or switch.");
+
         break;
+    }
     case 50: // CONTINUE
+    {
+        if (loopDepth == 0)
+            throw SemanticError("CONTINUE used outside of a loop.");
         break;
+    }
     case 51: // ARRAY VALUE
     {
         if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
