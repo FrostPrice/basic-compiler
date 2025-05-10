@@ -34,8 +34,6 @@ private:
     int loopDepth = 0;                     // Loop depth for break and continue statements
     int switchDepth = 0;                   // Switch depth for break and continue statements
 
-    // bool isRawValue = false;                                                     // Flag to indicate if an expression is a value (eg. 1, 2.0, 'a', "string", true)
-
 public:
     vector<string> warnings; // Warnings generated during semantic analysis
     void reportWarning(const string &msg)
