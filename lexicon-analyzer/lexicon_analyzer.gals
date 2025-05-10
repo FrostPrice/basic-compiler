@@ -257,9 +257,9 @@ VAL_FALSE = ID : "false"
                  | IF "(" <expression> #41 ")" <block> ELSE <if_statement>;
 
 
-<switch_case> ::= SWITCH "(" <expression> ")" "{" <case_list> "}" | SWITCH "(" <expression> ")" "{" <case_list> <default_case> "}";
+<switch_case> ::= SWITCH "(" <expression> #42 ")" "{" #23 <case_list> "}" #24 | SWITCH "(" <expression> #42 ")" "{" #23 <case_list> <default_case> "}" #24;
 <case_list> ::= <case_item> <case_list> | <case_item>;
-<case_item> ::= CASE <expression> ":" <statement_list>;
+<case_item> ::= CASE <expression> #43 ":" <statement_list>;
 <default_case> ::= DEFAULT ":" <statement_list>;
 
 <return_statement> ::= RETURN <expression> #25 | RETURN #25;
