@@ -15,8 +15,10 @@ using namespace std;
 class Semantic
 {
 private:
-    SymbolTable::SymbolInfo *currentSymbol = nullptr;      // Current symbol being processed
-    SymbolTable::SymbolInfo *declarationSymbol = nullptr;  // Current symbol being processed
+    SymbolTable::SymbolInfo *currentSymbol = nullptr;     // Current symbol being processed
+    SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Current symbol being processed
+
+    stack<tuple<SymbolTable::SymbolInfo *, int>> symbolEvaluateStack; // Stack to manage symbols in expressions
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 

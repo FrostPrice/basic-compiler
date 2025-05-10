@@ -671,7 +671,54 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 54: // ARRAY ACCESS
     {
+        auto [symbol, arrayDepth] = this->symbolEvaluateStack.top();
+        if (arrayDepth < (int)symbol->arraySize.size())
+        {
+            if (this->symbolTable.expressionStack.size() == 1)
+            {
+                SymbolTable::ExpressionsEntry entry = this->symbolTable.expressionStack.top();
+                if (entry.entryType == SemanticTable::INT)
+                {
+                    int value = isNumber(entry.value, false) ? stoi(entry.value) : -1;
 
+                    if (value >= symbol->arraySize[arrayDepth] && symbol->arraySize[arrayDepth] != -1)
+                        throw SemanticError("Array size exceeded");
+
+                    this->symbolTable.expressionStack.pop();
+                }
+                else
+                {
+                    throw SemanticError(SemanticError::InvalidValueForArrayLength());
+                }
+            }
+            else
+            {
+                validateExpressionType(SemanticTable::INT);
+            }
+            get<1>(this->symbolEvaluateStack.top())++;
+        }
+        else
+        {
+            throw SemanticError("Array dimension exceeded");
+        }
+        break;
+    }
+    case 55: // ARRAY SYMBOL
+    {
+        SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+
+        if (matchedSymbol->symbolClassification != SymbolTable::ARRAY)
+        {
+            throw SemanticError(SemanticError::SymbolNotOfClassification(matchedSymbol->id));
+        }
+
+        this->symbolEvaluateStack.push(make_tuple(matchedSymbol, 0));
+        break;
+    }
+    case 56: // END ARRAY ACCESS
+    {
+        this->symbolEvaluateStack.pop();
         break;
     }
     default:
