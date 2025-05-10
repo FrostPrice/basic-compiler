@@ -149,7 +149,7 @@ void Semantic::executeAction(int action, const Token *token)
     case 7: // ARRAY ASSIGNMENT VALUE
     {
         this->arrayDepth = -1;
-        this->valueArraySizes.clear();
+
         for (int i = 0; i < this->arrayDeclarationSymbol->arraySize.size(); i++)
         {
             this->valueArraySizes.push_back(vector<int>());
