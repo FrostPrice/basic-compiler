@@ -117,6 +117,8 @@ void Semantic::executeAction(int action, const Token *token)
         this->arrayDeclarationSymbol->symbolClassification = SymbolTable::ARRAY;
 
         this->symbolTable.addSymbol(*this->arrayDeclarationSymbol);
+
+        this->valueArraySizes.clear();
         break;
     }
     case 6: // ARRAY SIZE DECLARATION
@@ -152,12 +154,12 @@ void Semantic::executeAction(int action, const Token *token)
         {
             this->valueArraySizes.push_back(vector<int>());
         }
-        break;
 
         while (!this->arrayLengthsStack.empty())
         {
             this->arrayLengthsStack.pop();
         }
+        break;
     }
     case 8:
     {
