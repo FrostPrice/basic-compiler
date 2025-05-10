@@ -488,10 +488,16 @@ void Semantic::executeAction(int action, const Token *token)
         SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
         validateIfVariableIsDeclared(matchedSymbol, lexeme);
-
         validateIsVariable(matchedSymbol);
-
         validateSymbolClassification(matchedSymbol, SymbolTable::VARIABLE);
+
+        this->symbolTable.pushType(matchedSymbol->dataType, matchedSymbol->id);
+
+        // Check if the expresion is valid
+        validateOneOfTypes({
+            SemanticTable::Types::CHAR,
+            SemanticTable::Types::STRING,
+        });
 
         this->currentSymbol->isInitialized = true;
 
@@ -499,7 +505,9 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 27: // OUTPUT
     {
-        validateOneOfTypes({SemanticTable::STRING, SemanticTable::CHAR});
+        validateOneOfTypes({SemanticTable::STRING, SemanticTable::CHAR,
+                            SemanticTable::INT, SemanticTable::FLOAT,
+                            SemanticTable::DOUBLE, SemanticTable::BOOL});
 
         break;
     }
