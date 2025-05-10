@@ -1,6 +1,8 @@
 #include "code_editor.hpp"
 #include <QPainter>
 #include <QTextBlock>
+#include <QTextCursor>
+#include <QShortcut>
 
 LineNumberArea::LineNumberArea(CodeEditor *editor)
     : QWidget(static_cast<QWidget *>(editor)), codeEditor(editor) {}
@@ -17,6 +19,11 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+
+    QShortcut *commentShortcut = new QShortcut(this);
+    commentShortcut->setKey(Qt::CTRL + Qt::Key_Slash);
+
+    connect(commentShortcut, &QShortcut::activated, this, &CodeEditor::toggleLineComment);
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -102,6 +109,56 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         bottom = top + static_cast<int>(blockBoundingRect(block).height());
         ++blockNumber;
     }
+}
+
+void CodeEditor::toggleLineComment()
+{
+    QTextCursor cursor = textCursor();
+    cursor.beginEditBlock();
+
+    QTextCursor startCursor = cursor;
+    startCursor.setPosition(cursor.selectionStart());
+    QTextBlock startBlock = startCursor.block();
+
+    QTextCursor endCursor = cursor;
+    endCursor.setPosition(cursor.selectionEnd());
+    QTextBlock endBlock = endCursor.block();
+
+    for (QTextBlock block = startBlock; block != endBlock.next(); block = block.next())
+    {
+        QString lineText = block.text();
+
+        if (lineText.isEmpty())
+            continue;
+
+        int position = block.position();
+        cursor.setPosition(position);
+
+        if (lineText.startsWith(" ") || lineText.startsWith("\t"))
+        {
+            cursor.movePosition(QTextCursor::NextWord);
+            position = cursor.position();
+            cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+            lineText = cursor.selectedText();
+        }
+
+        if (lineText.startsWith("//"))
+        {
+            lineText.remove(0, 2);
+            if (lineText.startsWith(" ") || lineText.startsWith("\t"))
+                lineText.remove(0, 1);
+        }
+        else
+        {
+            lineText.prepend("// ");
+        }
+
+        cursor.setPosition(position);
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+        cursor.insertText(lineText);
+    }
+
+    cursor.endEditBlock();
 }
 
 QSize LineNumberArea::sizeHint() const

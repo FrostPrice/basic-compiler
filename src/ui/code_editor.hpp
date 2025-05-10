@@ -29,6 +29,7 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void toggleLineComment();
 
 private slots:
     void updateLineNumberAreaWidth(int);
