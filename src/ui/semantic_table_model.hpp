@@ -31,6 +31,8 @@ private:
             return "char";
         case SemanticTable::STRING:
             return "string";
+        case SemanticTable::BOOL:
+            return "bool";
         default:
             return "unknown";
         }
