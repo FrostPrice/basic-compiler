@@ -2,7 +2,7 @@ int a, b[10], c;
 float x = 3.14;
 bool flag = true;
 
-void printSomething(int value) {
+void printSomething(string value) {
     print("Value: " + value);
 }
 
