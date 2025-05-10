@@ -69,23 +69,25 @@ void Semantic::executeAction(int action, const Token *token)
 
         if (alreadyDeclared != nullptr)
         {
-            validateDuplicateSymbolInSameScope(alreadyDeclared);
+            // Maybe there is a better way to validate a function call in a declaration
+            if (!alreadyDeclared->symbolClassification == SymbolTable::FUNCTION)
+                validateDuplicateSymbolInSameScope(alreadyDeclared);
         }
 
         this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
-        this->currentSymbol = this->symbolTable.addSymbol(*this->currentSymbol);
+        this->arrayDeclarationSymbol = this->currentSymbol;
+        this->symbolTable.addSymbol(*this->currentSymbol);
 
         break;
     }
     case 4:
     { // ASSIGNMENT VALUE
         SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->currentSymbol->id);
+            symbolTable.getSymbol(this->arrayDeclarationSymbol->id);
 
-        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+        validateIfVariableIsDeclared(matchedSymbol, this->arrayDeclarationSymbol->id);
         validateExpressionType(matchedSymbol->dataType);
         matchedSymbol->isInitialized = true;
-        matchedSymbol->symbolClassification = SymbolTable::VARIABLE;
 
         break;
     }
@@ -171,6 +173,7 @@ void Semantic::executeAction(int action, const Token *token)
             validateDuplicateSymbolInSameScope(alreadyDeclared);
         }
 
+        this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
         this->arrayDeclarationSymbol = this->currentSymbol;
 
         break;
@@ -497,7 +500,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         // Check if is inside a function
         SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getFunctionInScope();
-        if (functionSymbol != nullptr)
+        if (functionSymbol != nullptr && this->symbolTable.getCurrentScope() != 0)
         {
             throw SemanticError("Function cannot be declared inside another function");
         }
@@ -511,7 +514,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 29: // FUNCTION CALL
     {
-        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getFunctionInScope();
+        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
         if (functionSymbol == nullptr)
         {
@@ -519,6 +522,7 @@ void Semantic::executeAction(int action, const Token *token)
         }
 
         validateFunctionParamCount(functionSymbol);
+        this->symbolTable.pushType(functionSymbol->dataType, functionSymbol->id);
 
         break;
     }
