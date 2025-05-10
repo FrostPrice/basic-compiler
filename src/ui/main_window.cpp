@@ -66,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     tableView = new QTableView(this);
     tableModel = new SemanticTableModel(this);
     tableView->setModel(tableModel);
+    tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tableView->verticalHeader()->setStyleSheet(R"(
         QHeaderView::section {
             color: #75715E;
