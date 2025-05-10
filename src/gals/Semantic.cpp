@@ -96,6 +96,13 @@ void Semantic::executeAction(int action, const Token *token)
             for (int i = 0; i < this->arrayDeclarationSymbol->arraySize.size(); i++)
             {
                 int symbolArraySize = this->arrayDeclarationSymbol->arraySize[i];
+                if (this->valueArraySizes[i].size() == 0)
+                {
+                    throw SemanticError(to_string(this->arrayDeclarationSymbol->arraySize.size()) +
+                                        " dimensions expected for array value, but got " +
+                                        to_string(i));
+                }
+
                 for (int arraySize : this->valueArraySizes[i])
                 {
                     if (symbolArraySize != arraySize && symbolArraySize != -1)
