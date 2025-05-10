@@ -22,7 +22,7 @@ private:
 
     ExpressionController expressionController; // Expression object to manage expressions
 
-    stack<tuple<SymbolTable::SymbolInfo *, int>> symbolEvaluateStack; // Stack to manage symbols in expressions
+    stack<tuple<SymbolTable::SymbolInfo *, int, ExpressionController>> symbolEvaluateStack; // Stack to manage symbols in expressions
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
