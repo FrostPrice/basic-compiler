@@ -13,6 +13,7 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QScrollBar>
+#include <QShortcut>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -149,6 +150,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     widget->setStyleSheet("background-color: #1E1E1E;");
 
     connect(compileButton, &QPushButton::clicked, this, &MainWindow::compileCode);
+
+    QShortcut *compileShortcut = new QShortcut(this);
+    compileShortcut->setKey(Qt::CTRL + Qt::Key_Return);
+
+    connect(compileShortcut, &QShortcut::activated, this, &MainWindow::compileCode);
 }
 
 void MainWindow::compileCode()
