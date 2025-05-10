@@ -33,6 +33,8 @@ private:
             return "string";
         case SemanticTable::BOOL:
             return "bool";
+        case SemanticTable::Types::__NULL:
+            return "void";
         default:
             return "unknown";
         }

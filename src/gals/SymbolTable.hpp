@@ -156,11 +156,12 @@ public:
         return symbolTable;
     }
 
-    SymbolInfo *getFunctionSymbol(string id)
+    SymbolInfo *getEnclosingFunction(int scope)
     {
         for (SymbolInfo &symbol : symbolTable)
         {
-            if (symbol.id == id && symbol.symbolClassification == FUNCTION)
+            // Will get the function that is enclosing the current scope
+            if (symbol.symbolClassification == FUNCTION && scope > symbol.scope)
             {
                 return &symbol; // Return the symbol if found in the current scope
             }
@@ -175,7 +176,6 @@ public:
             SymbolInfo &symbol = *it;
             if (symbol.symbolClassification == FUNCTION && isInValidScope(symbol.scope))
             {
-                cout << "Found function: " << symbol.id << " in scope: " << symbol.scope << endl;
                 return &symbol; // Return the symbol if found in the current scope
             }
         }
