@@ -458,13 +458,28 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 25: // RETURN
     {
-        // SymbolTable::SymbolInfo *currentScopeSymbol = this->symbolTable.getFunctionScope();
+        SymbolTable::SymbolInfo *enclosingFunction = this->symbolTable.getEnclosingFunction(this->symbolTable.getCurrentScope());
 
-        // validateReturnStatementScope(currentScopeSymbol);
+        validateIfVariableIsDeclared(enclosingFunction, lexeme);
 
-        // SemanticTable::Types expectedReturnType = currentScopeSymbol->dataType;
+        validateReturnStatementScope(enclosingFunction);
 
-        // validateExpressionType(expectedReturnType);
+        // If the function is void, we don't need to check the return type
+        if (enclosingFunction->dataType == SemanticTable::Types::__NULL && lexeme == "return")
+        {
+            break;
+        }
+
+        if (this->symbolTable.expressionStack.empty())
+        {
+            throw SemanticError(SemanticError::TypeMismatch(
+                enclosingFunction->dataType,
+                SemanticTable::Types::__NULL));
+        }
+
+        SemanticTable ::Types expectedReturnType = enclosingFunction->dataType;
+
+        validateExpressionType(expectedReturnType);
 
         break;
     }
