@@ -61,7 +61,8 @@ private:
         QString result;
         for (int size : arraySize)
         {
-            result += "[" + QString::number(size) + "]";
+            QString strSize = size == -1 ? "exp" : QString::number(size);
+            result += "[" + strSize + "]";
         }
         return result;
     }
