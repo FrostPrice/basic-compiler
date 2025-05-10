@@ -75,7 +75,7 @@ void Semantic::executeAction(int action, const Token *token)
         }
 
         this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
-        this->arrayDeclarationSymbol = this->currentSymbol;
+        this->declarationSymbol = this->currentSymbol;
         this->symbolTable.addSymbol(*this->currentSymbol);
 
         break;
@@ -83,9 +83,9 @@ void Semantic::executeAction(int action, const Token *token)
     case 4:
     { // ASSIGNMENT VALUE
         SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->arrayDeclarationSymbol->id);
+            symbolTable.getSymbol(this->declarationSymbol->id);
 
-        validateIfVariableIsDeclared(matchedSymbol, this->arrayDeclarationSymbol->id);
+        validateIfVariableIsDeclared(matchedSymbol, this->declarationSymbol->id);
         validateExpressionType(matchedSymbol->dataType);
         matchedSymbol->isInitialized = true;
 
@@ -95,12 +95,12 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if (this->valueArraySizes.size())
         {
-            for (int i = 0; i < this->arrayDeclarationSymbol->arraySize.size(); i++)
+            for (int i = 0; i < this->declarationSymbol->arraySize.size(); i++)
             {
-                int symbolArraySize = this->arrayDeclarationSymbol->arraySize[i];
+                int symbolArraySize = this->declarationSymbol->arraySize[i];
                 if (this->valueArraySizes[i].size() == 0)
                 {
-                    throw SemanticError(to_string(this->arrayDeclarationSymbol->arraySize.size()) +
+                    throw SemanticError(to_string(this->declarationSymbol->arraySize.size()) +
                                         " dimensions expected for array value, but got " +
                                         to_string(i));
                 }
@@ -115,10 +115,10 @@ void Semantic::executeAction(int action, const Token *token)
             }
         }
 
-        this->arrayDeclarationSymbol->isInitialized = true;
-        this->arrayDeclarationSymbol->symbolClassification = SymbolTable::ARRAY;
+        this->declarationSymbol->isInitialized = true;
+        this->declarationSymbol->symbolClassification = SymbolTable::ARRAY;
 
-        this->symbolTable.addSymbol(*this->arrayDeclarationSymbol);
+        this->symbolTable.addSymbol(*this->declarationSymbol);
 
         this->valueArraySizes.clear();
         break;
@@ -132,7 +132,7 @@ void Semantic::executeAction(int action, const Token *token)
             {
                 int value = isNumber(entry.value, false) ? stoi(entry.value) : -1;
 
-                this->arrayDeclarationSymbol->arraySize.push_back(value);
+                this->declarationSymbol->arraySize.push_back(value);
                 this->symbolTable.expressionStack.pop();
             }
             else
@@ -143,7 +143,7 @@ void Semantic::executeAction(int action, const Token *token)
         else
         {
             validateExpressionType(SemanticTable::INT);
-            this->arrayDeclarationSymbol->arraySize.push_back(-1);
+            this->declarationSymbol->arraySize.push_back(-1);
         }
 
         break;
@@ -152,7 +152,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth = -1;
 
-        for (int i = 0; i < this->arrayDeclarationSymbol->arraySize.size(); i++)
+        for (int i = 0; i < this->declarationSymbol->arraySize.size(); i++)
         {
             this->valueArraySizes.push_back(vector<int>());
         }
@@ -174,7 +174,7 @@ void Semantic::executeAction(int action, const Token *token)
         }
 
         this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
-        this->arrayDeclarationSymbol = this->currentSymbol;
+        this->declarationSymbol = this->currentSymbol;
 
         break;
     }
@@ -632,7 +632,7 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     case 51: // ARRAY VALUE
     {
-        if (this->arrayDepth == this->arrayDeclarationSymbol->arraySize.size() - 1)
+        if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
             validateExpressionType(this->pendingType);
         this->arrayLengthsStack.top()++;
         break;
@@ -641,7 +641,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth++;
 
-        if (this->arrayDepth >= this->arrayDeclarationSymbol->arraySize.size())
+        if (this->arrayDepth >= this->declarationSymbol->arraySize.size())
         {
             throw SemanticError("Array length exceeded");
         }
@@ -651,7 +651,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 53: // ARRAY DEPTH OUT
     {
-        int arraySize = this->arrayDeclarationSymbol->arraySize[this->arrayDepth];
+        int arraySize = this->declarationSymbol->arraySize[this->arrayDepth];
         if (this->arrayLengthsStack.top() > arraySize && arraySize != -1)
             throw SemanticError("Array length exceeded");
 
@@ -663,28 +663,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 54: // ARRAY ACCESS
     {
-        // Push array size dimension
-        // this->currentArrayDimension++;
-        // SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->pendingId);
-        // if (isNumber(lexeme, false))
-        // {
-        //     int value = stoi(lexeme);
 
-        //     this->validateExistingSymbol(symbol);
-        //     this->validateSymbolClassification(symbol, SymbolTable::ARRAY);
-
-        //     int dimensions = symbol->arraySize.size();
-        //     if (this->currentArrayDimension >= dimensions || value >= symbol->arraySize[this->currentArrayDimension])
-        //     {
-        //         throw SemanticError("Array index out of bounds");
-        //     }
-        // }
-        // else if (!this->validateExpressionType(SemanticTable::INT))
-        // {
-        //     throw SemanticError("Invalid array index");
-        // }
-
-        // symbol->isUsed = true;
         break;
     }
     default:

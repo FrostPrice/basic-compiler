@@ -15,8 +15,8 @@ using namespace std;
 class Semantic
 {
 private:
-    SymbolTable::SymbolInfo *currentSymbol = nullptr;          // Current symbol being processed
-    SymbolTable::SymbolInfo *arrayDeclarationSymbol = nullptr; // Current symbol being processed
+    SymbolTable::SymbolInfo *currentSymbol = nullptr;      // Current symbol being processed
+    SymbolTable::SymbolInfo *declarationSymbol = nullptr;  // Current symbol being processed
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
