@@ -57,6 +57,8 @@ Action Number, Description
 #52, ARRAY DEPTH IN, (Array depth in)
 #53, ARRAY DEPTH OUT, (Array depth out)
 #54, ARRAY ACCESS, (Expression to get array value)
+#55, ARRAY SYMBOL, (Array symbol)
+#56, END ARRAY ACCESS, (Remove symbol)
 
 <dec_assign> ::= ID #1 ASSIGNMENT #11 <expression> #4 | ID #1 <array_access> ASSIGNMENT #11 <array_value> #5 | ID #1 <array_access> | ID #1;
 <array_dec> ::= "[" <expression> #9 "]" #8 <array_access> | "[" <expression> #9 "]" #8;
