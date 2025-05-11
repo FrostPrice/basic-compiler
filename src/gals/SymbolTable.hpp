@@ -33,6 +33,7 @@ public:
         bool isUsed = false;        // true if the variable is used
         vector<int> arraySize;      // Array size of each dimension
         int functionParams = -1;    // Number of parameters in the function
+        string functionId;          // ID of the function
 
         SymbolInfo() {}
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
@@ -146,6 +147,21 @@ public:
         }
         return nullptr; // Symbol not found
     };
+
+    vector<SymbolInfo *> getFunctionParams(int scope)
+    {
+        vector<SymbolInfo *> params;
+
+        for (auto it = symbolTable.rbegin(); it != symbolTable.rend(); ++it)
+        {
+            SymbolInfo &symbol = *it;
+            if (symbol.symbolClassification == PARAM && symbol.scope == scope)
+            {
+                params.push_back(&symbol);
+            }
+        }
+        return params;
+    }
 
     // * Used only for debugging
     void printTable()
