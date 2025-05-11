@@ -532,16 +532,8 @@ void Semantic::executeAction(int action, const Token *token)
     // * 21-30: Functions, blocks, I/O *
     case 21: // FUNCTION_DEF_PARAMETER
     {
-        int newScope = this->symbolTable.getCurrentScope() + 1; // Predict the next scope
+        int newScope = this->symbolTable.getNextScope(); // Predict the next scope
         this->currentSymbol->scope = newScope;
-
-        SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbolInScope(this->currentSymbol->id, newScope);
-
-        if (matchedSymbol != nullptr)
-        {
-            validateDuplicateSymbolInSameScope(matchedSymbol);
-        }
 
         // Validation that a function already exists is made in the sintactic
         // You cannot have a parameter without a function
@@ -551,7 +543,10 @@ void Semantic::executeAction(int action, const Token *token)
         this->currentSymbol->symbolClassification = SymbolTable::PARAM;
         this->currentSymbol->functionId = functionSymbol->id;
         this->currentSymbol->isInitialized = true;
+        this->currentSymbol->arraySize = this->functionArraySizes;
         this->symbolTable.addSymbol(*this->currentSymbol);
+
+        this->functionArraySizes.clear();
 
         break;
     }

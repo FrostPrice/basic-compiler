@@ -58,6 +58,11 @@ public:
         return scopeStack.top();
     };
 
+    int getNextScope()
+    {
+        return this->currentScope + 1;
+    };
+
     // Scope
     int enterScope()
     {
