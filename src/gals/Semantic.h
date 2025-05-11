@@ -224,13 +224,14 @@ public:
 
     void validateOneOfTypes(std::initializer_list<SemanticTable::Types> types)
     {
-        if (expressionController.expressionStack.empty())
+        stack<ExpressionController::ExpressionsEntry> expressionStack = symbolEvaluateStack.empty()
+                                                                            ? expressionController.expressionStack
+                                                                            : get<2>(symbolEvaluateStack.top()).expressionStack;
+
+        if (expressionStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
 
-        // Make a copy of the expression stack
-        std::stack<ExpressionController::ExpressionsEntry> copyStack = expressionController.expressionStack;
-
-        ExpressionController::ExpressionsEntry top = copyStack.top();
+        ExpressionController::ExpressionsEntry top = expressionStack.top();
 
         for (SemanticTable::Types t : types)
         {

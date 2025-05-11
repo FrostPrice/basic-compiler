@@ -683,6 +683,13 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->parametersCountInFuncCall = 0;
 
+        SymbolTable::SymbolInfo *symbol = get<0>(this->symbolEvaluateStack.top());
+        this->symbolEvaluateStack.pop();
+
+        this->symbolEvaluateStack.empty()
+            ? this->expressionController.pushType(symbol->dataType, symbol->id)
+            : get<2>(this->symbolEvaluateStack.top()).pushType(symbol->dataType, symbol->id);
+
         break;
     }
     case 30: // FUNCTION_DEF_ARRAY
@@ -775,6 +782,8 @@ void Semantic::executeAction(int action, const Token *token)
 
         symbol->isUsed = true;
         this->functionSymbol = symbol;
+
+        this->symbolEvaluateStack.push(make_tuple(this->functionSymbol, 0, ExpressionController()));
 
         break;
     }
@@ -957,8 +966,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 61: // VALIDATE EXPRESSION
     {
-        if (this->expressionController.expressionStack.size() > 1)
-            this->reduceExpressionAndGetType();
+        this->reduceExpressionAndGetType();
         break;
     }
     default:
