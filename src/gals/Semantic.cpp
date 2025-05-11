@@ -754,8 +754,9 @@ void Semantic::executeAction(int action, const Token *token)
         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->currentSymbol->id);
         if (symbol == nullptr)
             throw SemanticError(SemanticError::SymbolUndeclared(this->currentSymbol->id));
+        // ! Nao podemos restringir o uso de variaveis nao inicializadas, apenas jogar o warning
         else if (!symbol->isInitialized)
-            throw SemanticError(SemanticError::SymbolNotInitialized(this->currentSymbol->id));
+            Semantic::warnings.push_back("Warning: Symbol '" + symbol->id + "' was not initialized but was used.");
         else if (symbol->symbolClassification == SymbolTable::FUNCTION)
             throw SemanticError(SemanticError::FunctionNotCalled(this->currentSymbol->id));
 
