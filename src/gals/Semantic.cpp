@@ -857,15 +857,6 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 47: // FOR CONDITION
     {
-        std::cout << "Stack size before FOR condition: " << expressionController.expressionStack.size() << std::endl;
-
-        auto copy = expressionController.expressionStack;
-        while (!copy.empty())
-        {
-            std::cout << "  Stack entry type: " << copy.top().entryType << std::endl;
-            copy.pop();
-        }
-
         SemanticTable::Types condType = reduceExpressionAndGetType();
         if (condType != SemanticTable::Types::BOOL && condType != SemanticTable::Types::INT)
             throw SemanticError("Invalid FOR condition expression type.");
@@ -875,8 +866,6 @@ void Semantic::executeAction(int action, const Token *token)
     {
         SymbolTable::SymbolInfo *sym = symbolTable.getSymbol(currentSymbol->id);
         validateIfVariableIsDeclared(sym, currentSymbol->id);
-        expressionController.pushType(sym->dataType, currentSymbol->id);
-        expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
         reduceExpressionAndGetType();
         break;
     }
