@@ -588,31 +588,39 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 25: // RETURN
     {
-        // 1) Locate the function symbol
-        auto *funcSym = symbolTable.getSymbol(this->currentSymbol->id);
-        if (!funcSym)
+        SymbolTable::SymbolInfo *functionSymbol = symbolTable.getFunctionInScope();
+        if (!functionSymbol)
             throw SemanticError("Function not found in scope");
 
-        // 2) Validate we saw N parameters
-        validateFunctionParamCount(funcSym);
-
-        // 3) Reduce the argument expression(s) (consumes the stack)
-        reduceExpressionAndGetType(funcSym->dataType, /*validate=*/true);
-
-        // 4) Push the return value as a raw VALUE
-        if (symbolEvaluateStack.empty())
+        if (functionSymbol->dataType == SemanticTable::Types::__NULL)
         {
-            expressionController.pushType(
-                funcSym->dataType,
-                this->currentSymbol->id);
+            if (lexeme != "return")
+                throw SemanticError("Function " + functionSymbol->id + " has no return type");
+            break;
         }
+
+        if (!functionSymbol->arraySize.empty())
+        {
+            if (this->expressionController.expressionStack.size() == 1)
+            {
+                SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(lexeme);
+
+                if (!matchedSymbol)
+                    throw SemanticError(SemanticError::SymbolUndeclared(lexeme));
+                else if (matchedSymbol->arraySize.size() != functionSymbol->arraySize.size() || matchedSymbol->dataType != functionSymbol->dataType)
+                    throw SemanticError("Invalid array for return of function " + functionSymbol->id);
+
+                expressionController.expressionStack.pop();
+                break;
+            }
+            throw SemanticError("Invalid return type for function " + functionSymbol->id);
+        }
+
+        if (this->expressionController.expressionStack.empty())
+            throw SemanticError("Invalid return type for function " + functionSymbol->id);
         else
-        {
-            get<2>(symbolEvaluateStack.top()).pushType(funcSym->dataType, this->currentSymbol->id);
-        }
+            reduceExpressionAndGetType(functionSymbol->dataType, true);
 
-        // 5) Reset the parameter counter
-        this->parametersCountInFuncCall = 0;
         break;
     }
     case 26: // INPUT
