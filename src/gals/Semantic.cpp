@@ -586,19 +586,19 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 25: // RETURN
     {
-        SymbolTable::SymbolInfo *functionSymbol = symbolTable.getEnclosingFunction(this->symbolTable.getCurrentScope());
-        functionSymbol->hasReturn = true;
-        if (!functionSymbol)
+        this->functionSymbol = symbolTable.getEnclosingFunction(this->symbolTable.getCurrentScope());
+        this->functionSymbol->hasReturn = true;
+        if (!this->functionSymbol)
             throw SemanticError("Function not found in scope");
 
-        if (functionSymbol->dataType == SemanticTable::Types::__NULL)
+        if (this->functionSymbol->dataType == SemanticTable::Types::__NULL)
         {
             if (lexeme != "return")
-                throw SemanticError("Function " + functionSymbol->id + " has no return type");
+                throw SemanticError("Function " + this->functionSymbol->id + " has no return type");
             break;
         }
 
-        if (!functionSymbol->arraySize.empty())
+        if (!this->functionSymbol->arraySize.empty())
         {
             if (this->expressionController.expressionStack.size() == 1)
             {
@@ -606,19 +606,19 @@ void Semantic::executeAction(int action, const Token *token)
 
                 if (!matchedSymbol)
                     throw SemanticError(SemanticError::SymbolUndeclared(lexeme));
-                else if (matchedSymbol->arraySize.size() != functionSymbol->arraySize.size() || matchedSymbol->dataType != functionSymbol->dataType)
-                    throw SemanticError("Invalid array for return of function " + functionSymbol->id);
+                else if (matchedSymbol->arraySize.size() != this->functionSymbol->arraySize.size() || matchedSymbol->dataType != this->functionSymbol->dataType)
+                    throw SemanticError("Invalid array for return of function " + this->functionSymbol->id);
 
                 expressionController.expressionStack.pop();
                 break;
             }
-            throw SemanticError("Invalid return type for function " + functionSymbol->id);
+            throw SemanticError("Invalid return type for function " + this->functionSymbol->id);
         }
 
         if (this->expressionController.expressionStack.empty())
-            throw SemanticError("Invalid return type for function " + functionSymbol->id);
+            throw SemanticError("Invalid return type for function " + this->functionSymbol->id);
         else
-            reduceExpressionAndGetType(functionSymbol->dataType, true);
+            reduceExpressionAndGetType(this->functionSymbol->dataType, true);
 
         break;
     }

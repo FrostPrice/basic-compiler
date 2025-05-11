@@ -130,9 +130,10 @@ public:
 
     SymbolInfo *getEnclosingFunction(int scope)
     {
-        for (SymbolInfo &symbol : symbolTable)
+        for (auto it = symbolTable.rbegin(); it != symbolTable.rend(); ++it)
         {
             // Will get the function that is enclosing the current scope
+            SymbolInfo &symbol = *it;
             if (symbol.symbolClassification == FUNCTION && scope > symbol.scope)
             {
                 return &symbol; // Return the symbol if found in the current scope
