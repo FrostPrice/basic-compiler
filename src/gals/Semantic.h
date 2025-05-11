@@ -5,6 +5,7 @@
 #include <vector>
 #include <stack>
 #include <optional>
+#include <algorithm>
 
 #include "ExpressionController.hpp"
 #include "Token.h"
@@ -59,185 +60,101 @@ public:
     void executeAction(int action, const Token *token);
 
     // Validation methods
-    void validateExpressionType(SemanticTable::Types expectedType)
-    {
-        ExpressionController::ExpressionsEntry currentValue = this->expressionController.expressionStack.top();
-        this->expressionController.expressionStack.pop();
-
-        int compat = SemanticTable::atribType(expectedType, currentValue.entryType);
-        if (compat == SemanticTable::ERR)
-        {
-            throw SemanticError(SemanticError::TypeMismatch(expectedType, currentValue.entryType));
-        }
-
-        if (compat == SemanticTable::WAR)
-        {
-            this->reportWarning("Warning: possible data loss when assigning value of type " +
-                                to_string(currentValue.entryType) +
-                                " to variable of type " +
-                                to_string(expectedType));
-        }
-    }
-    SemanticTable::Types validateGeneralExpression(SemanticTable::Types expectedType)
-    {
-        if (expressionController.expressionStack.empty())
-            throw SemanticError(SemanticError::ExpressionStackEmpty());
-
-        size_t stackSize = expressionController.expressionStack.size();
-
-        SemanticTable::Types resultType = SemanticTable::Types::__NULL;
-
-        if (stackSize >= 3) // Try binary: operand1, op, operand2
-        {
-            ExpressionController::ExpressionsEntry right = expressionController.expressionStack.top();
-            expressionController.expressionStack.pop();
-
-            ExpressionController::ExpressionsEntry operation = expressionController.expressionStack.top();
-            expressionController.expressionStack.pop();
-
-            ExpressionController::ExpressionsEntry left = expressionController.expressionStack.top();
-            expressionController.expressionStack.pop();
-
-            if (left.entryType == SemanticTable::Types::__NULL || right.entryType == SemanticTable::Types::__NULL)
-            {
-                throw SemanticError("Invalid binary operation between types " +
-                                    std::to_string(left.entryType) + " and " +
-                                    std::to_string(right.entryType) + " using op " +
-                                    std::to_string(operation.binaryOperation));
-            }
-
-            int result = SemanticTable::resultBinaryType(left.entryType, right.entryType, operation.binaryOperation);
-
-            if (result == SemanticTable::ERR)
-            {
-                throw SemanticError("Invalid binary operation between types " +
-                                    std::to_string(left.entryType) + " and " +
-                                    std::to_string(right.entryType) + " using op " +
-                                    std::to_string(operation.binaryOperation));
-            }
-
-            resultType = static_cast<SemanticTable::Types>(result);
-        }
-        else if (stackSize >= 2) // Try unary: op, operand
-        {
-            ExpressionController::ExpressionsEntry operand = expressionController.expressionStack.top();
-            expressionController.expressionStack.pop();
-
-            ExpressionController::ExpressionsEntry operation = expressionController.expressionStack.top();
-            expressionController.expressionStack.pop();
-
-            int result = SemanticTable::unaryResultType(operand.entryType, operation.unaryOperation);
-
-            if (result == SemanticTable::ERR)
-            {
-                throw SemanticError("Invalid unary operation on type " +
-                                    std::to_string(operand.entryType) +
-                                    " with operation " + std::to_string(operation.unaryOperation));
-            }
-
-            resultType = static_cast<SemanticTable::Types>(result);
-        }
-        else
-        {
-            throw SemanticError("Insufficient elements in expression stack for unary or binary expression.");
-        }
-
-        // Validate result type against expected
-        int compat = SemanticTable::atribType(expectedType, resultType);
-
-        if (compat == SemanticTable::ERR)
-        {
-            throw SemanticError(SemanticError::TypeMismatch(expectedType, resultType));
-        }
-
-        if (compat == SemanticTable::WAR)
-        {
-            this->reportWarning("Warning: possible data loss when assigning value of type " +
-                                std::to_string(resultType) +
-                                " to expected type " +
-                                std::to_string(expectedType));
-        }
-
-        return resultType;
-    }
     SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false)
     {
-        stack<ExpressionController::ExpressionsEntry> copyStack = expressionController.expressionStack;
-        if (!this->symbolEvaluateStack.empty())
-            copyStack = get<2>(this->symbolEvaluateStack.top()).expressionStack;
+        auto *orig = symbolEvaluateStack.empty()
+                         ? &expressionController.expressionStack
+                         : &get<2>(symbolEvaluateStack.top()).expressionStack;
 
-        if (copyStack.empty())
+        if (orig->empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
 
-        std::stack<ExpressionController::ExpressionsEntry> reverseStack;
-
-        while (!copyStack.empty())
+        vector<ExpressionController::ExpressionsEntry> tokens;
+        tokens.reserve(orig->size());
+        while (!orig->empty())
         {
-            reverseStack.push(copyStack.top());
-            copyStack.pop();
+            tokens.push_back(move(orig->top()));
+            orig->pop();
         }
+        reverse(tokens.begin(), tokens.end());
 
-        ExpressionController::ExpressionsEntry result;
-
-        while (reverseStack.size() >= 3)
+        vector<ExpressionController::ExpressionsEntry> rpn;
+        stack<ExpressionController::ExpressionsEntry> opStack;
+        for (auto &t : tokens)
         {
-            ExpressionController::ExpressionsEntry right = reverseStack.top();
-            reverseStack.pop();
-            ExpressionController::ExpressionsEntry op = reverseStack.top();
-            reverseStack.pop();
-            ExpressionController::ExpressionsEntry left = reverseStack.top();
-            reverseStack.pop();
-
-            int typeResult = SemanticTable::resultBinaryType(left.entryType, right.entryType, op.binaryOperation);
-            if (typeResult == SemanticTable::ERR)
+            if (t.kind == ExpressionController::ExpressionsEntry::VALUE)
             {
-                throw SemanticError("Invalid binary operation between types " +
-                                    std::to_string(left.entryType) + " and " +
-                                    std::to_string(right.entryType) + " using op " +
-                                    std::to_string(op.binaryOperation));
+                rpn.push_back(t);
             }
-
-            result.entryType = static_cast<SemanticTable::Types>(typeResult);
-            reverseStack.push(result);
-        }
-
-        if (reverseStack.size() == 2)
-        {
-            ExpressionController::ExpressionsEntry operand = reverseStack.top();
-            reverseStack.pop();
-            ExpressionController::ExpressionsEntry op = reverseStack.top();
-            reverseStack.pop();
-
-            int typeResult = SemanticTable::unaryResultType(operand.entryType, op.unaryOperation);
-            if (typeResult == SemanticTable::ERR)
+            else
             {
-                throw SemanticError("Invalid unary operation on type " +
-                                    std::to_string(operand.entryType) + " with op " +
-                                    std::to_string(op.unaryOperation));
+                while (!opStack.empty() &&
+                       opStack.top().kind != ExpressionController::ExpressionsEntry::VALUE)
+                {
+                    rpn.push_back(opStack.top());
+                    opStack.pop();
+                }
+                opStack.push(t);
             }
-
-            result.entryType = static_cast<SemanticTable::Types>(typeResult);
         }
-        else if (reverseStack.size() == 1)
+        while (!opStack.empty())
         {
-            result = reverseStack.top();
-            reverseStack.pop();
-        }
-        else
-        {
-            throw SemanticError("Malformed expression or unsupported expression format.");
+            rpn.push_back(opStack.top());
+            opStack.pop();
         }
 
+        stack<ExpressionController::ExpressionsEntry> eval;
+        for (auto &tok : rpn)
+        {
+            if (tok.kind == ExpressionController::ExpressionsEntry::VALUE)
+            {
+                eval.push(tok);
+            }
+            else if (tok.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
+            {
+                if (eval.empty())
+                    throw SemanticError("Not enough operands for unary operator");
+                auto opnd = eval.top();
+                eval.pop();
+                int rt = SemanticTable::unaryResultType(opnd.entryType, tok.unaryOperation);
+                if (rt == SemanticTable::ERR)
+                    throw SemanticError("Invalid unary op on type " + to_string(opnd.entryType));
+                ExpressionController::ExpressionsEntry out;
+                out.kind = ExpressionController::ExpressionsEntry::VALUE;
+                out.entryType = static_cast<SemanticTable::Types>(rt);
+                eval.push(out);
+            }
+            else
+            { // BINARY_OP
+                if (eval.size() < 2)
+                    throw SemanticError("Not enough operands for binary operator");
+                auto r = eval.top();
+                eval.pop();
+                auto l = eval.top();
+                eval.pop();
+                int rt = SemanticTable::resultBinaryType(l.entryType, r.entryType, tok.binaryOperation);
+                if (rt == SemanticTable::ERR)
+                    throw SemanticError("Invalid binary op between types " + to_string(l.entryType) + " and " + to_string(r.entryType));
+                ExpressionController::ExpressionsEntry out;
+                out.kind = ExpressionController::ExpressionsEntry::VALUE;
+                out.entryType = static_cast<SemanticTable::Types>(rt);
+                eval.push(out);
+            }
+        }
+
+        // Must end with exactly one
+        if (eval.size() != 1)
+            throw SemanticError("Malformed expression or unsupported expression format");
+        auto result = eval.top();
+
+        // Optional validation
         if (validate)
         {
-            int compat = SemanticTable::atribType(expectedType, result.entryType);
-            if (compat == SemanticTable::ERR)
+            int comp = SemanticTable::atribType(expectedType, result.entryType);
+            if (comp == SemanticTable::ERR)
                 throw SemanticError(SemanticError::TypeMismatch(expectedType, result.entryType));
-
-            if (compat == SemanticTable::WAR)
-                this->reportWarning("Warning: possible data loss converting " +
-                                    std::to_string(result.entryType) +
-                                    " to " + std::to_string(expectedType));
+            if (comp == SemanticTable::WAR)
+                reportWarning("Warning: possible data loss converting " + to_string(result.entryType) + " to " + to_string(expectedType));
         }
 
         return result.entryType;
