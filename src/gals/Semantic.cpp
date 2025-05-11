@@ -584,12 +584,22 @@ void Semantic::executeAction(int action, const Token *token)
     case 24: // BLOCK_END
     {
         this->symbolTable.exitScope();
-
+        if (this->functionSymbol != nullptr)
+        {
+            SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->functionSymbol->id);
+            if (symbol->scope == this->symbolTable.getCurrentScope())
+            {
+                if (!symbol->hasReturn)
+                    throw SemanticError("Function " + symbol->id + " has no return statement");
+                this->functionSymbol = nullptr;
+            }
+        }
         break;
     }
     case 25: // RETURN
     {
-        SymbolTable::SymbolInfo *functionSymbol = symbolTable.getFunctionInScope();
+        SymbolTable::SymbolInfo *functionSymbol = symbolTable.getEnclosingFunction(this->symbolTable.getCurrentScope());
+        functionSymbol->hasReturn = true;
         if (!functionSymbol)
             throw SemanticError("Function not found in scope");
 
@@ -671,11 +681,16 @@ void Semantic::executeAction(int action, const Token *token)
             throw SemanticError("Function cannot be declared inside another function");
         }
 
+        if (this->currentSymbol->dataType == SemanticTable::Types::__NULL)
+            this->currentSymbol->hasReturn = true;
+
         this->currentSymbol->symbolClassification = SymbolTable::FUNCTION;
         this->currentSymbol->isInitialized = true;
         this->currentSymbol->functionParams = 0; // Starts with 0 parameters
         this->currentSymbol->arraySize = this->functionArraySizes;
         this->symbolTable.addSymbol(*this->currentSymbol);
+
+        this->functionSymbol = this->currentSymbol;
 
         this->functionArraySizes.clear();
 

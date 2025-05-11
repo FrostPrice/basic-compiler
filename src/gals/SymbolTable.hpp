@@ -34,6 +34,7 @@ public:
         vector<int> arraySize;      // Array size of each dimension
         int functionParams = -1;    // Number of parameters in the function
         string functionId;          // ID of the function
+        bool hasReturn = false;     // true if the function has a return statement
 
         SymbolInfo() {}
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
