@@ -134,16 +134,6 @@ public:
             }
         }
 
-        // Debugging: Print the expression stack
-        cout << "Expression Stack:" << endl;
-        stack<ExpressionController::ExpressionsEntry> tempStack = eval;
-        while (!tempStack.empty())
-        {
-            auto entry = tempStack.top();
-            tempStack.pop();
-            cout << "Kind: " << entry.kind << ", Type: " << entry.entryType << ", Value: " << entry.value << endl;
-        }
-
         // Must end with exactly one
         if (eval.size() != 1)
             throw SemanticError("Malformed expression or unsupported expression format");
