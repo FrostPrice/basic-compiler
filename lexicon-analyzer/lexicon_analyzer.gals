@@ -209,8 +209,8 @@ VAL_FALSE = ID : "false"
 <exp8> ::= <exp8> <op_bitwise> <exp9> | <exp9>;
 <exp9> ::= <exp9> <op_arit_low> <exp10> | <exp10>;
 <exp10> ::= <exp10> <op_arit_high> <exp11> | <exp11>;
-<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp12>;
-<exp12> ::= <assignable> <op_inc> | <val> | "(" <expression> ")";
+<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> #36 | <exp12>;
+<exp12> ::= <assignable> #36 <op_inc> | <val> | "(" <expression> ")";
 
 <val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
 <assignable_func_call> ::= <assignable> #37 <func_call> | <assignable> #36;
