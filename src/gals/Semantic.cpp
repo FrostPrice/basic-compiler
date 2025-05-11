@@ -42,6 +42,15 @@ void Semantic::executeAction(int action, const Token *token)
             this->symbolTable.getCurrentScope() // scope
         );
 
+        // Get current function symbol
+        SymbolTable::SymbolInfo *currentFunctionSymbol =
+            this->symbolTable.getSymbol(lexeme);
+        if (currentFunctionSymbol != nullptr)
+            if (currentFunctionSymbol->symbolClassification == SymbolTable::FUNCTION)
+            {
+                this->functionSymbol = currentFunctionSymbol;
+            }
+
         break;
     }
     case 2: // TYPE
@@ -58,6 +67,10 @@ void Semantic::executeAction(int action, const Token *token)
             this->pendingType = SemanticTable::STRING;
         else if (lexeme == "bool")
             this->pendingType = SemanticTable::BOOL;
+        else if (lexeme == "void")
+            this->pendingType = SemanticTable::__NULL;
+        else
+            throw SemanticError("Invalid type: " + lexeme);
 
         break;
     }
@@ -530,30 +543,34 @@ void Semantic::executeAction(int action, const Token *token)
             validateDuplicateSymbolInSameScope(matchedSymbol);
         }
 
-        this->currentSymbol->symbolClassification = SymbolTable::PARAM;
-        this->currentSymbol->isInitialized = true;
-        this->symbolTable.addSymbol(*this->currentSymbol);
-
         // Validation that a function already exists is made in the sintactic
         // You cannot have a parameter without a function
         SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getFunctionInScope();
-
         functionSymbol->functionParams++;
+
+        this->currentSymbol->symbolClassification = SymbolTable::PARAM;
+        this->currentSymbol->functionId = functionSymbol->id;
+        this->currentSymbol->isInitialized = true;
+        this->symbolTable.addSymbol(*this->currentSymbol);
 
         break;
     }
     case 22: // FUNCTION_CALL_PARAMETER
     {
-        auto *funcSym = this->symbolTable.getFunctionInScope();
-        if (!funcSym)
+        if (!this->functionSymbol)
             throw SemanticError("Function not found in scope");
-        cout << "Function name: " << funcSym->id << endl;
-        cout << "Function parameters: " << funcSym->functionParams << endl;
+
+        vector<SymbolTable::SymbolInfo *> params = this->symbolTable.getFunctionParams(this->functionSymbol->scope + 1);
+
+        SymbolTable::SymbolInfo *currentParam = params[this->parametersCountInFuncCall];
+
+        if (!currentParam)
+            throw SemanticError("Too many parameters in function call");
+
+        reduceExpressionAndGetType(currentParam->dataType, true);
 
         this->parametersCountInFuncCall++;
-        if (this->parametersCountInFuncCall > funcSym->functionParams)
-            throw SemanticError("Too many parameters in function call");
-        break;
+
         break;
     }
     case 23: // BLOCK_INIT
@@ -654,33 +671,15 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 29: // FUNCTION CALL
     {
-        auto *funcSym = symbolTable.getSymbol(this->currentSymbol->id);
-        if (!funcSym)
+        if (!this->functionSymbol)
             throw SemanticError("Function not found in scope");
-        validateFunctionParamCount(funcSym);
-
-        // Push the return value onto the appropriate stack
-        if (symbolEvaluateStack.empty())
-        {
-            expressionController.pushType(
-                funcSym->dataType,
-                this->currentSymbol->id);
-        }
-        else
-        {
-            get<2>(symbolEvaluateStack.top()).pushType(funcSym->dataType, this->currentSymbol->id);
-        }
-
-        // Pop the argument frame and reset parameter counter
-        if (!symbolEvaluateStack.empty())
-        {
-            symbolEvaluateStack.pop();
-        }
+        validateFunctionParamCount(this->functionSymbol);
 
         this->parametersCountInFuncCall = 0;
 
         break;
     }
+
     // * 31-40: Primitive values *
     case 31: // INT VALUE
     {
@@ -758,15 +757,15 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 37: // FUNCTION RETURN VALUE
     {
-        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
+        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->currentSymbol->id);
 
-        if (functionSymbol == nullptr)
+        if (symbol == nullptr)
         {
             throw SemanticError("Function not found in scope");
         }
 
-        functionSymbol->isUsed = true;
-        this->expressionController.pushType(functionSymbol->dataType, lexeme);
+        symbol->isUsed = true;
+        this->functionSymbol = symbol;
 
         break;
     }
@@ -941,7 +940,8 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 61: // VALIDATE EXPRESSION
     {
-        this->reduceExpressionAndGetType();
+        if (this->expressionController.expressionStack.size() > 1)
+            this->reduceExpressionAndGetType();
         break;
     }
     default:
