@@ -41,16 +41,6 @@ void Semantic::executeAction(int action, const Token *token)
             this->pendingType,                  // type
             this->symbolTable.getCurrentScope() // scope
         );
-
-        // Get current function symbol
-        SymbolTable::SymbolInfo *currentFunctionSymbol =
-            this->symbolTable.getSymbol(lexeme);
-        if (currentFunctionSymbol != nullptr)
-            if (currentFunctionSymbol->symbolClassification == SymbolTable::FUNCTION)
-            {
-                this->functionSymbol = currentFunctionSymbol;
-            }
-
         break;
     }
     case 2: // TYPE
@@ -584,11 +574,10 @@ void Semantic::executeAction(int action, const Token *token)
         this->symbolTable.exitScope();
         if (this->functionSymbol != nullptr)
         {
-            SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->functionSymbol->id);
-            if (symbol->scope == this->symbolTable.getCurrentScope())
+            if (this->functionSymbol->scope == this->symbolTable.getCurrentScope())
             {
-                if (!symbol->hasReturn)
-                    throw SemanticError("Function " + symbol->id + " has no return statement");
+                if (!this->functionSymbol->hasReturn)
+                    throw SemanticError("Function " + this->functionSymbol->id + " has no return statement");
                 this->functionSymbol = nullptr;
             }
         }
