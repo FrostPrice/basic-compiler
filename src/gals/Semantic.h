@@ -162,15 +162,19 @@ public:
     }
     SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false)
     {
-        if (expressionController.expressionStack.empty())
+        stack<ExpressionController::ExpressionsEntry> copyStack = expressionController.expressionStack;
+        if (!this->symbolEvaluateStack.empty())
+            copyStack = get<2>(this->symbolEvaluateStack.top()).expressionStack;
+
+        if (copyStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
 
         std::stack<ExpressionController::ExpressionsEntry> reverseStack;
 
-        while (!expressionController.expressionStack.empty())
+        while (!copyStack.empty())
         {
-            reverseStack.push(expressionController.expressionStack.top());
-            expressionController.expressionStack.pop();
+            reverseStack.push(copyStack.top());
+            copyStack.pop();
         }
 
         ExpressionController::ExpressionsEntry result;

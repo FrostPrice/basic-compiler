@@ -60,6 +60,9 @@ Action Number, Description
 #55, ARRAY SYMBOL, (Array symbol)
 #56, END ARRAY ACCESS, (Remove symbol)
 
+// 61 - 70: utils
+#61, VALIDATE EXPRESSION, (Clear expression stack)
+
 <dec_assign> ::= ID #1 ASSIGNMENT #11 <expression> #4 | ID #1 <array_access> ASSIGNMENT #11 <array_value> #5 | ID #1 <array_access> | ID #1;
 <array_dec> ::= "[" <expression> #9 "]" #8 <array_access> | "[" <expression> #9 "]" #8;
 

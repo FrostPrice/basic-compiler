@@ -179,7 +179,7 @@ VAL_FALSE = ID : "false"
 <statement_list> ::= <statement_list> <statement> ";" | <statement_list> <no_semicolon> | <statement> ";" | <no_semicolon>;
 <statement> ::= <declaration>
               | <assignment>
-              | <expression>
+              | <expression> #61
               | <return_statement>
               | <break_statement>
               | <continue_statement>
