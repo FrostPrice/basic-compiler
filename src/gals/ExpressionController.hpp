@@ -15,6 +15,13 @@ class ExpressionController
 public:
     struct ExpressionsEntry
     {
+        enum Kind
+        {
+            BINARY_OP,
+            UNARY_OP,
+            VALUE
+        } kind; // Type of the entry (binary operator, unary operator, or value)
+
         SemanticTable::Types entryType = SemanticTable::Types::__NULL; // Type of the entry
         SemanticTable::OperationsBinary binaryOperation;               // Binary operation
         SemanticTable::OperationsUnary unaryOperation;                 // Unary operation
@@ -26,6 +33,7 @@ public:
     void pushType(SemanticTable::Types type, const string &value)
     {
         ExpressionsEntry entry;
+        entry.kind = ExpressionsEntry::VALUE;
         entry.entryType = type;
         entry.value = value;
         expressionStack.push(entry);
@@ -35,6 +43,7 @@ public:
     void pushBinaryOp(SemanticTable::OperationsBinary op)
     {
         ExpressionsEntry entry;
+        entry.kind = ExpressionsEntry::BINARY_OP;
         entry.binaryOperation = op;
         expressionStack.push(entry);
     }
@@ -43,9 +52,10 @@ public:
     void pushUnaryOp(SemanticTable::OperationsUnary op)
     {
         ExpressionsEntry entry;
+        entry.kind = ExpressionsEntry::UNARY_OP;
         entry.unaryOperation = op;
         expressionStack.push(entry);
     }
 };
 
-#endif EXPRESSION_CONTROLLER_HPP
+#endif // EXPRESSION_CONTROLLER_HPP
