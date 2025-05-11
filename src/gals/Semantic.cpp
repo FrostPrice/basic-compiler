@@ -665,7 +665,10 @@ void Semantic::executeAction(int action, const Token *token)
         this->currentSymbol->symbolClassification = SymbolTable::FUNCTION;
         this->currentSymbol->isInitialized = true;
         this->currentSymbol->functionParams = 0; // Starts with 0 parameters
+        this->currentSymbol->arraySize = this->functionArraySizes;
         this->symbolTable.addSymbol(*this->currentSymbol);
+
+        this->functionArraySizes.clear();
 
         break;
     }
@@ -677,6 +680,11 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->parametersCountInFuncCall = 0;
 
+        break;
+    }
+    case 30: // FUNCTION_DEF_ARRAY
+    {
+        this->functionArraySizes.push_back(-1);
         break;
     }
 

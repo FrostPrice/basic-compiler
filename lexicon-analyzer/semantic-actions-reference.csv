@@ -30,6 +30,7 @@ Action Number, Description
 #27, OUTPUT, (Output function)
 #28, FUNCTION_DEF, (Function definition)
 #29, FUNCTION_CALL, (Function call)
+#30, FUNCTION_DEF_ARRAY, (Function array return type)
 
 // 31 - 40: primitive values
 #31, INT VALUE, (Integer values)

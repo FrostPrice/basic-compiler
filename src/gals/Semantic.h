@@ -19,7 +19,7 @@ class Semantic
 {
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr;     // Current symbol being processed
-    SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Current symbol being processed
+    SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Declaration symbol being processed
     SymbolTable::SymbolInfo *functionSymbol = nullptr;    // Current function being processed
 
     ExpressionController expressionController; // Expression object to manage expressions
@@ -28,12 +28,16 @@ private:
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
-    vector<vector<int>> valueArraySizes;   // Array dimensions of the declaration array value
-    stack<int> arrayLengthsStack;          // Array length of inner arrays in declaration array value
-    int arrayDepth = -1;                   // Array depth of the last identifier
-    int parametersCountInFuncCall = 0;     // Number of parameters in the function call
+    vector<vector<int>> valueArraySizes; // Array dimensions of the declaration array value
+    stack<int> arrayLengthsStack;        // Array length of inner arrays in declaration array value
+    int arrayDepth = -1;                 // Array depth of the last identifier
+
+    vector<int> functionArraySizes;    // Array dimensions of the function array value
+    int parametersCountInFuncCall = 0; // Number of parameters in the function call
+
+    int loopDepth = 0; // Loop depth for break and continue statements
+
     SemanticTable::Types switchResultType; // Type of the switch expression
-    int loopDepth = 0;                     // Loop depth for break and continue statements
     int switchDepth = 0;                   // Switch depth for break and continue statements
 
 public:

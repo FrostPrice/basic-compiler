@@ -272,7 +272,7 @@ VAL_FALSE = ID : "false"
 
 // Subroutines
 <subroutine_def> ::= <subroutine_def_type> "(" <subroutine_def_param_list> ")" <block> | <subroutine_def_type> "(" ")" <block>;
-<subroutine_def_array_declaration> ::= <subroutine_def_array_declaration> "[" "]" #52 | "[" "]" #52;
+<subroutine_def_array_declaration> ::= <subroutine_def_array_declaration> "[" "]" #30 | "[" "]" #30;
 <subroutine_def_type> ::= <data_type> ID #1 #28 | <data_type> <subroutine_def_array_declaration> ID #1 #28 | VOID #2 ID #1 #28;
 <subroutine_def_param_list> ::= <subroutine_def_param_list> "," <param_subroutine_def> #21 | <param_subroutine_def> #21;
 <param_subroutine_def> ::= <data_type> ID #1 | <data_type> ID #1 <subroutine_def_array_declaration>;
