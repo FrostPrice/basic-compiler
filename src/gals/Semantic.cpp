@@ -947,7 +947,9 @@ void Semantic::executeAction(int action, const Token *token)
         auto [symbol, arrayDepth, expression] = this->symbolEvaluateStack.top();
         this->symbolEvaluateStack.pop();
 
-        // TODO: validate arrayDepth
+        if (arrayDepth < symbol->arraySize.size())
+            throw SemanticError("Invalid value from array access");
+
         this->symbolEvaluateStack.empty()
             ? this->expressionController.pushType(symbol->dataType, symbol->id)
             : get<2>(this->symbolEvaluateStack.top()).pushType(symbol->dataType, symbol->id);
