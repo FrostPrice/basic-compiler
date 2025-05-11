@@ -83,9 +83,9 @@ void Semantic::executeAction(int action, const Token *token)
     case 4:
     { // ASSIGNMENT VALUE
         SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->currentSymbol->id);
+            symbolTable.getSymbol(this->declarationSymbol->id);
 
-        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+        validateIfVariableIsDeclared(matchedSymbol, this->declarationSymbol->id);
         reduceExpressionAndGetType(matchedSymbol->dataType, true);
         matchedSymbol->isInitialized = true;
 
@@ -186,6 +186,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
         matchedSymbol->isInitialized = true;
+        this->declarationSymbol = matchedSymbol;
 
         break;
     }
