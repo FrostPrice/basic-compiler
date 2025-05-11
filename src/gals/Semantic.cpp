@@ -36,8 +36,6 @@ void Semantic::executeAction(int action, const Token *token)
         // * 1-10: Declarations and assignments *
     case 1: // ID
     {
-        // ! QUANDO DELETA O CURRENT SYMBOL AQUI, AS ATRIBUICOES "int a,b;" NAO FUNCIONAM
-        // delete this->currentSymbol;
         this->currentSymbol = new SymbolTable::SymbolInfo(
             lexeme,                             // id
             this->pendingType,                  // type
@@ -87,7 +85,7 @@ void Semantic::executeAction(int action, const Token *token)
             symbolTable.getSymbol(this->currentSymbol->id);
 
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
-        validateExpressionType(matchedSymbol->dataType);
+        reduceExpressionAndGetType(matchedSymbol->dataType, true);
         matchedSymbol->isInitialized = true;
 
         break;
@@ -546,27 +544,16 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 22: // FUNCTION_CALL_PARAMETER
     {
-        // Check the amount of parameters in the FUNC DEF, and compare with the FUNC CALL
-        // Also, check if the types are compatible
-
-        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getFunctionInScope();
-
-        if (functionSymbol == nullptr)
-        {
+        auto *funcSym = this->symbolTable.getFunctionInScope();
+        if (!funcSym)
             throw SemanticError("Function not found in scope");
-        }
+        cout << "Function name: " << funcSym->id << endl;
+        cout << "Function parameters: " << funcSym->functionParams << endl;
 
-        SemanticTable::Types expectedType = functionSymbol->dataType;
-
-        validateExpressionType(expectedType);
-
-        int expectedParams = functionSymbol->functionParams;
-        if (this->parametersCountInFuncCall > expectedParams)
-        {
-            throw SemanticError("Too many parameters in function call");
-        }
         this->parametersCountInFuncCall++;
-
+        if (this->parametersCountInFuncCall > funcSym->functionParams)
+            throw SemanticError("Too many parameters in function call");
+        break;
         break;
     }
     case 23: // BLOCK_INIT
@@ -584,29 +571,31 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 25: // RETURN
     {
-        SymbolTable::SymbolInfo *enclosingFunction = this->symbolTable.getEnclosingFunction(this->symbolTable.getCurrentScope());
+        // 1) Locate the function symbol
+        auto *funcSym = symbolTable.getSymbol(this->currentSymbol->id);
+        if (!funcSym)
+            throw SemanticError("Function not found in scope");
 
-        validateIfVariableIsDeclared(enclosingFunction, lexeme);
+        // 2) Validate we saw N parameters
+        validateFunctionParamCount(funcSym);
 
-        validateReturnStatementScope(enclosingFunction);
+        // 3) Reduce the argument expression(s) (consumes the stack)
+        reduceExpressionAndGetType(funcSym->dataType, /*validate=*/true);
 
-        // If the function is void, we don't need to check the return type
-        if (enclosingFunction->dataType == SemanticTable::Types::__NULL && lexeme == "return")
+        // 4) Push the return value as a raw VALUE
+        if (symbolEvaluateStack.empty())
         {
-            break;
+            expressionController.pushType(
+                funcSym->dataType,
+                this->currentSymbol->id);
+        }
+        else
+        {
+            get<2>(symbolEvaluateStack.top()).pushType(funcSym->dataType, this->currentSymbol->id);
         }
 
-        if (this->expressionController.expressionStack.empty())
-        {
-            throw SemanticError(SemanticError::TypeMismatch(
-                enclosingFunction->dataType,
-                SemanticTable::Types::__NULL));
-        }
-
-        SemanticTable ::Types expectedReturnType = enclosingFunction->dataType;
-
-        validateExpressionType(expectedReturnType);
-
+        // 5) Reset the parameter counter
+        this->parametersCountInFuncCall = 0;
         break;
     }
     case 26: // INPUT
@@ -665,18 +654,30 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 29: // FUNCTION CALL
     {
-        SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
-
-        if (functionSymbol == nullptr)
-        {
+        auto *funcSym = symbolTable.getSymbol(this->currentSymbol->id);
+        if (!funcSym)
             throw SemanticError("Function not found in scope");
+        validateFunctionParamCount(funcSym);
+
+        // Push the return value onto the appropriate stack
+        if (symbolEvaluateStack.empty())
+        {
+            expressionController.pushType(
+                funcSym->dataType,
+                this->currentSymbol->id);
+        }
+        else
+        {
+            get<2>(symbolEvaluateStack.top()).pushType(funcSym->dataType, this->currentSymbol->id);
         }
 
-        validateFunctionParamCount(functionSymbol);
-        if (this->symbolEvaluateStack.empty())
-            this->expressionController.pushType(functionSymbol->dataType, lexeme);
-        else
-            get<2>(this->symbolEvaluateStack.top()).pushType(functionSymbol->dataType, lexeme);
+        // Pop the argument frame and reset parameter counter
+        if (!symbolEvaluateStack.empty())
+        {
+            symbolEvaluateStack.pop();
+        }
+
+        this->parametersCountInFuncCall = 0;
 
         break;
     }
@@ -773,7 +774,7 @@ void Semantic::executeAction(int action, const Token *token)
     // * 41-50: Conditionals and loops *
     case 41: // IF CONDITION
     {
-        validateGeneralExpression(SemanticTable::Types::BOOL);
+        reduceExpressionAndGetType(SemanticTable::Types::BOOL, true);
 
         break;
     }
@@ -794,7 +795,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 43: // CASE VALUE
     {
-        validateExpressionType(this->switchResultType);
+        reduceExpressionAndGetType(this->switchResultType, true);
 
         break;
     }
@@ -835,6 +836,10 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 48: // FOR INCREMENT
     {
+        SymbolTable::SymbolInfo *sym = symbolTable.getSymbol(currentSymbol->id);
+        validateIfVariableIsDeclared(sym, currentSymbol->id);
+        expressionController.pushType(sym->dataType, currentSymbol->id);
+        expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
         reduceExpressionAndGetType();
         break;
     }
@@ -854,7 +859,7 @@ void Semantic::executeAction(int action, const Token *token)
     case 51: // ARRAY VALUE
     {
         if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
-            validateExpressionType(this->pendingType);
+            reduceExpressionAndGetType(this->pendingType, true);
         this->arrayLengthsStack.top()++;
         break;
     }
