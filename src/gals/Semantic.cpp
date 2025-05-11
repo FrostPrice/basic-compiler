@@ -953,7 +953,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 56: // END ARRAY ACCESS
     {
-        auto [symbol, arrayDepth, expression] = this->symbolEvaluateStack.top();
+        auto [symbol, arrayDepth, _] = this->symbolEvaluateStack.top();
         this->symbolEvaluateStack.pop();
 
         if (arrayDepth < symbol->arraySize.size())
