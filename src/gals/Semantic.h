@@ -49,19 +49,6 @@ public:
 
     SymbolTable symbolTable;
 
-    void resetControllVariables()
-    {
-        if (this->currentSymbol != nullptr)
-        {
-            delete this->currentSymbol;
-        }
-
-        this->currentSymbol = new SymbolTable::SymbolInfo();
-
-        while (!this->expressionController.expressionStack.empty())
-            this->expressionController.expressionStack.pop();
-    }
-
     void executeAction(int action, const Token *token);
 
     // Validation methods
