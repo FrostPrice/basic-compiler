@@ -20,6 +20,7 @@ class Semantic
 private:
     SymbolTable::SymbolInfo *currentSymbol = nullptr;     // Current symbol being processed
     SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Current symbol being processed
+    SymbolTable::SymbolInfo *functionSymbol = nullptr;    // Current function being processed
 
     ExpressionController expressionController; // Expression object to manage expressions
 
@@ -140,6 +141,16 @@ public:
                 out.entryType = static_cast<SemanticTable::Types>(rt);
                 eval.push(out);
             }
+        }
+
+        // Debugging: Print the expression stack
+        cout << "Expression Stack:" << endl;
+        stack<ExpressionController::ExpressionsEntry> tempStack = eval;
+        while (!tempStack.empty())
+        {
+            auto entry = tempStack.top();
+            tempStack.pop();
+            cout << "Kind: " << entry.kind << ", Type: " << entry.entryType << ", Value: " << entry.value << endl;
         }
 
         // Must end with exactly one
