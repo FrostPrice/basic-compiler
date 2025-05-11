@@ -242,7 +242,7 @@ VAL_FALSE = ID : "false"
 
 // Function Call
 <func_call> ::=  "(" <func_call_params> ")" #29 | "(" ")" #29;
-<func_call_params> ::= <func_call_params> "," <expression> #22 | <func_call_params> "," <array> #22 | <expression> #22 | <array> #22;
+<func_call_params> ::= <func_call_params> "," <expression> #22 | <expression> #22;
 
 // Control Structures
 <while_loop> ::= WHILE "(" <expression> #44 ")" <block>;
