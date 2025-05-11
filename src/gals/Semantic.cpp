@@ -746,19 +746,17 @@ void Semantic::executeAction(int action, const Token *token)
     {
         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(this->currentSymbol->id);
         if (symbol == nullptr)
-        {
             throw SemanticError(SemanticError::SymbolUndeclared(this->currentSymbol->id));
-        }
         else if (!symbol->isInitialized)
-        {
             throw SemanticError(SemanticError::SymbolNotInitialized(this->currentSymbol->id));
-        }
         else if (symbol->symbolClassification == SymbolTable::FUNCTION)
-        {
             throw SemanticError(SemanticError::FunctionNotCalled(this->currentSymbol->id));
-        }
 
         symbol->isUsed = true;
+
+        if (symbol->symbolClassification == SymbolTable::ARRAY || symbol->arraySize.size() > 0)
+            break;
+
         if (this->symbolEvaluateStack.empty())
             this->expressionController.pushType(symbol->dataType, lexeme);
         else
@@ -912,7 +910,7 @@ void Semantic::executeAction(int action, const Token *token)
                     if (value >= symbol->arraySize[arrayDepth] && symbol->arraySize[arrayDepth] != -1)
                         throw SemanticError("Array size exceeded");
 
-                    expression.expressionStack.pop();
+                    get<2>(this->symbolEvaluateStack.top()).expressionStack.pop();
                 }
                 else
                 {
@@ -936,7 +934,7 @@ void Semantic::executeAction(int action, const Token *token)
         SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
 
-        if (matchedSymbol->symbolClassification != SymbolTable::ARRAY)
+        if (matchedSymbol->symbolClassification != SymbolTable::ARRAY && matchedSymbol->arraySize.empty())
         {
             throw SemanticError(SemanticError::SymbolNotOfClassification(matchedSymbol->id));
         }
@@ -946,7 +944,13 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 56: // END ARRAY ACCESS
     {
+        auto [symbol, arrayDepth, expression] = this->symbolEvaluateStack.top();
         this->symbolEvaluateStack.pop();
+
+        // TODO: validate arrayDepth
+        this->symbolEvaluateStack.empty()
+            ? this->expressionController.pushType(symbol->dataType, symbol->id)
+            : get<2>(this->symbolEvaluateStack.top()).pushType(symbol->dataType, symbol->id);
         break;
     }
     case 61: // VALIDATE EXPRESSION
