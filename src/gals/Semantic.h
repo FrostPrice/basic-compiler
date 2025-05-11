@@ -110,7 +110,7 @@ public:
                 eval.pop();
                 int rt = SemanticTable::unaryResultType(opnd.entryType, tok.unaryOperation);
                 if (rt == SemanticTable::ERR)
-                    throw SemanticError("Invalid unary op on type " + to_string(opnd.entryType));
+                    throw SemanticError("Invalid unary op on type " + SemanticError::typeToString(opnd.entryType));
                 ExpressionController::ExpressionsEntry out;
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
                 out.entryType = static_cast<SemanticTable::Types>(rt);
@@ -126,7 +126,7 @@ public:
                 eval.pop();
                 int rt = SemanticTable::resultBinaryType(l.entryType, r.entryType, tok.binaryOperation);
                 if (rt == SemanticTable::ERR)
-                    throw SemanticError("Invalid binary op between types " + to_string(l.entryType) + " and " + to_string(r.entryType));
+                    throw SemanticError("Invalid binary op between types " + SemanticError::typeToString(l.entryType) + " and " + SemanticError::typeToString(r.entryType));
                 ExpressionController::ExpressionsEntry out;
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
                 out.entryType = static_cast<SemanticTable::Types>(rt);
@@ -146,7 +146,7 @@ public:
             if (comp == SemanticTable::ERR)
                 throw SemanticError(SemanticError::TypeMismatch(expectedType, result.entryType));
             if (comp == SemanticTable::WAR)
-                reportWarning("Warning: possible data loss converting " + to_string(result.entryType) + " to " + to_string(expectedType));
+                reportWarning("Warning: possible data loss converting " + SemanticError::typeToString(result.entryType) + " to " + SemanticError::typeToString(expectedType));
         }
 
         return result.entryType;
