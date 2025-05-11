@@ -404,11 +404,17 @@ void Semantic::executeAction(int action, const Token *token)
         // Increment and decrement operations (Don't validate, since the value appears after)
         else if (lexeme == "--")
         {
-            this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+            if (this->symbolEvaluateStack.empty())
+                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+            else
+                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
         }
         else if (lexeme == "++")
         {
-            this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+            if (this->symbolEvaluateStack.empty())
+                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+            else
+                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
         }
         else
         {
