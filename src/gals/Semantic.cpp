@@ -81,9 +81,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         if (alreadyDeclared != nullptr)
         {
-            // Maybe there is a better way to validate a function call in a declaration
-            if (!alreadyDeclared->symbolClassification == SymbolTable::FUNCTION)
-                validateDuplicateSymbolInSameScope(alreadyDeclared);
+            validateDuplicateSymbolInSameScope(alreadyDeclared);
         }
 
         this->currentSymbol->symbolClassification = SymbolTable::VARIABLE;
