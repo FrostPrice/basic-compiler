@@ -185,6 +185,10 @@ void Semantic::executeAction(int action, const Token *token)
             symbolTable.getSymbol(this->currentSymbol->id);
 
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+
+        // TODO: cannot allow the syntax bellow
+        // int a
+        // a = a;
         matchedSymbol->isInitialized = true;
         this->declarationSymbol = matchedSymbol;
 
