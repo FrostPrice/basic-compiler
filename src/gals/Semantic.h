@@ -12,6 +12,7 @@
 #include "SemanticError.h"
 #include "SemanticTable.hpp"
 #include "SymbolTable.hpp"
+#include "Assembly.hpp"
 
 using namespace std;
 
@@ -41,6 +42,8 @@ private:
     int switchDepth = 0;                   // Switch depth for break and continue statements
 
 public:
+    Assembly assembly; // Assembly object to generate assembly code
+
     vector<string> warnings; // Warnings generated during semantic analysis
     void reportWarning(const string &msg)
     {

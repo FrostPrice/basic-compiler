@@ -230,6 +230,8 @@ void MainWindow::compileCode()
 
         // sem.symbolTable.printTable(); // Print the symbol table for debugging
         output->setHtml(resultText);
+
+        assemblyOutput->setText(QString::fromStdString(sem.assembly.generateAssembly()));
     }
     catch (LexicalError err)
     {

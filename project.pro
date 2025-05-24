@@ -12,6 +12,7 @@ SOURCES += src/main.cpp \
            src/gals/Constants.cpp \
            src/gals/Lexical.cpp \
            src/gals/Semantic.cpp \
+           src/gals/Assembly.hpp \
            src/gals/Syntactic.cpp \
            src/gals/SemanticTable.cpp \
            src/ui/semantic_table_model.cpp
