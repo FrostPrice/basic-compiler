@@ -134,6 +134,9 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->symbolTable.addSymbol(*this->declarationSymbol);
 
+        this->assembly.addData(this->generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope),
+                               this->arrayValues);
+
         this->valueArraySizes.clear();
         break;
     }
@@ -886,7 +889,17 @@ void Semantic::executeAction(int action, const Token *token)
     case 51: // ARRAY VALUE
     {
         if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
+        {
+            stack<ExpressionController::ExpressionsEntry> expStack = this->symbolEvaluateStack.empty()
+                                                                         ? this->expressionController.expressionStack
+                                                                         : get<2>(this->symbolEvaluateStack.top()).expressionStack;
+            if (expStack.size() == 1 && isNumber(expStack.top().value))
+                this->arrayValues.push_back(expStack.top().value);
+            else
+                this->arrayValues.push_back("-1");
+
             reduceExpressionAndGetType(this->pendingType, true);
+        }
         this->arrayLengthsStack.top()++;
         break;
     }

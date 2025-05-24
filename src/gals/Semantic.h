@@ -32,6 +32,7 @@ private:
     vector<vector<int>> valueArraySizes; // Array dimensions of the declaration array value
     stack<int> arrayLengthsStack;        // Array length of inner arrays in declaration array value
     int arrayDepth = -1;                 // Array depth of the last identifier
+    vector<string> arrayValues;          // Array values of the last identifier
 
     vector<int> functionArraySizes;    // Array dimensions of the function array value
     int parametersCountInFuncCall = 0; // Number of parameters in the function call
