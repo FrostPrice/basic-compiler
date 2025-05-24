@@ -7,23 +7,6 @@
 
 using namespace std;
 
-bool isNumber(const string &str, bool allowNegative = true)
-{
-    if (str.empty())
-        return false;
-
-    size_t start = 0;
-    if (allowNegative && str[0] == '-')
-        start = 1;
-
-    for (size_t i = start; i < str.size(); i++)
-    {
-        if (!isdigit(str[i]))
-            return false;
-    }
-    return true;
-}
-
 void Semantic::executeAction(int action, const Token *token)
 {
     string lexeme = token->getLexeme();

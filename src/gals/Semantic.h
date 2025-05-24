@@ -60,6 +60,24 @@ public:
         return id + "_" + to_string(scope);
     }
 
+    // Helper Functions
+    bool isNumber(const string &str, bool allowNegative = true)
+    {
+        if (str.empty())
+            return false;
+
+        size_t start = 0;
+        if (allowNegative && str[0] == '-')
+            start = 1;
+
+        for (size_t i = start; i < str.size(); i++)
+        {
+            if (!isdigit(str[i]))
+                return false;
+        }
+        return true;
+    }
+
     // Validation methods
     SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false)
     {
