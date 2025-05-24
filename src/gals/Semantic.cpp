@@ -632,10 +632,9 @@ void Semantic::executeAction(int action, const Token *token)
         this->expressionController.pushType(matchedSymbol->dataType, matchedSymbol->id);
 
         // Check if the expresion is valid
-        validateOneOfTypes({
-            SemanticTable::Types::CHAR,
-            SemanticTable::Types::STRING,
-        });
+        validateOneOfTypes({SemanticTable::Types::CHAR,
+                            SemanticTable::Types::STRING,
+                            SemanticTable::Types::INT});
 
         this->currentSymbol->isInitialized = true;
 
