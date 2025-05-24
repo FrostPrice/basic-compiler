@@ -422,31 +422,41 @@ void Semantic::executeAction(int action, const Token *token)
 
         break;
     }
-    case 17: // INTEGER OP (Bitwise and remainder, only for integers)
-        validateOneOfTypes({
-            SemanticTable::Types::INT,
-        });
+    case 17:
+    { // INTEGER OP (Bitwise and remainder, only for integers)
 
         if (lexeme == "&")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+            });
+
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
         }
         else if (lexeme == "|")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+            });
+
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
         }
         else if (lexeme == "^")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+            });
+
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
         }
         else if (lexeme == "~")
         {
@@ -457,20 +467,32 @@ void Semantic::executeAction(int action, const Token *token)
         }
         else if (lexeme == "<<")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+            });
+
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
         }
         else if (lexeme == ">>")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+            });
+
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
         }
         else if (lexeme == "%")
         {
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+            });
+
             if (this->symbolEvaluateStack.empty())
                 this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER);
             else
@@ -482,6 +504,7 @@ void Semantic::executeAction(int action, const Token *token)
         }
 
         break;
+    }
     case 18: // BOOLEAN OP (for booleans)
         if (lexeme == "&&" || lexeme == "||")
         {

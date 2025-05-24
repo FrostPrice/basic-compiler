@@ -40,11 +40,12 @@ public:
     }
 
     // Pushes a pending binary operator onto the expression stack
-    void pushBinaryOp(SemanticTable::OperationsBinary op)
+    void pushBinaryOp(SemanticTable::OperationsBinary op, string value = "")
     {
         ExpressionsEntry entry;
         entry.kind = ExpressionsEntry::BINARY_OP;
         entry.binaryOperation = op;
+        entry.value = value;
         expressionStack.push(entry);
     }
 

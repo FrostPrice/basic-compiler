@@ -159,6 +159,27 @@ public:
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
                 out.entryType = static_cast<SemanticTable::Types>(rt);
                 eval.push(out);
+
+                // * Assembly generation
+                if (isNumber(opnd.value, true)) // If the lexeme is a number, use imidiate instructions
+                {
+                    if (tok.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
+                    {
+                        this->assembly.addText("ADDI", opnd.value);
+                        this->assembly.addText("NOT", ""); // * The NOT instruction does not require an operand, since in BIP it will negate the value in the register (ACC)
+                    }
+                }
+                else // If the lexeme is not a number, use the label of the variable
+                {
+                    SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(opnd.value);
+                    string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
+
+                    if (tok.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
+                    {
+                        this->assembly.addText("ADDI", generatedLabel);
+                        this->assembly.addText("NOT", ""); // * The NOT instruction does not require an operand, since in BIP it will negate the value in the register (ACC)
+                    }
+                }
             }
             else
             { // BINARY_OP
@@ -182,6 +203,7 @@ public:
                 // ! Only the first ocurency of the left operand is used, in the rest of the expression, will be only the right operand
                 // TODO: There may be a better way to validate the left operand without this shit
                 if (l.value != "")
+                {
                     if (isNumber(l.value, true)) // If the lexeme is a number, use imidiate instructions
                     {
                         this->assembly.addText("ADDI", l.value);
@@ -193,6 +215,7 @@ public:
 
                         this->assembly.addText("ADD", generatedLabel);
                     }
+                }
 
                 // ? Right Operand
                 if (isNumber(r.value, true)) // If the lexeme is a number, use imidiate instructions
@@ -204,6 +227,30 @@ public:
                     else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
                     {
                         this->assembly.addText("SUBI", r.value);
+                    }
+                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
+                    {
+                        // TODO: There must be a better way for this
+                        if (tok.value == "<<")
+                        {
+                            this->assembly.addText("SLL", r.value);
+                        }
+                        else if (tok.value == ">>")
+                        {
+                            this->assembly.addText("SRL", r.value);
+                        }
+                        else if (tok.value == "&")
+                        {
+                            this->assembly.addText("ANDI", r.value);
+                        }
+                        else if (tok.value == "|")
+                        {
+                            this->assembly.addText("ORI", r.value);
+                        }
+                        else if (tok.value == "^")
+                        {
+                            this->assembly.addText("XORI", r.value);
+                        }
                     }
                 }
                 else // If the lexeme is not a number, use the label of the variable
@@ -218,6 +265,30 @@ public:
                     else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
                     {
                         this->assembly.addText("SUB", generatedLabel);
+                    }
+                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
+                    {
+                        // TODO: There must be a better way for this
+                        if (tok.value == "<<")
+                        {
+                            this->assembly.addText("SLL", generatedLabel);
+                        }
+                        else if (tok.value == ">>")
+                        {
+                            this->assembly.addText("SRL", generatedLabel);
+                        }
+                        else if (tok.value == "&")
+                        {
+                            this->assembly.addText("AND", generatedLabel);
+                        }
+                        else if (tok.value == "|")
+                        {
+                            this->assembly.addText("OR", generatedLabel);
+                        }
+                        else if (tok.value == "^")
+                        {
+                            this->assembly.addText("XOR", generatedLabel);
+                        }
                     }
                 }
             }
