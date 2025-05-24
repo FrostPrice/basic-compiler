@@ -187,8 +187,6 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 12: // ARITHMETICAL ASSIGN OP (only for numbers)
     {
-        // a -= 2; -> a = a - 2;
-        // No momento que essa acao eh disparada, nao teremos o valor 2
         if (lexeme == "-=")
         {
             if (this->symbolEvaluateStack.empty())
@@ -203,9 +201,6 @@ void Semantic::executeAction(int action, const Token *token)
         }
         else if (lexeme == "*=")
         {
-            // a *= 2; -> a = a * 2;
-            // No momento que essa acao eh disparada, nao teremos o valor 2
-
             if (this->symbolEvaluateStack.empty())
                 this->expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
             else
@@ -218,9 +213,6 @@ void Semantic::executeAction(int action, const Token *token)
         }
         else if (lexeme == "/=")
         {
-            // a /= 2; -> a = a / 2;
-            // No momento que essa acao eh disparada, nao teremos o valor 2
-
             if (this->symbolEvaluateStack.empty())
                 this->expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
             else
@@ -241,8 +233,6 @@ void Semantic::executeAction(int action, const Token *token)
     case 13: // ADD ASSIGN OP (for strings or numbers)
 
     {
-        // a += 2; -> a = a + 2;
-        // No momento que essa acao eh disparada, nao teremos o valor 2
         if (lexeme == "+=")
         {
             if (this->symbolEvaluateStack.empty())
@@ -264,8 +254,6 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 14: // REMAINDER ASSIGN OP (for integers)
     {
-        // a %= 2; -> a = a % 2;
-        // No momento que essa acao eh disparada, nao teremos o valor
         if (lexeme == "%=")
         {
             if (this->symbolEvaluateStack.empty())
@@ -657,15 +645,22 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->currentSymbol->isInitialized = true;
 
+        // * Assembly generation
+        this->assembly.addText("LD", "$in_port");
+        this->assembly.addText("STO", this->generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
+
         break;
     }
     case 27: // OUTPUT
     {
-        SemanticTable::Types result = reduceExpressionAndGetType();
+        SemanticTable::Types result = reduceExpressionAndGetType(SemanticTable::Types ::__NULL, false, true);
         if (result != SemanticTable::STRING && result != SemanticTable::CHAR && result != SemanticTable::INT && result != SemanticTable::FLOAT && result != SemanticTable::DOUBLE && result != SemanticTable::BOOL)
         {
             throw SemanticError("Invalid type in output expression");
         }
+
+        // * Assembly generation
+        this->assembly.addText("STO", "$out_port");
 
         break;
     }

@@ -80,7 +80,7 @@ public:
     }
 
     // Validation methods
-    SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false)
+    SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false, bool willBeParameter = false) // TODO: Find a better way to set the instruction for values that will be parameters (For example, in the call of the print function
     {
         auto *orig = symbolEvaluateStack.empty()
                          ? &expressionController.expressionStack
@@ -135,14 +135,20 @@ public:
                 {
                     if (isNumber(tok.value, true)) // If the lexeme is a number, use imidiate instructions
                     {
-                        this->assembly.addText("ADDI", tok.value);
+                        if (!willBeParameter)
+                            this->assembly.addText("ADDI", tok.value);
+                        else
+                            this->assembly.addText("LDI", tok.value);
                     }
                     else // If the lexeme is not a number, use the label of the variable
                     {
                         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(tok.value);
                         string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
 
-                        this->assembly.addText("ADD", generatedLabel);
+                        if (!willBeParameter)
+                            this->assembly.addText("ADD", generatedLabel);
+                        else
+                            this->assembly.addText("LD", generatedLabel);
                     }
                 }
             }
@@ -176,7 +182,7 @@ public:
 
                     if (tok.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
                     {
-                        this->assembly.addText("ADDI", generatedLabel);
+                        this->assembly.addText("ADD", generatedLabel);
                         this->assembly.addText("NOT", ""); // * The NOT instruction does not require an operand, since in BIP it will negate the value in the register (ACC)
                     }
                 }
@@ -204,6 +210,7 @@ public:
                 // TODO: There may be a better way to validate the left operand without this shit
                 if (l.value != "")
                 {
+
                     if (isNumber(l.value, true)) // If the lexeme is a number, use imidiate instructions
                     {
                         this->assembly.addText("ADDI", l.value);
@@ -213,7 +220,10 @@ public:
                         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(l.value);
                         string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
 
-                        this->assembly.addText("ADD", generatedLabel);
+                        if (!willBeParameter)
+                            this->assembly.addText("ADD", generatedLabel);
+                        else
+                            this->assembly.addText("LD", generatedLabel);
                     }
                 }
 
