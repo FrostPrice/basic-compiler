@@ -55,6 +55,7 @@ public:
 
     void executeAction(int action, const Token *token);
 
+    // Assembly Related
     string generateAssemblyLabel(const string &id, int scope)
     {
         return id + "_" + to_string(scope);
@@ -128,6 +129,22 @@ public:
             if (tok.kind == ExpressionController::ExpressionsEntry::VALUE)
             {
                 eval.push(tok);
+
+                // * Assembly generation
+                if (rpn.size() == 1)
+                {
+                    if (isNumber(tok.value, true)) // If the lexeme is a number, use imidiate instructions
+                    {
+                        this->assembly.addText("ADDI", tok.value);
+                    }
+                    else // If the lexeme is not a number, use the label of the variable
+                    {
+                        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(tok.value);
+                        string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
+
+                        this->assembly.addText("ADD", generatedLabel);
+                    }
+                }
             }
             else if (tok.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
             {
@@ -158,6 +175,51 @@ public:
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
                 out.entryType = static_cast<SemanticTable::Types>(rt);
                 eval.push(out);
+
+                // * Assembly generation
+                // ? Left Operand
+                // We always add the first operand
+                // ! Only the first ocurency of the left operand is used, in the rest of the expression, will be only the right operand
+                // TODO: There may be a better way to validate the left operand without this shit
+                if (l.value != "")
+                    if (isNumber(l.value, true)) // If the lexeme is a number, use imidiate instructions
+                    {
+                        this->assembly.addText("ADDI", l.value);
+                    }
+                    else // If the lexeme is not a number, use the label of the variable
+                    {
+                        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(l.value);
+                        string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
+
+                        this->assembly.addText("ADD", generatedLabel);
+                    }
+
+                // ? Right Operand
+                if (isNumber(r.value, true)) // If the lexeme is a number, use imidiate instructions
+                {
+                    if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
+                    {
+                        this->assembly.addText("ADDI", r.value);
+                    }
+                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
+                    {
+                        this->assembly.addText("SUBI", r.value);
+                    }
+                }
+                else // If the lexeme is not a number, use the label of the variable
+                {
+                    SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(r.value);
+                    string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
+
+                    if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
+                    {
+                        this->assembly.addText("ADD", generatedLabel);
+                    }
+                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
+                    {
+                        this->assembly.addText("SUB", generatedLabel);
+                    }
+                }
             }
         }
 
