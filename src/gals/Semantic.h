@@ -54,6 +54,11 @@ public:
 
     void executeAction(int action, const Token *token);
 
+    string generateAssemblyLabel(const string &id, int scope)
+    {
+        return id + "_" + to_string(scope);
+    }
+
     // Validation methods
     SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false)
     {

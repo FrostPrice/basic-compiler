@@ -78,6 +78,8 @@ void Semantic::executeAction(int action, const Token *token)
         this->declarationSymbol = this->currentSymbol;
         this->symbolTable.addSymbol(*this->currentSymbol);
 
+        this->assembly.addData(this->generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope), "0");
+
         break;
     }
     case 4:
@@ -88,6 +90,17 @@ void Semantic::executeAction(int action, const Token *token)
         validateIfVariableIsDeclared(matchedSymbol, this->declarationSymbol->id);
         reduceExpressionAndGetType(matchedSymbol->dataType, true);
         matchedSymbol->isInitialized = true;
+
+        if (isNumber(lexeme, true)) // If the lexeme is a number, use imidiate instructions
+        {
+            this->assembly.addText("LD", this->generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope));
+            this->assembly.addText("ADDI", lexeme);
+        }
+        else // If the lexeme is not a number, use the label of the variable
+        {
+            this->assembly.addText("LD", this->generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope));
+        }
+        this->assembly.addText("STO", this->generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
 
         break;
     }
