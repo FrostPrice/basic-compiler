@@ -120,24 +120,48 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         }
     )");
 
+    assemblyOutput = new QTextBrowser(this);
+    assemblyOutput->setMinimumHeight(40);
+    assemblyOutput->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    assemblyOutput->setFontPointSize(14);
+    assemblyOutput->setStyleSheet(R"(
+        QTextBrowser {
+            background-color: #2D2A2E;
+            color: #FCFCFA;
+            border: 1px solid #403E41;
+        }
+    )");
+    assemblyOutput->setText("Assembly output will be shown here.");
+
     // Parte de cima: editor + botão + output empilhados verticalmente
-    QSplitter *verticalSplitter = new QSplitter(Qt::Vertical, this);
-    verticalSplitter->addWidget(editor);
-    verticalSplitter->addWidget(compileButton);
-    verticalSplitter->addWidget(output);
+    QSplitter *leftSplitter = new QSplitter(Qt::Vertical, this);
+    leftSplitter->addWidget(editor);
+    leftSplitter->addWidget(compileButton);
+    leftSplitter->addWidget(output);
 
-    verticalSplitter->setCollapsible(0, false);
-    verticalSplitter->setCollapsible(1, false);
-    verticalSplitter->setCollapsible(2, false);
+    leftSplitter->setCollapsible(0, false);
+    leftSplitter->setCollapsible(1, false);
+    leftSplitter->setCollapsible(2, false);
 
-    verticalSplitter->setStretchFactor(0, 8);
-    verticalSplitter->setStretchFactor(1, 1);
-    verticalSplitter->setStretchFactor(2, 2);
+    leftSplitter->setStretchFactor(0, 8);
+    leftSplitter->setStretchFactor(1, 1);
+    leftSplitter->setStretchFactor(2, 2);
+
+    // Parte de cima: editor + botão + output empilhados verticalmente
+    QSplitter *rightSplitter = new QSplitter(Qt::Vertical, this);
+    rightSplitter->addWidget(tableView);
+    rightSplitter->addWidget(assemblyOutput);
+
+    rightSplitter->setCollapsible(0, true);
+    rightSplitter->setCollapsible(1, true);
+
+    rightSplitter->setStretchFactor(0, 2);
+    rightSplitter->setStretchFactor(1, 3);
 
     // Horizontal: verticalSplitter | tableView
     QSplitter *horizontalSplitter = new QSplitter(Qt::Horizontal, this);
-    horizontalSplitter->addWidget(verticalSplitter);
-    horizontalSplitter->addWidget(tableView);
+    horizontalSplitter->addWidget(leftSplitter);
+    horizontalSplitter->addWidget(rightSplitter);
 
     horizontalSplitter->setStretchFactor(0, 3);
     horizontalSplitter->setStretchFactor(1, 2);
@@ -159,8 +183,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     QShortcut *symbolTableShortcut = new QShortcut(this);
     symbolTableShortcut->setKey(Qt::CTRL + Qt::Key_T);
-    connect(symbolTableShortcut, &QShortcut::activated, this, [this]()
-            { tableView->setVisible(!tableView->isVisible()); });
+    connect(symbolTableShortcut, &QShortcut::activated, this, [rightSplitter]()
+            { rightSplitter->setVisible(!rightSplitter->isVisible()); });
 }
 
 void MainWindow::compileCode()

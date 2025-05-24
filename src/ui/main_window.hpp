@@ -3,8 +3,9 @@
 
 #include <QMainWindow>
 #include <QLabel>
+
 #include "code_editor.hpp"
-#include "semantic_table_model.hpp" // AAAAAAAA
+#include "semantic_table_model.hpp"
 
 class QTextEdit;
 class QTextBrowser;
@@ -24,8 +25,11 @@ private slots:
 private:
     CodeEditor *editor;
     QTextBrowser *output;
+
     QTableView *tableView;
-    SemanticTableModel *tableModel; // agora vai por favor
+    QTextBrowser *assemblyOutput;
+
+    SemanticTableModel *tableModel;
 };
 
 #endif // MAINWINDOW_H
