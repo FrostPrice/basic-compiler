@@ -18,6 +18,18 @@ public:
         data.push_back(id + " : " + value);
     }
 
+    void addData(const string id, const vector<string> valuesArray = vector<string>({"0"}))
+    {
+        string values = "";
+        for (size_t i = 0; i < valuesArray.size(); i++)
+        {
+            if (i != 0)
+                values += ", ";
+            values += valuesArray[i];
+        }
+        data.push_back(id + " : " + values);
+    }
+
     void addText(const string instruction, const string operand)
     {
         text.push_back(instruction + " " + operand);
