@@ -82,7 +82,7 @@ public:
                   const ExpressionController::ExpressionsEntry &entry,
                   bool willBeParameter)
     {
-        // Guard clause to allow only INT type for now
+        // ! Guard clause to allow only INT type for now
         if (entry.entryType != SemanticTable::Types::INT)
             return;
 
@@ -102,7 +102,7 @@ public:
                      const ExpressionController::ExpressionsEntry &op,
                      const ExpressionController::ExpressionsEntry &operand)
     {
-        // Guard clause to allow only INT type for now
+        // ! Guard clause to allow only INT type for now
         if (operand.entryType != SemanticTable::Types::INT)
             return;
 
@@ -121,6 +121,19 @@ public:
                 addText("NOT", "");
             }
         }
+        else if (op.unaryOperation == SemanticTable::OperationsUnary::NEG)
+        {
+            if (isNumber(operand.value, true))
+            {
+                addText("SUBI", operand.value);
+            }
+            else
+            {
+                auto *symbol = symTable.getSymbol(operand.value);
+                string label = generateAssemblyLabel(symbol->id, symbol->scope);
+                addText("SUB", label);
+            }
+        }
     }
 
     void emitBinaryOp(SymbolTable &symTable,
@@ -129,7 +142,7 @@ public:
                       const ExpressionController::ExpressionsEntry &right,
                       bool willBeParameter)
     {
-        // Guard clause to allow only INT type for now
+        // ! Guard clause to allow only INT type for now
         if (left.entryType != SemanticTable::Types::INT || right.entryType != SemanticTable::Types::INT)
             return;
 

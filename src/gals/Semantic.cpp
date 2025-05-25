@@ -290,15 +290,20 @@ void Semantic::executeAction(int action, const Token *token)
         }
         else if (lexeme == "-")
         {
-            validateOneOfTypes({
-                SemanticTable::Types::INT,
-                SemanticTable::Types::FLOAT,
-                SemanticTable::Types::DOUBLE,
-            });
-            if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+            ExpressionController *expController = this->symbolEvaluateStack.empty()
+                                                      ? &this->expressionController
+                                                      : &get<2>(this->symbolEvaluateStack.top());
+            if (expController->expressionStack.empty() || expController->expressionStack.top().kind == ExpressionController::ExpressionsEntry::BINARY_OP)
+                expController->pushUnaryOp(SemanticTable::OperationsUnary::NEG);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+            {
+                validateOneOfTypes({
+                    SemanticTable::Types::INT,
+                    SemanticTable::Types::FLOAT,
+                    SemanticTable::Types::DOUBLE,
+                });
+                expController->pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+            }
         }
         else if (lexeme == "*")
         {
