@@ -35,6 +35,11 @@ public:
         text.push_back("\t" + instruction + " " + operand);
     }
 
+    void addBlankLine()
+    {
+        text.push_back("");
+    }
+
     string generateAssembly()
     {
         string assemblyCode;
