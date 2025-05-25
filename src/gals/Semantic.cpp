@@ -75,7 +75,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         // * Assembly generation
         string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
-        this->assembly.addComment("Assign valute to " + label);
+        this->assembly.addComment("Assign value to " + label);
         this->assembly.addText("LDI", "0");
 
         reduceExpressionAndGetType(matchedSymbol->dataType, true);
