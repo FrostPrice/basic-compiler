@@ -108,8 +108,7 @@ public:
             }
             else
             {
-                while (!opStack.empty() &&
-                       opStack.top().kind != ExpressionController::ExpressionsEntry::VALUE)
+                while (!opStack.empty())
                 {
                     rpn.push_back(opStack.top());
                     opStack.pop();
