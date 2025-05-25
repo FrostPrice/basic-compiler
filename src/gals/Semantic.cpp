@@ -650,6 +650,8 @@ void Semantic::executeAction(int action, const Token *token)
                             SemanticTable::Types::STRING,
                             SemanticTable::Types::INT});
 
+        // Since we are using this value only to check the type, we can pop it
+        this->expressionController.expressionStack.pop();
         this->currentSymbol->isInitialized = true;
 
         // * Assembly generation
@@ -661,7 +663,7 @@ void Semantic::executeAction(int action, const Token *token)
     case 27: // OUTPUT
     {
         SemanticTable::Types result = reduceExpressionAndGetType(SemanticTable::Types ::__NULL, false, true);
-        if (result != SemanticTable::STRING && result != SemanticTable::CHAR && result != SemanticTable::INT && result != SemanticTable::FLOAT && result != SemanticTable::DOUBLE && result != SemanticTable::BOOL)
+        if (result == SemanticTable::Types::__NULL)
         {
             throw SemanticError("Invalid type in output expression");
         }
