@@ -57,6 +57,11 @@ public:
         text.push_back("");
     }
 
+    void addComment(const string &comment)
+    {
+        text.push_back("\t# " + comment);
+    }
+
     string generateAssembly()
     {
         string assemblyCode;

@@ -74,13 +74,15 @@ void Semantic::executeAction(int action, const Token *token)
         validateIfVariableIsDeclared(matchedSymbol, this->declarationSymbol->id);
 
         // * Assembly generation
+        string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
+        this->assembly.addComment("Assign valute to " + label);
         this->assembly.addText("LDI", "0");
 
         reduceExpressionAndGetType(matchedSymbol->dataType, true);
         matchedSymbol->isInitialized = true;
 
         // * Assembly generation
-        this->assembly.addText("STO", this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
+        this->assembly.addText("STO", label);
 
         break;
     }
