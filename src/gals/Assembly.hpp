@@ -42,7 +42,7 @@ public:
         {
             if (i != 0)
                 values += ", ";
-            values += "-1";
+            values += "0";
         }
         data.push_back("\t" + id + " : " + values);
     }
