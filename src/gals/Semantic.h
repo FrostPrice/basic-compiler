@@ -79,6 +79,23 @@ public:
         return true;
     }
 
+    int precedence(const ExpressionController::ExpressionsEntry &op)
+    {
+        if (op.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
+            return 3;
+        if (op.kind == ExpressionController::ExpressionsEntry::BINARY_OP)
+        {
+            // TODO: Implement the rest of the precedence
+            if (op.value == "*" || op.value == "/" || op.value == "%" || op.value == "&")
+                return 2;
+            if (op.value == "+" || op.value == "-")
+                return 1;
+            if (op.value == "<<" || op.value == ">>")
+                return 0;
+        }
+        return 0;
+    }
+
     // Validation methods
     SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false, bool willBeParameter = false) // TODO: Find a better way to set the instruction for values that will be parameters (For example, in the call of the print function
     {
@@ -108,7 +125,9 @@ public:
             }
             else
             {
-                while (!opStack.empty())
+                while (!opStack.empty() &&
+                       opStack.top().kind != ExpressionController::ExpressionsEntry::VALUE &&
+                       precedence(opStack.top()) >= precedence(t))
                 {
                     rpn.push_back(opStack.top());
                     opStack.pop();
@@ -209,7 +228,6 @@ public:
                 // TODO: There may be a better way to validate the left operand without this shit
                 if (l.value != "")
                 {
-
                     if (isNumber(l.value, true)) // If the lexeme is a number, use imidiate instructions
                     {
                         this->assembly.addText("ADDI", l.value);
@@ -227,76 +245,79 @@ public:
                 }
 
                 // ? Right Operand
-                if (isNumber(r.value, true)) // If the lexeme is a number, use imidiate instructions
+                if (r.value != "")
                 {
-                    if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
+                    if (isNumber(r.value, true)) // If the lexeme is a number, use imidiate instructions
                     {
-                        this->assembly.addText("ADDI", r.value);
+                        if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
+                        {
+                            this->assembly.addText("ADDI", r.value);
+                        }
+                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
+                        {
+                            this->assembly.addText("SUBI", r.value);
+                        }
+                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
+                        {
+                            // TODO: There must be a better way for this
+                            if (tok.value == "<<")
+                            {
+                                this->assembly.addText("SLL", r.value);
+                            }
+                            else if (tok.value == ">>")
+                            {
+                                this->assembly.addText("SRL", r.value);
+                            }
+                            else if (tok.value == "&")
+                            {
+                                this->assembly.addText("ANDI", r.value);
+                            }
+                            else if (tok.value == "|")
+                            {
+                                this->assembly.addText("ORI", r.value);
+                            }
+                            else if (tok.value == "^")
+                            {
+                                this->assembly.addText("XORI", r.value);
+                            }
+                        }
                     }
-                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
+                    else // If the lexeme is not a number, use the label of the variable
                     {
-                        this->assembly.addText("SUBI", r.value);
-                    }
-                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
-                    {
-                        // TODO: There must be a better way for this
-                        if (tok.value == "<<")
-                        {
-                            this->assembly.addText("SLL", r.value);
-                        }
-                        else if (tok.value == ">>")
-                        {
-                            this->assembly.addText("SRL", r.value);
-                        }
-                        else if (tok.value == "&")
-                        {
-                            this->assembly.addText("ANDI", r.value);
-                        }
-                        else if (tok.value == "|")
-                        {
-                            this->assembly.addText("ORI", r.value);
-                        }
-                        else if (tok.value == "^")
-                        {
-                            this->assembly.addText("XORI", r.value);
-                        }
-                    }
-                }
-                else // If the lexeme is not a number, use the label of the variable
-                {
-                    SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(r.value);
-                    string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
+                        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(r.value);
+                        string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
 
-                    if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
-                    {
-                        this->assembly.addText("ADD", generatedLabel);
-                    }
-                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
-                    {
-                        this->assembly.addText("SUB", generatedLabel);
-                    }
-                    else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
-                    {
-                        // TODO: There must be a better way for this
-                        if (tok.value == "<<")
+                        if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
                         {
-                            this->assembly.addText("SLL", generatedLabel);
+                            this->assembly.addText("ADD", generatedLabel);
                         }
-                        else if (tok.value == ">>")
+                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
                         {
-                            this->assembly.addText("SRL", generatedLabel);
+                            this->assembly.addText("SUB", generatedLabel);
                         }
-                        else if (tok.value == "&")
+                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
                         {
-                            this->assembly.addText("AND", generatedLabel);
-                        }
-                        else if (tok.value == "|")
-                        {
-                            this->assembly.addText("OR", generatedLabel);
-                        }
-                        else if (tok.value == "^")
-                        {
-                            this->assembly.addText("XOR", generatedLabel);
+                            // TODO: There must be a better way for this
+                            if (tok.value == "<<")
+                            {
+                                this->assembly.addText("SLL", generatedLabel);
+                            }
+                            else if (tok.value == ">>")
+                            {
+                                this->assembly.addText("SRL", generatedLabel);
+                            }
+                            else if (tok.value == "&")
+                            {
+                                this->assembly.addText("AND", generatedLabel);
+                            }
+                            else if (tok.value == "|")
+                            {
+                                this->assembly.addText("OR", generatedLabel);
+                            }
+                            else if (tok.value == "^")
+                            {
+                                this->assembly.addText("XOR", generatedLabel);
+                            }
                         }
                     }
                 }
