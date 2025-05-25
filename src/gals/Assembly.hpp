@@ -15,7 +15,7 @@ private:
 public:
     void addData(const string id, const string value = "0")
     {
-        data.push_back(id + " : " + value);
+        data.push_back("\t" + id + " : " + value);
     }
 
     void addData(const string id, const vector<string> valuesArray = vector<string>({"0"}))
@@ -27,12 +27,12 @@ public:
                 values += ", ";
             values += valuesArray[i];
         }
-        data.push_back(id + " : " + values);
+        data.push_back("\t" + id + " : " + values);
     }
 
     void addText(const string instruction, const string operand)
     {
-        text.push_back(instruction + " " + operand);
+        text.push_back("\t" + instruction + " " + operand);
     }
 
     string generateAssembly()
