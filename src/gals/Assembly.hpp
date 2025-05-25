@@ -35,14 +35,14 @@ public:
         data.push_back("\t" + id + " : " + value);
     }
 
-    void addData(const string id, const vector<string> valuesArray = vector<string>({"0"}))
+    void addData(const string id, const int arrayLength = 0)
     {
         string values = "";
-        for (size_t i = 0; i < valuesArray.size(); i++)
+        for (size_t i = 0; i < arrayLength; i++)
         {
             if (i != 0)
                 values += ", ";
-            values += valuesArray[i];
+            values += "-1";
         }
         data.push_back("\t" + id + " : " + values);
     }

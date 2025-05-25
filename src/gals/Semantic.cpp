@@ -115,7 +115,7 @@ void Semantic::executeAction(int action, const Token *token)
         this->symbolTable.addSymbol(*this->declarationSymbol);
 
         this->assembly.addData(this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope),
-                               this->arrayValues);
+                               this->declarationSymbol->arraySize[0]);
 
         this->valueArraySizes.clear();
         break;
