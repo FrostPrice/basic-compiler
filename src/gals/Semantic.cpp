@@ -74,7 +74,7 @@ void Semantic::executeAction(int action, const Token *token)
         validateIfVariableIsDeclared(matchedSymbol, this->declarationSymbol->id);
 
         // * Assembly generation
-        this->assembly.addText("LD", this->generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
+        this->assembly.addText("LDI", "0");
 
         reduceExpressionAndGetType(matchedSymbol->dataType, true);
         matchedSymbol->isInitialized = true;
