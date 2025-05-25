@@ -76,7 +76,9 @@ void Semantic::executeAction(int action, const Token *token)
         // * Assembly generation
         string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
         this->assembly.addComment("Assign value to " + label);
-        this->assembly.addText("LDI", "0");
+        if (this->hasToCleanAccumulator)
+            this->assembly.addText("LDI", "0");
+        this->hasToCleanAccumulator = true;
 
         reduceExpressionAndGetType(matchedSymbol->dataType, true);
         matchedSymbol->isInitialized = true;
@@ -959,18 +961,15 @@ void Semantic::executeAction(int action, const Token *token)
 
                     if (value >= symbol->arraySize[arrayDepth] && symbol->arraySize[arrayDepth] != -1)
                         throw SemanticError("Array size exceeded");
-
-                    get<2>(this->symbolEvaluateStack.top()).expressionStack.pop();
                 }
                 else
                 {
                     throw SemanticError(SemanticError::InvalidValueForArrayLength());
                 }
             }
-            else
-            {
-                reduceExpressionAndGetType(SemanticTable::INT, true);
-            }
+
+            reduceExpressionAndGetType(SemanticTable::INT, true);
+
             get<1>(this->symbolEvaluateStack.top())++;
         }
         else
@@ -988,6 +987,9 @@ void Semantic::executeAction(int action, const Token *token)
         {
             throw SemanticError(SemanticError::SymbolNotOfClassification(matchedSymbol->id));
         }
+
+        this->assembly.addText("LDI", "0");
+        this->hasToCleanAccumulator = false;
 
         this->symbolEvaluateStack.push(make_tuple(matchedSymbol, 0, ExpressionController()));
         break;

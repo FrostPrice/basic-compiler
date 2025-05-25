@@ -99,6 +99,13 @@ public:
         {
             auto *symbol = symTable.getSymbol(entry.value);
             string label = generateAssemblyLabel(symbol->id, symbol->scope);
+
+            if (symbol->arraySize.size())
+            {
+                addText("STO", "$indr");
+                addText("LDV", label);
+                return; // Array loading is handled separately
+            }
             addText(willBeParameter ? "LD" : "ADD", label);
         }
     }
