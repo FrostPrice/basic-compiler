@@ -85,6 +85,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         // * Assembly generation
         this->assembly.addText("STO", label);
+        this->assembly.addBlankLine();
 
         break;
     }
@@ -659,13 +660,19 @@ void Semantic::executeAction(int action, const Token *token)
         this->currentSymbol->isInitialized = true;
 
         // * Assembly generation
+        string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
+        this->assembly.addComment("Getting input for " + label);
         this->assembly.addText("LD", "$in_port");
         this->assembly.addText("STO", this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
+        this->assembly.addBlankLine();
 
         break;
     }
     case 27: // OUTPUT
     {
+        // * Assembly generation
+        this->assembly.addComment("Printing value");
+
         SemanticTable::Types result = reduceExpressionAndGetType(SemanticTable::Types ::__NULL, false, true);
         if (result == SemanticTable::Types::__NULL)
         {
@@ -674,6 +681,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         // * Assembly generation
         this->assembly.addText("STO", "$out_port");
+        this->assembly.addBlankLine();
 
         break;
     }
