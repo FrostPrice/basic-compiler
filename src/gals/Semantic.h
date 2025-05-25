@@ -55,12 +55,6 @@ public:
 
     void executeAction(int action, const Token *token);
 
-    // Assembly Related
-    string generateAssemblyLabel(const string &id, int scope)
-    {
-        return id + "_" + to_string(scope);
-    }
-
     // Helper Functions
     bool isNumber(const string &str, bool allowNegative = true)
     {
@@ -123,8 +117,13 @@ public:
     }
 
     // Validation methods
-    SemanticTable::Types reduceExpressionAndGetType(SemanticTable::Types expectedType = SemanticTable::Types::__NULL, bool validate = false, bool willBeParameter = false) // TODO: Find a better way to set the instruction for values that will be parameters (For example, in the call of the print function
+    SemanticTable::Types reduceExpressionAndGetType(
+        SemanticTable::Types expectedType = SemanticTable::Types::__NULL,
+        bool validate = false,
+        bool willBeParameter = false)
     {
+        using Entry = ExpressionController::ExpressionsEntry;
+
         auto *orig = symbolEvaluateStack.empty()
                          ? &expressionController.expressionStack
                          : &get<2>(symbolEvaluateStack.top()).expressionStack;
@@ -132,7 +131,7 @@ public:
         if (orig->empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
 
-        vector<ExpressionController::ExpressionsEntry> tokens;
+        vector<Entry> tokens;
         tokens.reserve(orig->size());
         while (!orig->empty())
         {
@@ -141,18 +140,19 @@ public:
         }
         reverse(tokens.begin(), tokens.end());
 
-        vector<ExpressionController::ExpressionsEntry> rpn;
-        stack<ExpressionController::ExpressionsEntry> opStack;
+        // Convert to RPN using precedence
+        vector<Entry> rpn;
+        stack<Entry> opStack;
         for (auto &t : tokens)
         {
-            if (t.kind == ExpressionController::ExpressionsEntry::VALUE)
+            if (t.kind == Entry::VALUE)
             {
                 rpn.push_back(t);
             }
             else
             {
                 while (!opStack.empty() &&
-                       opStack.top().kind != ExpressionController::ExpressionsEntry::VALUE &&
+                       opStack.top().kind != Entry::VALUE &&
                        precedence(opStack.top()) >= precedence(t))
                 {
                     rpn.push_back(opStack.top());
@@ -167,192 +167,61 @@ public:
             opStack.pop();
         }
 
-        stack<ExpressionController::ExpressionsEntry> eval;
+        stack<Entry> eval;
         for (auto &tok : rpn)
         {
-            if (tok.kind == ExpressionController::ExpressionsEntry::VALUE)
+            if (tok.kind == Entry::VALUE)
             {
                 eval.push(tok);
-
-                // * Assembly generation
                 if (rpn.size() == 1)
-                {
-                    if (isNumber(tok.value, true)) // If the lexeme is a number, use imidiate instructions
-                    {
-                        if (willBeParameter)
-                            this->assembly.addText("LDI", tok.value);
-                        else
-                            this->assembly.addText("ADDI", tok.value);
-                    }
-                    else // If the lexeme is not a number, use the label of the variable
-                    {
-                        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(tok.value);
-                        string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
-
-                        if (willBeParameter)
-                            this->assembly.addText("LD", generatedLabel);
-                        else
-                            this->assembly.addText("ADD", generatedLabel);
-                    }
-                }
+                    assembly.emitLoad(this->symbolTable, tok, willBeParameter);
             }
-            else if (tok.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
+            else if (tok.kind == Entry::UNARY_OP)
             {
                 if (eval.empty())
                     throw SemanticError("Not enough operands for unary operator");
+
                 auto opnd = eval.top();
                 eval.pop();
-                int rt = SemanticTable::unaryResultType(opnd.entryType, tok.unaryOperation);
-                if (rt == SemanticTable::ERR)
+                auto resultType = SemanticTable::unaryResultType(opnd.entryType, tok.unaryOperation);
+                if (resultType == SemanticTable::ERR)
                     throw SemanticError("Invalid unary op on type " + SemanticError::typeToString(opnd.entryType));
+
                 ExpressionController::ExpressionsEntry out;
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
-                out.entryType = static_cast<SemanticTable::Types>(rt);
+                out.entryType = static_cast<SemanticTable::Types>(resultType);
                 eval.push(out);
 
-                // * Assembly generation
-                if (isNumber(opnd.value, true)) // If the lexeme is a number, use imidiate instructions
-                {
-                    if (tok.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
-                    {
-                        this->assembly.addText("ADDI", opnd.value);
-                        this->assembly.addText("NOT", ""); // * The NOT instruction does not require an operand, since in BIP it will negate the value in the register (ACC)
-                    }
-                }
-                else // If the lexeme is not a number, use the label of the variable
-                {
-                    SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(opnd.value);
-                    string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
-
-                    if (tok.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
-                    {
-                        this->assembly.addText("ADD", generatedLabel);
-                        this->assembly.addText("NOT", ""); // * The NOT instruction does not require an operand, since in BIP it will negate the value in the register (ACC)
-                    }
-                }
+                assembly.emitUnaryOp(this->symbolTable, tok, opnd);
             }
             else
-            { // BINARY_OP
+            { // Binary op
                 if (eval.size() < 2)
                     throw SemanticError("Not enough operands for binary operator");
+
                 auto r = eval.top();
                 eval.pop();
                 auto l = eval.top();
                 eval.pop();
-                int rt = SemanticTable::resultBinaryType(l.entryType, r.entryType, tok.binaryOperation);
-                if (rt == SemanticTable::ERR)
-                    throw SemanticError("Invalid binary op between types " + SemanticError::typeToString(l.entryType) + " and " + SemanticError::typeToString(r.entryType));
+
+                auto resultType = SemanticTable::resultBinaryType(l.entryType, r.entryType, tok.binaryOperation);
+                if (resultType == SemanticTable::ERR)
+                    throw SemanticError("Invalid binary op between types " +
+                                        SemanticError::typeToString(l.entryType) + " and " +
+                                        SemanticError::typeToString(r.entryType));
+
                 ExpressionController::ExpressionsEntry out;
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
-                out.entryType = static_cast<SemanticTable::Types>(rt);
+                out.entryType = static_cast<SemanticTable::Types>(resultType);
                 eval.push(out);
 
-                // * Assembly generation
-                // ? Left Operand
-                // We always add the first operand
-                // ! Only the first ocurency of the left operand is used, in the rest of the expression, will be only the right operand
-                // TODO: There may be a better way to validate the left operand without this shit
-                if (l.value != "")
-                {
-                    if (isNumber(l.value, true)) // If the lexeme is a number, use imidiate instructions
-                    {
-                        this->assembly.addText("ADDI", l.value);
-                    }
-                    else // If the lexeme is not a number, use the label of the variable
-                    {
-                        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(l.value);
-                        string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
-
-                        if (willBeParameter)
-                            this->assembly.addText("LD", generatedLabel);
-                        else
-                            this->assembly.addText("ADD", generatedLabel);
-                    }
-                }
-
-                // ? Right Operand
-                if (r.value != "")
-                {
-                    if (isNumber(r.value, true)) // If the lexeme is a number, use imidiate instructions
-                    {
-                        if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
-                        {
-                            this->assembly.addText("ADDI", r.value);
-                        }
-                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
-                        {
-                            this->assembly.addText("SUBI", r.value);
-                        }
-                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
-                        {
-                            // TODO: There must be a better way for this
-                            if (tok.value == "<<")
-                            {
-                                this->assembly.addText("SLL", r.value);
-                            }
-                            else if (tok.value == ">>")
-                            {
-                                this->assembly.addText("SRL", r.value);
-                            }
-                            else if (tok.value == "&")
-                            {
-                                this->assembly.addText("ANDI", r.value);
-                            }
-                            else if (tok.value == "|")
-                            {
-                                this->assembly.addText("ORI", r.value);
-                            }
-                            else if (tok.value == "^")
-                            {
-                                this->assembly.addText("XORI", r.value);
-                            }
-                        }
-                    }
-                    else // If the lexeme is not a number, use the label of the variable
-                    {
-                        SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(r.value);
-                        string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
-
-                        if (tok.binaryOperation == SemanticTable::OperationsBinary::SUM)
-                        {
-                            this->assembly.addText("ADD", generatedLabel);
-                        }
-                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
-                        {
-                            this->assembly.addText("SUB", generatedLabel);
-                        }
-                        else if (tok.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
-                        {
-                            // TODO: There must be a better way for this
-                            if (tok.value == "<<")
-                            {
-                                this->assembly.addText("SLL", generatedLabel);
-                            }
-                            else if (tok.value == ">>")
-                            {
-                                this->assembly.addText("SRL", generatedLabel);
-                            }
-                            else if (tok.value == "&")
-                            {
-                                this->assembly.addText("AND", generatedLabel);
-                            }
-                            else if (tok.value == "|")
-                            {
-                                this->assembly.addText("OR", generatedLabel);
-                            }
-                            else if (tok.value == "^")
-                            {
-                                this->assembly.addText("XOR", generatedLabel);
-                            }
-                        }
-                    }
-                }
+                assembly.emitBinaryOp(symbolTable, tok, l, r, willBeParameter);
             }
         }
 
-        // Must end with exactly one
         if (eval.size() != 1)
             throw SemanticError("Malformed expression or unsupported expression format");
+
         auto result = eval.top();
 
         // Optional validation
@@ -362,7 +231,9 @@ public:
             if (comp == SemanticTable::ERR)
                 throw SemanticError(SemanticError::TypeMismatch(expectedType, result.entryType));
             if (comp == SemanticTable::WAR)
-                reportWarning("Warning: possible data loss converting " + SemanticError::typeToString(result.entryType) + " to " + SemanticError::typeToString(expectedType));
+                reportWarning("Warning: possible data loss converting " +
+                              SemanticError::typeToString(result.entryType) + " to " +
+                              SemanticError::typeToString(expectedType));
         }
 
         return result.entryType;

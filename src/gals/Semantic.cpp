@@ -62,7 +62,7 @@ void Semantic::executeAction(int action, const Token *token)
         this->symbolTable.addSymbol(*this->currentSymbol);
 
         // * Assembly generation
-        this->assembly.addData(this->generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope), "0");
+        this->assembly.addData(this->assembly.generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope), "0");
 
         break;
     }
@@ -80,7 +80,7 @@ void Semantic::executeAction(int action, const Token *token)
         matchedSymbol->isInitialized = true;
 
         // * Assembly generation
-        this->assembly.addText("STO", this->generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
+        this->assembly.addText("STO", this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
 
         break;
     }
@@ -114,7 +114,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->symbolTable.addSymbol(*this->declarationSymbol);
 
-        this->assembly.addData(this->generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope),
+        this->assembly.addData(this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope),
                                this->arrayValues);
 
         this->valueArraySizes.clear();
@@ -647,7 +647,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         // * Assembly generation
         this->assembly.addText("LD", "$in_port");
-        this->assembly.addText("STO", this->generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
+        this->assembly.addText("STO", this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
 
         break;
     }
@@ -905,7 +905,7 @@ void Semantic::executeAction(int action, const Token *token)
             // Set array value
             this->assembly.addText("LDI", "0");
             reduceExpressionAndGetType(this->pendingType, true);
-            this->assembly.addText("STOV", this->generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope));
+            this->assembly.addText("STOV", this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope));
 
             this->assembly.addBlankLine();
         }
