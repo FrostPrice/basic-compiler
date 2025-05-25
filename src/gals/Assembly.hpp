@@ -174,9 +174,25 @@ public:
             else if (op.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
             {
                 if (op.value == "<<")
+                {
+                    // Check if the right operand is a number for SLL
+                    // The BIP v4, doesnt allow labels as right operand for SLL
+                    if (!isRightNum)
+                    {
+                        throw SemanticError("Right operand for SLL must be a number, and not variable or label.");
+                    }
                     addText("SLL", operand);
+                }
                 else if (op.value == ">>")
+                {
+                    // Check if the right operand is a number for SRL
+                    // The BIP v4, doesnt allow labels as right operand for SRL
+                    if (!isRightNum)
+                    {
+                        throw SemanticError("Right operand for SRL must be a number, and not variable or label.");
+                    }
                     addText("SRL", operand);
+                }
                 else if (op.value == "&")
                     addText(isRightNum ? "ANDI" : "AND", operand);
                 else if (op.value == "|")
