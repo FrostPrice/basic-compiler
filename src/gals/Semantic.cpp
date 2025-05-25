@@ -199,9 +199,9 @@ void Semantic::executeAction(int action, const Token *token)
                 get<2>(this->symbolEvaluateStack.top()).pushType(this->currentSymbol->dataType, this->currentSymbol->id);
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION, "-=");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION, "-=");
         }
         else if (lexeme == "*=")
         {
@@ -211,9 +211,9 @@ void Semantic::executeAction(int action, const Token *token)
                 get<2>(this->symbolEvaluateStack.top()).pushType(this->currentSymbol->dataType, this->currentSymbol->id);
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION, "*=");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION, "*=");
         }
         else if (lexeme == "/=")
         {
@@ -223,9 +223,9 @@ void Semantic::executeAction(int action, const Token *token)
                 get<2>(this->symbolEvaluateStack.top()).pushType(this->currentSymbol->dataType, this->currentSymbol->id);
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::DIVISION);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::DIVISION, "/=");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::DIVISION);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::DIVISION, "/=");
         }
         else
         {
@@ -245,9 +245,9 @@ void Semantic::executeAction(int action, const Token *token)
                 get<2>(this->symbolEvaluateStack.top()).pushType(this->currentSymbol->dataType, this->currentSymbol->id);
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, "+=");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUM, "+=");
         }
         else
         {
@@ -266,9 +266,9 @@ void Semantic::executeAction(int action, const Token *token)
                 get<2>(this->symbolEvaluateStack.top()).pushType(this->currentSymbol->dataType, this->currentSymbol->id);
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER, "%=");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER, "%=");
         }
         else
         {
@@ -288,9 +288,9 @@ void Semantic::executeAction(int action, const Token *token)
                 SemanticTable::Types::DOUBLE,
             });
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, "+");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUM, "+");
         }
         else if (lexeme == "-")
         {
@@ -306,7 +306,7 @@ void Semantic::executeAction(int action, const Token *token)
                     SemanticTable::Types::FLOAT,
                     SemanticTable::Types::DOUBLE,
                 });
-                expController->pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION);
+                expController->pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION, "-");
             }
         }
         else if (lexeme == "*")
@@ -317,9 +317,9 @@ void Semantic::executeAction(int action, const Token *token)
                 SemanticTable::Types::DOUBLE,
             });
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION, "*");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::MULTIPLICATION, "*");
         }
         else if (lexeme == "/")
         {
@@ -329,9 +329,9 @@ void Semantic::executeAction(int action, const Token *token)
                 SemanticTable::Types::DOUBLE,
             });
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::DIVISION);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::DIVISION, "/");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::DIVISION);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::DIVISION, "/");
         }
         // Comparisson operations
         else if (lexeme == "<")
@@ -342,9 +342,9 @@ void Semantic::executeAction(int action, const Token *token)
                 SemanticTable::Types::DOUBLE,
             });
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, "<");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, "<");
         }
         else if (lexeme == "<=")
         {
@@ -354,9 +354,9 @@ void Semantic::executeAction(int action, const Token *token)
                 SemanticTable::Types::DOUBLE,
             });
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, "<=");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, "<=");
         }
         else if (lexeme == ">")
         {
@@ -366,9 +366,9 @@ void Semantic::executeAction(int action, const Token *token)
                 SemanticTable::Types::DOUBLE,
             });
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, ">");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, ">");
         }
         else if (lexeme == ">=")
         {
@@ -378,9 +378,9 @@ void Semantic::executeAction(int action, const Token *token)
                 SemanticTable::Types::DOUBLE,
             });
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, ">=");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_HIGH, ">=");
         }
         // Increment and decrement operations (Don't validate, since the value appears after)
         else if (lexeme == "--")
@@ -413,9 +413,9 @@ void Semantic::executeAction(int action, const Token *token)
             SemanticTable::Types::STRING,
         });
         if (this->symbolEvaluateStack.empty())
-            this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+            this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, "+");
         else
-            get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUM);
+            get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::SUM, "+");
 
         break;
     }
@@ -429,9 +429,9 @@ void Semantic::executeAction(int action, const Token *token)
             });
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "&");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "&");
         }
         else if (lexeme == "|")
         {
@@ -440,9 +440,9 @@ void Semantic::executeAction(int action, const Token *token)
             });
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "|");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "|");
         }
         else if (lexeme == "^")
         {
@@ -451,9 +451,9 @@ void Semantic::executeAction(int action, const Token *token)
             });
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "^");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "^");
         }
         else if (lexeme == "~")
         {
@@ -469,9 +469,9 @@ void Semantic::executeAction(int action, const Token *token)
             });
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "<<");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, "<<");
         }
         else if (lexeme == ">>")
         {
@@ -480,9 +480,9 @@ void Semantic::executeAction(int action, const Token *token)
             });
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, ">>");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, lexeme);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::BITWISE, ">>");
         }
         else if (lexeme == "%")
         {
@@ -491,9 +491,9 @@ void Semantic::executeAction(int action, const Token *token)
             });
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER, "%");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER, "%");
         }
         else // Fallback em caso de esquecermos alguma operacao
         {
@@ -507,9 +507,9 @@ void Semantic::executeAction(int action, const Token *token)
         {
 
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::LOGICAL);
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::LOGICAL, "&&");
             else
-                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::LOGICAL);
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::LOGICAL, "&&");
         }
         else if (lexeme == "!")
         {
@@ -532,11 +532,13 @@ void Semantic::executeAction(int action, const Token *token)
             SemanticTable::Types::BOOL,
         });
 
-        if (this->symbolEvaluateStack.empty())
-            this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_LOW);
-        else
-            get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_LOW);
-
+        if (lexeme == "==")
+        {
+            if (this->symbolEvaluateStack.empty())
+                this->expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_LOW, "==");
+            else
+                get<2>(this->symbolEvaluateStack.top()).pushBinaryOp(SemanticTable::OperationsBinary::RELATION_LOW, "==");
+        }
         break;
 
     // * 21-30: Functions, blocks, I/O *
