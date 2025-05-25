@@ -906,6 +906,8 @@ void Semantic::executeAction(int action, const Token *token)
             this->assembly.addText("LDI", "0");
             reduceExpressionAndGetType(this->pendingType, true);
             this->assembly.addText("STOV", this->generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope));
+
+            this->assembly.addBlankLine();
         }
         this->arrayLengthsStack.top()++;
         break;
