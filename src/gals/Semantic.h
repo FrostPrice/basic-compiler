@@ -81,19 +81,45 @@ public:
 
     int precedence(const ExpressionController::ExpressionsEntry &op)
     {
-        if (op.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
-            return 3;
-        if (op.kind == ExpressionController::ExpressionsEntry::BINARY_OP)
+        using Kind = ExpressionController::ExpressionsEntry::Kind;
+
+        if (op.kind == Kind::UNARY_OP)
         {
-            // TODO: Implement the rest of the precedence
-            if (op.value == "*" || op.value == "/" || op.value == "%" || op.value == "&")
-                return 2;
-            if (op.value == "+" || op.value == "-")
-                return 1;
-            if (op.value == "<<" || op.value == ">>")
-                return 0;
+            // Highest precedence for unary operators (e.g., !, ~, ++, --, unary +, unary -)
+            return 7;
         }
-        return 0;
+
+        if (op.kind == Kind::BINARY_OP)
+        {
+            // Multiplicative: *, /, %
+            if (op.value == "*" || op.value == "/" || op.value == "%")
+                return 6;
+            // Additive: +, -
+            if (op.value == "+" || op.value == "-")
+                return 5;
+            // Bitwise shift: <<, >>
+            if (op.value == "<<" || op.value == ">>")
+                return 4;
+            // Relational: <, >, <=, >=
+            if (op.value == "<" || op.value == ">" || op.value == "<=" || op.value == ">=")
+                return 3;
+            // Equality: ==, !=
+            if (op.value == "==" || op.value == "!=")
+                return 2;
+            // Bitwise: AND &, XOR ^, OR |,
+            if (op.value == "&" || op.value == "^" || op.value == "|")
+                return 1;
+            // Logical: AND &&, OR ||
+            if (op.value == "&&" || op.value == "||")
+                return 0;
+            // Assignment (lowest precedence)
+            if (op.value == "=" || op.value == "+=" || op.value == "-=" ||
+                op.value == "*=" || op.value == "/=" || op.value == "%=")
+                return -1;
+        }
+
+        // Default (unrecognized or miscategorized operator)
+        return -1;
     }
 
     // Validation methods
