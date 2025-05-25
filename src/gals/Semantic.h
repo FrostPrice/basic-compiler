@@ -135,20 +135,20 @@ public:
                 {
                     if (isNumber(tok.value, true)) // If the lexeme is a number, use imidiate instructions
                     {
-                        if (!willBeParameter)
-                            this->assembly.addText("ADDI", tok.value);
-                        else
+                        if (willBeParameter)
                             this->assembly.addText("LDI", tok.value);
+                        else
+                            this->assembly.addText("ADDI", tok.value);
                     }
                     else // If the lexeme is not a number, use the label of the variable
                     {
                         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(tok.value);
                         string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
 
-                        if (!willBeParameter)
-                            this->assembly.addText("ADD", generatedLabel);
-                        else
+                        if (willBeParameter)
                             this->assembly.addText("LD", generatedLabel);
+                        else
+                            this->assembly.addText("ADD", generatedLabel);
                     }
                 }
             }
@@ -220,10 +220,10 @@ public:
                         SymbolTable::SymbolInfo *symbol = this->symbolTable.getSymbol(l.value);
                         string generatedLabel = generateAssemblyLabel(symbol->id, symbol->scope);
 
-                        if (!willBeParameter)
-                            this->assembly.addText("ADD", generatedLabel);
-                        else
+                        if (willBeParameter)
                             this->assembly.addText("LD", generatedLabel);
+                        else
+                            this->assembly.addText("ADD", generatedLabel);
                     }
                 }
 
