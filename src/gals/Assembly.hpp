@@ -12,6 +12,23 @@ private:
     vector<string> data;
     vector<string> text;
 
+    bool isNumber(const string &str, bool allowNegative = true)
+    {
+        if (str.empty())
+            return false;
+
+        size_t start = 0;
+        if (allowNegative && str[0] == '-')
+            start = 1;
+
+        for (size_t i = start; i < str.size(); i++)
+        {
+            if (!isdigit(str[i]))
+                return false;
+        }
+        return true;
+    }
+
 public:
     void addData(const string id, const string value = "0")
     {
@@ -54,6 +71,102 @@ public:
             assemblyCode += t + "\n";
         }
         return assemblyCode;
+    }
+
+    string generateAssemblyLabel(const string &id, int scope)
+    {
+        return id + "_" + to_string(scope);
+    }
+
+    void emitLoad(SymbolTable &symTable,
+                  const ExpressionController::ExpressionsEntry &entry,
+                  bool willBeParameter)
+    {
+        // Guard clause to allow only INT type for now
+        if (entry.entryType != SemanticTable::Types::INT)
+            return;
+
+        if (isNumber(entry.value, true))
+        {
+            addText(willBeParameter ? "LDI" : "ADDI", entry.value);
+        }
+        else
+        {
+            auto *symbol = symTable.getSymbol(entry.value);
+            string label = generateAssemblyLabel(symbol->id, symbol->scope);
+            addText(willBeParameter ? "LD" : "ADD", label);
+        }
+    }
+
+    void emitUnaryOp(SymbolTable &symTable,
+                     const ExpressionController::ExpressionsEntry &op,
+                     const ExpressionController::ExpressionsEntry &operand)
+    {
+        // Guard clause to allow only INT type for now
+        if (operand.entryType != SemanticTable::Types::INT)
+            return;
+
+        if (op.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
+        {
+            if (isNumber(operand.value, true))
+            {
+                addText("ADDI", operand.value);
+                addText("NOT", "");
+            }
+            else
+            {
+                auto *symbol = symTable.getSymbol(operand.value);
+                string label = generateAssemblyLabel(symbol->id, symbol->scope);
+                addText("ADD", label);
+                addText("NOT", "");
+            }
+        }
+    }
+
+    void emitBinaryOp(SymbolTable &symTable,
+                      const ExpressionController::ExpressionsEntry &op,
+                      const ExpressionController::ExpressionsEntry &left,
+                      const ExpressionController::ExpressionsEntry &right,
+                      bool willBeParameter)
+    {
+        // Guard clause to allow only INT type for now
+        if (left.entryType != SemanticTable::Types::INT || right.entryType != SemanticTable::Types::INT)
+            return;
+
+        if (!left.value.empty())
+        {
+            emitLoad(symTable, left, willBeParameter);
+        }
+
+        if (!right.value.empty())
+        {
+            bool isRightNum = isNumber(right.value, true);
+            string operand = right.value;
+
+            if (!isRightNum)
+            {
+                auto *symbol = symTable.getSymbol(right.value);
+                operand = generateAssemblyLabel(symbol->id, symbol->scope);
+            }
+
+            if (op.binaryOperation == SemanticTable::OperationsBinary::SUM)
+                addText(isRightNum ? "ADDI" : "ADD", operand);
+            else if (op.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
+                addText(isRightNum ? "SUBI" : "SUB", operand);
+            else if (op.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
+            {
+                if (op.value == "<<")
+                    addText("SLL", operand);
+                else if (op.value == ">>")
+                    addText("SRL", operand);
+                else if (op.value == "&")
+                    addText(isRightNum ? "ANDI" : "AND", operand);
+                else if (op.value == "|")
+                    addText(isRightNum ? "ORI" : "OR", operand);
+                else if (op.value == "^")
+                    addText(isRightNum ? "XORI" : "XOR", operand);
+            }
+        }
     }
 };
 
