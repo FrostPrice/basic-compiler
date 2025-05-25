@@ -891,12 +891,21 @@ void Semantic::executeAction(int action, const Token *token)
             stack<ExpressionController::ExpressionsEntry> expStack = this->symbolEvaluateStack.empty()
                                                                          ? this->expressionController.expressionStack
                                                                          : get<2>(this->symbolEvaluateStack.top()).expressionStack;
-            if (expStack.size() == 1 && isNumber(expStack.top().value))
-                this->arrayValues.push_back(expStack.top().value);
-            else
-                this->arrayValues.push_back("-1");
+            // if (expStack.size() == 1 && isNumber(expStack.top().value))
+            //     this->arrayValues.push_back(expStack.top().value);
+            // else
+            //     this->arrayValues.push_back("-1");
 
+            this->arrayValues.push_back("-1");
+
+            // Set array index
+            this->assembly.addText("LDI", to_string(arrayLengthsStack.top()));
+            this->assembly.addText("STO", "$indr");
+
+            // Set array value
+            this->assembly.addText("LDI", "0");
             reduceExpressionAndGetType(this->pendingType, true);
+            this->assembly.addText("STOV", this->generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope));
         }
         this->arrayLengthsStack.top()++;
         break;
