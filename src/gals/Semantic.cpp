@@ -76,9 +76,7 @@ void Semantic::executeAction(int action, const Token *token)
         // * Assembly generation
         string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
         this->assembly.addComment("Assign value to " + label);
-        if (this->hasToCleanAccumulator)
-            this->assembly.addText("LDI", "0");
-        this->hasToCleanAccumulator = true;
+        this->assembly.addText("LDI", "0"); // This makes sure the ACC (Register) is empty for the assignment
 
         reduceExpressionAndGetType(matchedSymbol->dataType, true);
         matchedSymbol->isInitialized = true;
