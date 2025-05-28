@@ -299,7 +299,7 @@ void Semantic::executeAction(int action, const Token *token)
                                                       ? &this->expressionController
                                                       : &get<2>(this->symbolEvaluateStack.top());
             if (expController->expressionStack.empty() || expController->expressionStack.top().kind == ExpressionController::ExpressionsEntry::BINARY_OP)
-                expController->pushUnaryOp(SemanticTable::OperationsUnary::NEG);
+                expController->pushUnaryOp(SemanticTable::OperationsUnary::NEG, lexeme);
             else
             {
                 validateOneOfTypes({
@@ -387,16 +387,16 @@ void Semantic::executeAction(int action, const Token *token)
         else if (lexeme == "--")
         {
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT, lexeme);
         }
         else if (lexeme == "++")
         {
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT);
+                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT, lexeme);
         }
         else
         {
@@ -459,9 +459,9 @@ void Semantic::executeAction(int action, const Token *token)
         else if (lexeme == "~")
         {
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::BITWISE_NOT);
+                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::BITWISE_NOT, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::BITWISE_NOT);
+                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::BITWISE_NOT, lexeme);
         }
         else if (lexeme == "<<")
         {
@@ -515,9 +515,9 @@ void Semantic::executeAction(int action, const Token *token)
         else if (lexeme == "!")
         {
             if (this->symbolEvaluateStack.empty())
-                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::NOT);
+                this->expressionController.pushUnaryOp(SemanticTable::OperationsUnary::NOT, lexeme);
             else
-                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::NOT);
+                get<2>(this->symbolEvaluateStack.top()).pushUnaryOp(SemanticTable::OperationsUnary::NOT, lexeme);
         }
         else
         {

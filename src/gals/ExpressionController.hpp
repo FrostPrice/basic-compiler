@@ -50,11 +50,12 @@ public:
     }
 
     // Pushes a pending unary operator
-    void pushUnaryOp(SemanticTable::OperationsUnary op)
+    void pushUnaryOp(SemanticTable::OperationsUnary op, string value)
     {
         ExpressionsEntry entry;
         entry.kind = ExpressionsEntry::UNARY_OP;
         entry.unaryOperation = op;
+        entry.value = value;
         expressionStack.push(entry);
     }
 };
