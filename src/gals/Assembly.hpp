@@ -160,6 +160,7 @@ public:
 
         if (!left.value.empty())
         {
+            // We always load the left operand, and the rights operand are added
             emitLoad(symTable, left, willBeParameter);
         }
 
