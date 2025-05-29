@@ -85,7 +85,7 @@ public:
 
     void emitLoad(SymbolTable &symTable,
                   const ExpressionController::ExpressionsEntry &entry,
-                  bool willBeParameter)
+                  bool shouldLoad)
     {
         // ! Guard clause to allow only INT type for now
         if (entry.entryType != SemanticTable::Types::INT)
@@ -93,7 +93,7 @@ public:
 
         if (isNumber(entry.value, true))
         {
-            addText(willBeParameter ? "LDI" : "ADDI", entry.value);
+            addText(shouldLoad ? "LDI" : "ADDI", entry.value);
         }
         else
         {
@@ -106,7 +106,7 @@ public:
                 addText("LDV", label);
                 return; // Array loading is handled separately
             }
-            addText(willBeParameter ? "LD" : "ADD", label);
+            addText(shouldLoad ? "LD" : "ADD", label);
         }
     }
 
@@ -152,7 +152,7 @@ public:
                       const ExpressionController::ExpressionsEntry &op,
                       const ExpressionController::ExpressionsEntry &left,
                       const ExpressionController::ExpressionsEntry &right,
-                      bool willBeParameter)
+                      bool shouldLoad)
     {
         // ! Guard clause to allow only INT type for now
         if (left.entryType != SemanticTable::Types::INT || right.entryType != SemanticTable::Types::INT)
@@ -161,7 +161,7 @@ public:
         if (!left.value.empty())
         {
             // We always load the left operand, and the rights operand are added
-            emitLoad(symTable, left, willBeParameter);
+            emitLoad(symTable, left, true);
         }
 
         if (!right.value.empty())
