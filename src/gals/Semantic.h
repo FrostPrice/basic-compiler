@@ -20,11 +20,21 @@ using namespace std;
 class Semantic
 {
 private:
+    struct ExpressionScope
+    {
+        SymbolTable::SymbolInfo *symbol;           // For complex symbols like arrays or functions
+        int arrayDepth;                            // Depth of the array access
+        ExpressionController expressionController; // Controller for managing expressions
+
+        ExpressionScope(SymbolTable::SymbolInfo *symbol = nullptr, int arrayDepth = 0)
+            : symbol(symbol), arrayDepth(arrayDepth) {}
+    };
+
     SymbolTable::SymbolInfo *currentSymbol = nullptr;     // Current symbol being processed
     SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Declaration symbol being processed
     SymbolTable::SymbolInfo *functionSymbol = nullptr;    // Current function being processed
 
-    queue<tuple<SymbolTable::SymbolInfo *, int, ExpressionController>> symbolEvaluateQueue; // Stack to manage symbols in expressions
+    queue<ExpressionScope> expressionScopeQueue; // Stack to manage symbols in expressions
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
@@ -39,13 +49,13 @@ private:
     int loopDepth = 0; // Loop depth for break and continue statements
 
     SemanticTable::Types switchResultType; // Type of the switch expression
-    int switchDepth = 0;                   // Switch depth for break and continue statements
+    int switchDepth = 0;
 
 public:
     Semantic()
     {
         // Initialize the symbol evaluate queue with an empty entry
-        symbolEvaluateQueue.push(make_tuple(nullptr, 0, ExpressionController()));
+        expressionScopeQueue.push(ExpressionScope());
     }
     Assembly assembly; // Assembly object to generate assembly code
 
@@ -128,7 +138,7 @@ public:
     {
         using Entry = ExpressionController::ExpressionsEntry;
 
-        auto *orig = &get<2>(symbolEvaluateQueue.front()).expressionStack;
+        stack<Entry> *orig = &expressionScopeQueue.front().expressionController.expressionStack;
 
         if (orig->empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
@@ -142,8 +152,8 @@ public:
         }
         reverse(tokens.begin(), tokens.end());
 
-        if (symbolEvaluateQueue.size() > 1)
-            symbolEvaluateQueue.pop();
+        if (expressionScopeQueue.size() > 1)
+            expressionScopeQueue.pop();
 
         // Convert to RPN using precedence
         vector<Entry> rpn;
@@ -307,7 +317,7 @@ public:
 
     void validateOneOfTypes(std::initializer_list<SemanticTable::Types> types)
     {
-        stack<ExpressionController::ExpressionsEntry> expressionStack = get<2>(symbolEvaluateQueue.front()).expressionStack;
+        stack<ExpressionController::ExpressionsEntry> expressionStack = expressionScopeQueue.front().expressionController.expressionStack;
 
         if (expressionStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
