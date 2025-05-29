@@ -76,9 +76,7 @@ void Semantic::executeAction(int action, const Token *token)
         // * Assembly generation
         string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
         this->assembly.addComment("Assign value to " + label);
-        // if (this->hasToCleanAccumulator)
         this->assembly.addText("LDI", "0"); // This makes sure the ACC (Register) is empty for the assignment
-        // this->hasToCleanAccumulator = true;
 
         // Criar flag de controle para determinar se eh array e se deve gerar um codigo assembly diferente
 
@@ -799,14 +797,6 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
         {
-            // stack<ExpressionController::ExpressionsEntry> expStack = get<2>(this->symbolEvaluateQueue.back()).expressionStack;
-            // if (expStack.size() == 1 && isNumber(expStack.top().value))
-            //     this->arrayValues.push_back(expStack.top().value);
-            // else
-            //     this->arrayValues.push_back("-1");
-
-            this->arrayValues.push_back("-1");
-
             // Set array index
             this->assembly.addText("LDI", to_string(arrayLengthsStack.top()));
             this->assembly.addText("STO", "$indr");
@@ -895,7 +885,6 @@ void Semantic::executeAction(int action, const Token *token)
     case 56: // END ARRAY ACCESS
     {
         auto [symbol, arrayDepth, _] = this->symbolEvaluateQueue.back();
-        // this->symbolEvaluateQueue.pop();
 
         if (arrayDepth < symbol->arraySize.size())
             throw SemanticError("Invalid value from array access");

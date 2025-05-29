@@ -24,8 +24,6 @@ private:
     SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Declaration symbol being processed
     SymbolTable::SymbolInfo *functionSymbol = nullptr;    // Current function being processed
 
-    // ExpressionController expressionController; // Expression object to manage expressions
-
     queue<tuple<SymbolTable::SymbolInfo *, int, ExpressionController>> symbolEvaluateQueue; // Stack to manage symbols in expressions
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
@@ -33,7 +31,6 @@ private:
     vector<vector<int>> valueArraySizes; // Array dimensions of the declaration array value
     stack<int> arrayLengthsStack;        // Array length of inner arrays in declaration array value
     int arrayDepth = -1;                 // Array depth of the last identifier
-    vector<string> arrayValues;          // Array values of the last identifier
     bool hasToCleanAccumulator = true;   // Flag to indicate if the accumulator needs to be cleaned
 
     vector<int> functionArraySizes;    // Array dimensions of the function array value
