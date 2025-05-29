@@ -26,16 +26,18 @@ public:
         SemanticTable::OperationsBinary binaryOperation;               // Binary operation
         SemanticTable::OperationsUnary unaryOperation;                 // Unary operation
         string value;
+        bool hasOwnScope; // Indicates if the entry has its own scope (arrays and functions)
     };
 
     stack<ExpressionsEntry> expressionStack; // Stack to manage expressions
 
-    void pushType(SemanticTable::Types type, const string &value)
+    void pushType(SemanticTable::Types type, const string &value, bool hasOwnScope = false)
     {
         ExpressionsEntry entry;
         entry.kind = ExpressionsEntry::VALUE;
         entry.entryType = type;
         entry.value = value;
+        entry.hasOwnScope = hasOwnScope; // Set if the entry has its own scope
         expressionStack.push(entry);
     }
 
@@ -46,6 +48,7 @@ public:
         entry.kind = ExpressionsEntry::BINARY_OP;
         entry.binaryOperation = op;
         entry.value = value;
+        entry.hasOwnScope = false;
         expressionStack.push(entry);
     }
 
@@ -56,6 +59,7 @@ public:
         entry.kind = ExpressionsEntry::UNARY_OP;
         entry.unaryOperation = op;
         entry.value = value;
+        entry.hasOwnScope = false;
         expressionStack.push(entry);
     }
 };

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <stack>
+#include <queue>
 #include <optional>
 #include <algorithm>
 
@@ -23,9 +24,9 @@ private:
     SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Declaration symbol being processed
     SymbolTable::SymbolInfo *functionSymbol = nullptr;    // Current function being processed
 
-    ExpressionController expressionController; // Expression object to manage expressions
+    // ExpressionController expressionController; // Expression object to manage expressions
 
-    stack<tuple<SymbolTable::SymbolInfo *, int, ExpressionController>> symbolEvaluateStack; // Stack to manage symbols in expressions
+    queue<tuple<SymbolTable::SymbolInfo *, int, ExpressionController>> symbolEvaluateQueue; // Stack to manage symbols in expressions
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
@@ -44,6 +45,11 @@ private:
     int switchDepth = 0;                   // Switch depth for break and continue statements
 
 public:
+    Semantic()
+    {
+        // Initialize the symbol evaluate queue with an empty entry
+        symbolEvaluateQueue.push(make_tuple(nullptr, 0, ExpressionController()));
+    }
     Assembly assembly; // Assembly object to generate assembly code
 
     vector<string> warnings; // Warnings generated during semantic analysis
@@ -121,13 +127,11 @@ public:
     SemanticTable::Types reduceExpressionAndGetType(
         SemanticTable::Types expectedType = SemanticTable::Types::__NULL,
         bool validate = false,
-        bool willBeParameter = false)
+        bool shouldLoad = false)
     {
         using Entry = ExpressionController::ExpressionsEntry;
 
-        auto *orig = symbolEvaluateStack.empty()
-                         ? &expressionController.expressionStack
-                         : &get<2>(symbolEvaluateStack.top()).expressionStack;
+        auto *orig = &get<2>(symbolEvaluateQueue.front()).expressionStack;
 
         if (orig->empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
@@ -140,6 +144,9 @@ public:
             orig->pop();
         }
         reverse(tokens.begin(), tokens.end());
+
+        if (symbolEvaluateQueue.size() > 1)
+            symbolEvaluateQueue.pop();
 
         // Convert to RPN using precedence
         vector<Entry> rpn;
@@ -175,7 +182,17 @@ public:
             {
                 eval.push(tok);
                 if (rpn.size() == 1)
-                    assembly.emitLoad(this->symbolTable, tok, willBeParameter);
+                {
+                    // if (tok.hasOwnScope)
+                    // {
+                    //     SemanticTable::Types resultType = reduceExpressionAndGetType();
+                    //     Entry out;
+                    //     out.kind = ExpressionController::ExpressionsEntry::VALUE;
+                    //     out.entryType = static_cast<SemanticTable::Types>(resultType);
+                    //     eval.push(out);
+                    // }
+                    assembly.emitLoad(this->symbolTable, tok, shouldLoad);
+                }
             }
             else if (tok.kind == Entry::UNARY_OP)
             {
@@ -191,6 +208,10 @@ public:
                 ExpressionController::ExpressionsEntry out;
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
                 out.entryType = static_cast<SemanticTable::Types>(resultType);
+                if (tok.hasOwnScope)
+                {
+                    reduceExpressionAndGetType();
+                }
                 eval.push(out);
 
                 assembly.emitUnaryOp(this->symbolTable, tok, opnd);
@@ -216,7 +237,7 @@ public:
                 out.entryType = static_cast<SemanticTable::Types>(resultType);
                 eval.push(out);
 
-                assembly.emitBinaryOp(symbolTable, tok, l, r, willBeParameter);
+                assembly.emitBinaryOp(symbolTable, tok, l, r, shouldLoad);
             }
         }
 
@@ -289,9 +310,7 @@ public:
 
     void validateOneOfTypes(std::initializer_list<SemanticTable::Types> types)
     {
-        stack<ExpressionController::ExpressionsEntry> expressionStack = symbolEvaluateStack.empty()
-                                                                            ? expressionController.expressionStack
-                                                                            : get<2>(symbolEvaluateStack.top()).expressionStack;
+        stack<ExpressionController::ExpressionsEntry> expressionStack = get<2>(symbolEvaluateQueue.front()).expressionStack;
 
         if (expressionStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
