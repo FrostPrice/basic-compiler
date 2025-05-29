@@ -198,7 +198,7 @@ public:
                     //     out.entryType = static_cast<SemanticTable::Types>(resultType);
                     //     eval.push(out);
                     // }
-                    assembly.emitLoad(this->symbolTable, tok, shouldLoad);
+                    assembly.emitLoad(this->symbolTable, tok);
                 }
             }
             else if (tok.kind == Entry::UNARY_OP)
@@ -221,7 +221,11 @@ public:
                 }
                 eval.push(out);
 
-                assembly.emitUnaryOp(this->symbolTable, tok, opnd);
+                // Check if the unary is the first left in entire the expression
+                if (eval.size() == 1)
+                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, true);
+                else
+                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, false);
             }
             else
             { // Binary op

@@ -76,11 +76,8 @@ void Semantic::executeAction(int action, const Token *token)
         // * Assembly generation
         string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
         this->assembly.addComment("Assign value to " + label);
-        this->assembly.addText("LDI", "0"); // This makes sure the ACC (Register) is empty for the assignment
 
-        // Criar flag de controle para determinar se eh array e se deve gerar um codigo assembly diferente
-
-        reduceExpressionAndGetType(matchedSymbol->dataType, true);
+        reduceExpressionAndGetType(matchedSymbol->dataType, true, true);
         matchedSymbol->isInitialized = true;
 
         // * Assembly generation
@@ -695,8 +692,6 @@ void Semantic::executeAction(int action, const Token *token)
 
         if (symbol->symbolClassification == SymbolTable::ARRAY || symbol->arraySize.size() > 0)
             break;
-
-        cout << "Pushing symbol value: " << lexeme << " of type: " << symbol->dataType << endl;
 
         this->expressionScopeQueue.back().expressionController.pushType(symbol->dataType, lexeme);
 

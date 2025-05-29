@@ -84,8 +84,7 @@ public:
     }
 
     void emitLoad(SymbolTable &symTable,
-                  const ExpressionController::ExpressionsEntry &entry,
-                  bool shouldLoad)
+                  const ExpressionController::ExpressionsEntry &entry)
     {
         // ! Guard clause to allow only INT type for now
         if (entry.entryType != SemanticTable::Types::INT)
@@ -93,7 +92,7 @@ public:
 
         if (isNumber(entry.value, true))
         {
-            addText(shouldLoad ? "LDI" : "ADDI", entry.value);
+            addText("LDI", entry.value);
         }
         else
         {
@@ -106,30 +105,39 @@ public:
                 addText("LDV", label);
                 return; // Array loading is handled separately
             }
-            addText(shouldLoad ? "LD" : "ADD", label);
+            addText("LD", label);
         }
     }
 
     void emitUnaryOp(SymbolTable &symTable,
                      const ExpressionController::ExpressionsEntry &op,
-                     const ExpressionController::ExpressionsEntry &operand)
+                     const ExpressionController::ExpressionsEntry &operand, bool shouldLoad = false)
     {
         // ! Guard clause to allow only INT type for now
         if (operand.entryType != SemanticTable::Types::INT)
             return;
 
+        if (shouldLoad)
+        {
+            emitLoad(symTable, operand);
+        }
+
         if (op.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
         {
             if (isNumber(operand.value, true))
             {
-                addText("ADDI", operand.value);
+                if (!shouldLoad)
+                    addText("ADDI", operand.value);
                 addText("NOT", "");
             }
             else
             {
-                auto *symbol = symTable.getSymbol(operand.value);
-                string label = generateAssemblyLabel(symbol->id, symbol->scope);
-                addText("ADD", label);
+                if (!shouldLoad)
+                {
+                    auto *symbol = symTable.getSymbol(operand.value);
+                    string label = generateAssemblyLabel(symbol->id, symbol->scope);
+                    addText("ADD", label);
+                }
                 addText("NOT", "");
             }
         }
@@ -161,7 +169,7 @@ public:
         if (!left.value.empty())
         {
             // We always load the left operand, and the rights operand are added
-            emitLoad(symTable, left, true);
+            emitLoad(symTable, left);
         }
 
         if (!right.value.empty())
