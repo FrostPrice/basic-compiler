@@ -78,6 +78,8 @@ void Assembly::emitLoad(SymbolTable &symTable,
 
         if (symbol->arraySize.size())
         {
+            if (semantic)
+                semantic->reduceExpressionAndGetType();
             addText("STO", "$indr");
             addText("LDV", label);
             return;

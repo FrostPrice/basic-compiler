@@ -189,17 +189,7 @@ public:
             {
                 eval.push(tok);
                 if (rpn.size() == 1)
-                {
-                    // if (tok.hasOwnScope)
-                    // {
-                    //     SemanticTable::Types resultType = reduceExpressionAndGetType();
-                    //     Entry out;
-                    //     out.kind = ExpressionController::ExpressionsEntry::VALUE;
-                    //     out.entryType = static_cast<SemanticTable::Types>(resultType);
-                    //     eval.push(out);
-                    // }
-                    assembly.emitLoad(this->symbolTable, tok);
-                }
+                    assembly.emitLoad(this->symbolTable, tok, this);
             }
             else if (tok.kind == Entry::UNARY_OP)
             {
