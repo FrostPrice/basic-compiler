@@ -158,7 +158,6 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
     {
         // We always load the left operand, and the rights operand are added
         emitLoad(symTable, left);
-        addText("STO", "1000"); // Store the left operand in a temporary location
     }
 
     if (!right.value.empty())
@@ -173,9 +172,13 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
 
             if (symbol->arraySize.size())
             {
+                addText("STO", this->tempAccAddress); // Store the left operand in a temporary location
                 semantic->reduceExpressionAndGetType();
                 addText("STO", "$indr");
                 addText("LDV", operand);
+                addText("STO", this->tempValueAddress);
+                operand = this->tempValueAddress; // Use the temporary location for the right operand
+                addText("LD", this->tempAccAddress);
             }
         }
 

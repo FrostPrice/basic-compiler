@@ -248,7 +248,7 @@ public:
                 out.entryType = static_cast<SemanticTable::Types>(resultType);
                 eval.push(out);
 
-                assembly.emitBinaryOp(symbolTable, tok, l, r, shouldLoad);
+                assembly.emitBinaryOp(symbolTable, tok, l, r, shouldLoad, this);
             }
         }
 
