@@ -34,7 +34,9 @@ private:
     SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Declaration symbol being processed
     SymbolTable::SymbolInfo *functionSymbol = nullptr;    // Current function being processed
 
-    queue<ExpressionScope> expressionScopeQueue; // Stack to manage symbols in expressions
+    vector<ExpressionScope> expressionScopeList; // Stack to manage symbols in expressions
+    stack<int> expressionScopeIndexes;           // Index of the current expression scope
+    int lastExpressionScopeIndex = 0;            // Index of the last expression scope
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
@@ -55,7 +57,8 @@ public:
     Semantic()
     {
         // Initialize the symbol evaluate queue with an empty entry
-        expressionScopeQueue.push(ExpressionScope());
+        expressionScopeList.push_back(ExpressionScope());
+        expressionScopeIndexes.push(0);
     }
     Assembly assembly; // Assembly object to generate assembly code
 
@@ -138,7 +141,9 @@ public:
     {
         using Entry = ExpressionController::ExpressionsEntry;
 
-        stack<Entry> *orig = &expressionScopeQueue.front().expressionController.expressionStack;
+        this->lastExpressionScopeIndex = 0;
+
+        stack<Entry> *orig = &expressionScopeList.front().expressionController.expressionStack;
 
         if (orig->empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
@@ -152,8 +157,8 @@ public:
         }
         reverse(tokens.begin(), tokens.end());
 
-        if (expressionScopeQueue.size() > 1)
-            expressionScopeQueue.pop();
+        if (expressionScopeList.size() > 1)
+            expressionScopeList.erase(expressionScopeList.begin());
 
         // Convert to RPN using precedence
         vector<Entry> rpn;
@@ -307,7 +312,7 @@ public:
 
     void validateOneOfTypes(std::initializer_list<SemanticTable::Types> types)
     {
-        stack<ExpressionController::ExpressionsEntry> expressionStack = expressionScopeQueue.front().expressionController.expressionStack;
+        stack<ExpressionController::ExpressionsEntry> expressionStack = expressionScopeList.front().expressionController.expressionStack;
 
         if (expressionStack.empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
