@@ -210,17 +210,9 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     }
     case 14: // REMAINDER ASSIGN OP (for integers)
-    {
-        if (lexeme == "%=")
-        {
-            this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
-
-            this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER, lexeme);
-        }
-        else
-        {
-            throw SemanticError("Invalid operator: " + lexeme);
-        }
+    {        // %=
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER, lexeme);
 
         break;
     }
