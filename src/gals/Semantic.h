@@ -215,17 +215,13 @@ public:
                 ExpressionController::ExpressionsEntry out;
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
                 out.entryType = static_cast<SemanticTable::Types>(resultType);
-                if (tok.hasOwnScope)
-                {
-                    reduceExpressionAndGetType();
-                }
                 eval.push(out);
 
                 // Check if the unary is the first left in entire the expression
                 if (eval.size() == 1)
-                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, true);
+                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, true, this);
                 else
-                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, false);
+                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, false, this);
             }
             else
             { // Binary op

@@ -96,7 +96,7 @@ void Assembly::emitUnaryOp(SymbolTable &symTable,
     if (operand.entryType != SemanticTable::Types::INT)
         return;
 
-    if (shouldLoad)
+    if (shouldLoad && !operand.hasOwnScope)
     {
         emitLoad(symTable, operand);
     }
@@ -117,6 +117,7 @@ void Assembly::emitUnaryOp(SymbolTable &symTable,
 
             if (symbol->arraySize.size())
             {
+                semantic->reduceExpressionAndGetType();
                 addText("STO", "$indr");
                 addText("LDV", label);
             }
