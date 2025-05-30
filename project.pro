@@ -12,12 +12,14 @@ SOURCES += src/main.cpp \
            src/gals/Constants.cpp \
            src/gals/Lexical.cpp \
            src/gals/Semantic.cpp \
-           src/gals/Assembly.hpp \
            src/gals/Syntactic.cpp \
            src/gals/SemanticTable.cpp \
-           src/ui/semantic_table_model.cpp
+           src/ui/semantic_table_model.cpp \
+           src/gals/Assembly.cpp
+
 
 HEADERS += src/ui/main_window.hpp \
+           src/gals/Assembly.hpp \
            src/ui/code_editor.hpp \
            src/gals/AnalysisError.h \
            src/gals/ExpressionController.hpp \
