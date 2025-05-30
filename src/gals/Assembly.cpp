@@ -160,7 +160,7 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
     if (!left.value.empty())
     {
         // We always load the left operand, and the rights operand are added
-        emitLoad(symTable, left);
+        emitLoad(symTable, left, semantic);
     }
 
     if (!right.value.empty())
