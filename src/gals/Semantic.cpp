@@ -203,18 +203,9 @@ void Semantic::executeAction(int action, const Token *token)
         break;
     }
     case 13: // ADD ASSIGN OP (for strings or numbers)
-
-    {
-        if (lexeme == "+=")
-        {
-            this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
-
-            this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, lexeme);
-        }
-        else
-        {
-            throw SemanticError("Invalid operator: " + lexeme);
-        }
+    {        // +=
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, lexeme);
 
         break;
     }
