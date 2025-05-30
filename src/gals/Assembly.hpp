@@ -14,6 +14,9 @@ private:
     vector<string> data;
     vector<string> text;
 
+    string tempAccAddress = "1000";   // Address for the temporary accumulator
+    string tempValueAddress = "1001"; // Address for the temporary value
+
     bool isNumber(const string &str, bool allowNegative = true)
     {
         if (str.empty())
