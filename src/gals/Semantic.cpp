@@ -869,8 +869,6 @@ void Semantic::executeAction(int action, const Token *token)
             throw SemanticError(SemanticError::SymbolNotOfClassification(matchedSymbol->id));
         }
 
-        this->assembly.addText("LDI", "0");
-
         this->expressionScopeQueue.back().expressionController.pushType(matchedSymbol->dataType, matchedSymbol->id, true);
 
         this->expressionScopeQueue.push(ExpressionScope(matchedSymbol));
