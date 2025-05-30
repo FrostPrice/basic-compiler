@@ -788,7 +788,6 @@ void Semantic::executeAction(int action, const Token *token)
             this->assembly.addText("STO", "$indr");
 
             // Set array value
-            this->assembly.addText("LDI", "0");
             reduceExpressionAndGetType(this->pendingType, true);
             this->assembly.addText("STOV", this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope));
 
