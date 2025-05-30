@@ -60,7 +60,8 @@ string Assembly::generateAssemblyLabel(const string &id, int scope)
 }
 
 void Assembly::emitLoad(SymbolTable &symTable,
-                        const ExpressionController::ExpressionsEntry &entry)
+                        const ExpressionController::ExpressionsEntry &entry,
+                        Semantic *semantic = nullptr)
 {
     // ! Guard clause to allow only INT type for now
     if (entry.entryType != SemanticTable::Types::INT)
@@ -87,7 +88,9 @@ void Assembly::emitLoad(SymbolTable &symTable,
 
 void Assembly::emitUnaryOp(SymbolTable &symTable,
                            const ExpressionController::ExpressionsEntry &op,
-                           const ExpressionController::ExpressionsEntry &operand, bool shouldLoad = false)
+                           const ExpressionController::ExpressionsEntry &operand,
+                           bool shouldLoad,
+                           Semantic *semantic = nullptr)
 {
     // ! Guard clause to allow only INT type for now
     if (operand.entryType != SemanticTable::Types::INT)

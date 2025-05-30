@@ -47,11 +47,14 @@ public:
     string generateAssemblyLabel(const string &id, int scope);
 
     void emitLoad(SymbolTable &symTable,
-                  const ExpressionController::ExpressionsEntry &entry);
+                  const ExpressionController::ExpressionsEntry &entry,
+                  Semantic *semantic);
 
     void emitUnaryOp(SymbolTable &symTable,
                      const ExpressionController::ExpressionsEntry &op,
-                     const ExpressionController::ExpressionsEntry &operand, bool shouldLoad);
+                     const ExpressionController::ExpressionsEntry &operand,
+                     bool shouldLoad,
+                     Semantic *semantic);
 
     void emitBinaryOp(SymbolTable &symTable,
                       const ExpressionController::ExpressionsEntry &op,
