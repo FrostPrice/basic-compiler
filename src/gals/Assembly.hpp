@@ -54,10 +54,7 @@ public:
                   Semantic *semantic);
 
     void emitUnaryOp(SymbolTable &symTable,
-                     const ExpressionController::ExpressionsEntry &op,
-                     const ExpressionController::ExpressionsEntry &operand,
-                     bool shouldLoad,
-                     Semantic *semantic);
+                     const ExpressionController::ExpressionsEntry &op);
 
     void emitBinaryOp(SymbolTable &symTable,
                       const ExpressionController::ExpressionsEntry &op,

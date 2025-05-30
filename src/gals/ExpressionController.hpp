@@ -59,7 +59,7 @@ public:
         entry.kind = ExpressionsEntry::UNARY_OP;
         entry.unaryOperation = op;
         entry.value = value;
-        entry.hasOwnScope = false;
+        entry.hasOwnScope = true; // Unary operators always have their own scope
         expressionStack.push(entry);
     }
 };

@@ -232,7 +232,12 @@ void Semantic::executeAction(int action, const Token *token)
         {
             ExpressionController *expController = &this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController;
             if (expController->expressionStack.empty() || expController->expressionStack.top().kind == ExpressionController::ExpressionsEntry::BINARY_OP)
+            {
                 expController->pushUnaryOp(SemanticTable::OperationsUnary::NEG, lexeme);
+
+                this->expressionScopeList.push_back(ExpressionScope());
+                this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
+            }
             else
             {
                 validateOneOfTypes({
@@ -316,13 +321,6 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 16: // ADD OP (for numbers and strings)
     {
-        validateOneOfTypes({
-            SemanticTable::Types::INT,
-            SemanticTable::Types::FLOAT,
-            SemanticTable::Types::DOUBLE,
-            SemanticTable::Types::STRING,
-        });
-
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, lexeme);
 
         break;
@@ -357,6 +355,9 @@ void Semantic::executeAction(int action, const Token *token)
         else if (lexeme == "~")
         {
             this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushUnaryOp(SemanticTable::OperationsUnary::BITWISE_NOT, lexeme);
+
+            this->expressionScopeList.push_back(ExpressionScope());
+            this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
         }
         else if (lexeme == "<<")
         {
@@ -620,6 +621,8 @@ void Semantic::executeAction(int action, const Token *token)
     case 31: // INT VALUE
     {
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(SemanticTable::INT, lexeme);
+        this->closeUnaryScopeIfNeeded();
+
         break;
     }
     case 32: // DECIMAL VALUE
@@ -857,6 +860,8 @@ void Semantic::executeAction(int action, const Token *token)
             throw SemanticError("Invalid value from array access");
 
         this->expressionScopeIndexes.pop();
+
+        this->closeUnaryScopeIfNeeded();
         break;
     }
     case 61: // VALIDATE EXPRESSION

@@ -198,25 +198,20 @@ public:
             }
             else if (tok.kind == Entry::UNARY_OP)
             {
-                if (eval.empty())
-                    throw SemanticError("Not enough operands for unary operator");
-
-                auto opnd = eval.top();
-                eval.pop();
-                auto resultType = SemanticTable::unaryResultType(opnd.entryType, tok.unaryOperation);
-                if (resultType == SemanticTable::ERR)
-                    throw SemanticError("Invalid unary op on type " + SemanticError::typeToString(opnd.entryType));
-
-                ExpressionController::ExpressionsEntry out;
-                out.kind = ExpressionController::ExpressionsEntry::VALUE;
-                out.entryType = static_cast<SemanticTable::Types>(resultType);
-                eval.push(out);
-
                 // Check if the unary is the first left in entire the expression
-                if (eval.size() == 1)
-                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, true, this);
-                else
-                    assembly.emitUnaryOp(this->symbolTable, tok, opnd, false, this);
+                // SemanticTable::Types entryType = reduceExpressionAndGetType(SemanticTable::__NULL, false, eval.size() == 0);
+
+                // assembly.addComment("Unary operation: " + SemanticError::typeToString(entryType) + " " + tok.value);
+                // assembly.emitUnaryOp(this->symbolTable, tok, this);
+
+                // auto resultType = SemanticTable::unaryResultType(entryType, tok.unaryOperation);
+                // if (resultType == SemanticTable::ERR)
+                //     throw SemanticError("Invalid unary op on type " + SemanticError::typeToString(entryType));
+
+                // ExpressionController::ExpressionsEntry out;
+                // out.kind = ExpressionController::ExpressionsEntry::VALUE;
+                // out.entryType = static_cast<SemanticTable::Types>(entryType); // Default type for unary operations
+                // eval.push(out);
             }
             else
             { // Binary op
@@ -261,6 +256,18 @@ public:
         }
 
         return result.entryType;
+    }
+
+    void closeUnaryScopeIfNeeded()
+    {
+        if (this->expressionScopeIndexes.size() > 1)
+        {
+            int lastScopeIndex = this->expressionScopeIndexes.top();
+            this->expressionScopeIndexes.pop();
+            ExpressionScope lastExpressionScope = this->expressionScopeList[this->expressionScopeIndexes.top()];
+            if (lastExpressionScope.expressionController.expressionStack.top().kind != ExpressionController::ExpressionsEntry::UNARY_OP)
+                this->expressionScopeIndexes.push(lastScopeIndex);
+        }
     }
 
     void validateSymbolClassification(SymbolTable::SymbolInfo *symbol, SymbolTable::SymbolClassification classification)

@@ -88,61 +88,16 @@ void Assembly::emitLoad(SymbolTable &symTable,
     }
 }
 
-void Assembly::emitUnaryOp(SymbolTable &symTable,
-                           const ExpressionController::ExpressionsEntry &op,
-                           const ExpressionController::ExpressionsEntry &operand,
-                           bool shouldLoad,
-                           Semantic *semantic = nullptr)
+void Assembly::emitUnaryOp(SymbolTable &symTable, const ExpressionController::ExpressionsEntry &op)
 {
-    // ! Guard clause to allow only INT type for now
-    if (operand.entryType != SemanticTable::Types::INT)
-        return;
-
-    if (shouldLoad && !operand.hasOwnScope)
-    {
-        emitLoad(symTable, operand);
-    }
-
     if (op.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
     {
-        if (isNumber(operand.value, true))
-        {
-            if (!shouldLoad)
-                addText("ADDI", operand.value);
-            addText("NOT", "");
-        }
-        else
-        {
-
-            auto *symbol = symTable.getSymbol(operand.value);
-            string label = generateAssemblyLabel(symbol->id, symbol->scope);
-
-            if (symbol->arraySize.size())
-            {
-                semantic->reduceExpressionAndGetType();
-                addText("STO", "$indr");
-                addText("LDV", label);
-            }
-            else if (!shouldLoad)
-            {
-                addText("ADD", label);
-            }
-
-            addText("NOT", "");
-        }
+        addText("NOT", "");
     }
     else if (op.unaryOperation == SemanticTable::OperationsUnary::NEG)
     {
-        if (isNumber(operand.value, true))
-        {
-            addText("SUBI", operand.value);
-        }
-        else
-        {
-            auto *symbol = symTable.getSymbol(operand.value);
-            string label = generateAssemblyLabel(symbol->id, symbol->scope);
-            addText("SUB", label);
-        }
+        addText("NOT", "");
+        addText("ADDI", "1");
     }
 }
 
