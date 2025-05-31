@@ -34,6 +34,24 @@ private:
         return true;
     }
 
+    string getTempAccAddress()
+    {
+        return to_string(tempAccAddressStack.top());
+    }
+
+    void addTempAccAddress()
+    {
+        tempAccAddressStack.push(tempAccAddressStack.top() + 1);
+    }
+
+    void popTempAccAddress()
+    {
+        if (tempAccAddressStack.size() > 1)
+        {
+            tempAccAddressStack.pop();
+        }
+    }
+
 public:
     string tempValueAddress = "1000";  // Address for the temporary value
     string arrayIndexAddress = "1001"; // Address for the array index
