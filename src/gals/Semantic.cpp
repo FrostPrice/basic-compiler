@@ -668,6 +668,7 @@ void Semantic::executeAction(int action, const Token *token)
             break;
 
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(symbol->dataType, lexeme);
+        this->closeUnaryScopeIfNeeded();
 
         break;
     }

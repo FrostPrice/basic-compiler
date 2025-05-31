@@ -88,8 +88,10 @@ void Assembly::emitLoad(SymbolTable &symTable,
     }
 }
 
-void Assembly::emitUnaryOp(SymbolTable &symTable, const ExpressionController::ExpressionsEntry &op)
+void Assembly::emitUnaryOp(ExpressionController::ExpressionsEntry &op, Semantic *semantic)
 {
+    op.entryType = semantic->reduceExpressionAndGetType();
+
     if (op.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
     {
         addText("NOT", "");
@@ -103,16 +105,17 @@ void Assembly::emitUnaryOp(SymbolTable &symTable, const ExpressionController::Ex
 
 void Assembly::emitBinaryOp(SymbolTable &symTable,
                             const ExpressionController::ExpressionsEntry &op,
-                            const ExpressionController::ExpressionsEntry &left,
-                            const ExpressionController::ExpressionsEntry &right,
+                            ExpressionController::ExpressionsEntry &left,
+                            ExpressionController::ExpressionsEntry &right,
                             bool shouldLoad,
                             Semantic *semantic)
 {
-    // ! Guard clause to allow only INT type for now
-    if (left.entryType != SemanticTable::Types::INT || right.entryType != SemanticTable::Types::INT)
-        return;
-
-    if (!left.value.empty())
+    if (left.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
+    {
+        // If the left operand is a unary operation, we need to emit it first
+        emitUnaryOp(left, semantic);
+    }
+    else if (!left.value.empty())
     {
         // We always load the left operand, and the rights operand are added
         emitLoad(symTable, left, semantic);
@@ -120,23 +123,35 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
 
     if (!right.value.empty())
     {
-        bool isRightNum = isNumber(right.value, true);
+        bool isRightNum = isNumber(right.value, false);
         string operand = right.value;
 
         if (!isRightNum)
         {
-            auto *symbol = symTable.getSymbol(right.value);
-            operand = generateAssemblyLabel(symbol->id, symbol->scope);
+            SymbolTable::SymbolInfo *symbol = symTable.getSymbol(right.value);
 
-            if (symbol->arraySize.size())
+            if (right.hasOwnScope)
             {
-                addText("STO", this->tempAccAddress); // Store the left operand in a temporary location
-                semantic->reduceExpressionAndGetType();
-                addText("STO", "$indr");
-                addText("LDV", operand);
+                addText("STO", this->tempAccAddress);
+
+                if (right.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
+                {
+                    emitUnaryOp(right, semantic);
+                }
+                else if (symbol && symbol->arraySize.size())
+                {
+                    semantic->reduceExpressionAndGetType();
+                    addText("STO", "$indr");
+                    addText("LDV", operand);
+                }
+
                 addText("STO", this->tempValueAddress);
-                operand = this->tempValueAddress; // Use the temporary location for the right operand
+                operand = this->tempValueAddress;
                 addText("LD", this->tempAccAddress);
+            }
+            else
+            {
+                operand = generateAssemblyLabel(symbol->id, symbol->scope);
             }
         }
 

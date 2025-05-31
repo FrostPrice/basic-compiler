@@ -53,13 +53,12 @@ public:
                   const ExpressionController::ExpressionsEntry &entry,
                   Semantic *semantic);
 
-    void emitUnaryOp(SymbolTable &symTable,
-                     const ExpressionController::ExpressionsEntry &op);
+    void emitUnaryOp(ExpressionController::ExpressionsEntry &op, Semantic *semantic);
 
     void emitBinaryOp(SymbolTable &symTable,
                       const ExpressionController::ExpressionsEntry &op,
-                      const ExpressionController::ExpressionsEntry &left,
-                      const ExpressionController::ExpressionsEntry &right,
+                      ExpressionController::ExpressionsEntry &left,
+                      ExpressionController::ExpressionsEntry &right,
                       bool shouldLoad,
                       Semantic *semantic);
 };

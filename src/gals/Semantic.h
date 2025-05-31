@@ -188,7 +188,7 @@ public:
         }
 
         stack<Entry> eval;
-        for (auto &tok : rpn)
+        for (auto tok : rpn)
         {
             if (tok.kind == Entry::VALUE)
             {
@@ -198,20 +198,10 @@ public:
             }
             else if (tok.kind == Entry::UNARY_OP)
             {
-                // Check if the unary is the first left in entire the expression
-                // SemanticTable::Types entryType = reduceExpressionAndGetType(SemanticTable::__NULL, false, eval.size() == 0);
+                if (rpn.size() == 1)
+                    assembly.emitUnaryOp(tok, this);
 
-                // assembly.addComment("Unary operation: " + SemanticError::typeToString(entryType) + " " + tok.value);
-                // assembly.emitUnaryOp(this->symbolTable, tok, this);
-
-                // auto resultType = SemanticTable::unaryResultType(entryType, tok.unaryOperation);
-                // if (resultType == SemanticTable::ERR)
-                //     throw SemanticError("Invalid unary op on type " + SemanticError::typeToString(entryType));
-
-                // ExpressionController::ExpressionsEntry out;
-                // out.kind = ExpressionController::ExpressionsEntry::VALUE;
-                // out.entryType = static_cast<SemanticTable::Types>(entryType); // Default type for unary operations
-                // eval.push(out);
+                eval.push(tok);
             }
             else
             { // Binary op
@@ -223,6 +213,8 @@ public:
                 auto l = eval.top();
                 eval.pop();
 
+                assembly.emitBinaryOp(symbolTable, tok, l, r, shouldLoad, this);
+
                 auto resultType = SemanticTable::resultBinaryType(l.entryType, r.entryType, tok.binaryOperation);
                 if (resultType == SemanticTable::ERR)
                     throw SemanticError("Invalid binary op between types " +
@@ -233,8 +225,6 @@ public:
                 out.kind = ExpressionController::ExpressionsEntry::VALUE;
                 out.entryType = static_cast<SemanticTable::Types>(resultType);
                 eval.push(out);
-
-                assembly.emitBinaryOp(symbolTable, tok, l, r, shouldLoad, this);
             }
         }
 
