@@ -34,9 +34,9 @@ private:
     SymbolTable::SymbolInfo *declarationSymbol = nullptr; // Declaration symbol being processed
     SymbolTable::SymbolInfo *functionSymbol = nullptr;    // Current function being processed
 
-    vector<ExpressionScope> expressionScopeList; // Stack to manage symbols in expressions
-    stack<int> expressionScopeIndexes;           // Index of the current expression scope
-    int lastExpressionScopeIndex = 0;            // Index of the last expression scope
+    vector<ExpressionScope> expressionScopeList = vector<ExpressionScope>({ExpressionScope()}); // Stack to manage symbols in expressions
+    stack<int> expressionScopeIndexes = stack<int>({0});                                        // Index of the current expression scope
+    int lastExpressionScopeIndex = 0;                                                           // Index of the last expression scope
 
     SemanticTable::Types pendingType = SemanticTable::Types::__NULL; // Type of the last identifier
 
@@ -54,12 +54,6 @@ private:
     int switchDepth = 0;
 
 public:
-    Semantic()
-    {
-        // Initialize the symbol evaluate queue with an empty entry
-        expressionScopeList.push_back(ExpressionScope());
-        expressionScopeIndexes.push(0);
-    }
     Assembly assembly; // Assembly object to generate assembly code
 
     vector<string> warnings; // Warnings generated during semantic analysis
