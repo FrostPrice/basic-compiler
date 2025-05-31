@@ -859,7 +859,8 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 57: // ARRAY VALUE ASSIGNMENT
     {
-        if (this->declarationSymbol->arraySize.size())
+        SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        if (matchedSymbol->arraySize.size())
         {
             this->assembly.emitArrayAssignment(this);
         }
