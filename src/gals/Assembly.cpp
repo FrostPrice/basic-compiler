@@ -121,7 +121,7 @@ void Assembly::emitUnaryOp(SymbolTable &symTable, ExpressionController::Expressi
         }
         else if (op.value == "--")
         {
-            addText("SUBI", "-1");
+            addText("SUBI", "1");
         }
 
         auto *symbol = symTable.getSymbol(right.value);
