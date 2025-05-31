@@ -117,16 +117,16 @@ void Assembly::emitUnaryOp(SymbolTable &symTable, ExpressionController::Expressi
     {
         if (op.value == "++")
         {
-            addText("LDI", "1");
+            addText("ADDI", "1");
         }
         else if (op.value == "--")
         {
-            addText("LDI", "-1");
+            addText("SUBI", "-1");
         }
 
         auto *symbol = symTable.getSymbol(right.value);
         string label = generateAssemblyLabel(symbol->id, symbol->scope);
-        addText("ADD", label);
+        // addText("ADD", label);
         addText("STO", label);
     }
 }
