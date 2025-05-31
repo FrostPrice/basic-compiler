@@ -259,12 +259,6 @@ void Semantic::executeAction(int action, const Token *token)
         }
         else if (lexeme == "-")
         {
-            validateOneOfTypes({
-                SemanticTable::Types::INT,
-                SemanticTable::Types::FLOAT,
-                SemanticTable::Types::DOUBLE,
-            });
-
             this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION, lexeme);
         }
         else if (lexeme == "*")
