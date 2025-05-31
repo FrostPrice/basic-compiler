@@ -248,16 +248,7 @@ void Semantic::executeAction(int action, const Token *token)
     case 15:
     { // NUMBER OP (for numbers)
         // Arithmetic operations
-        if (lexeme == "+")
-        {
-            validateOneOfTypes({
-                SemanticTable::Types::INT,
-                SemanticTable::Types::FLOAT,
-                SemanticTable::Types::DOUBLE,
-            });
-            this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, lexeme);
-        }
-        else if (lexeme == "-")
+        if (lexeme == "-")
         {
             this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION, lexeme);
         }
