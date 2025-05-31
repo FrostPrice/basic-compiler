@@ -132,7 +132,8 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
 
             if (right.hasOwnScope)
             {
-                addText("STO", this->tempAccAddress);
+                addText("STO", to_string(this->tempAccAddressStack.top()));
+                this->tempAccAddressStack.push(this->tempAccAddressStack.top() + 1);
 
                 if (right.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
                 {
@@ -147,7 +148,9 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
 
                 addText("STO", this->tempValueAddress);
                 operand = this->tempValueAddress;
-                addText("LD", this->tempAccAddress);
+
+                this->tempAccAddressStack.pop();
+                addText("LD", to_string(this->tempAccAddressStack.top()));
             }
             else
             {

@@ -2,6 +2,7 @@
 #define ASSEMBLY_H
 
 #include <vector>
+#include <stack>
 #include <string>
 
 using namespace std;
@@ -14,8 +15,8 @@ private:
     vector<string> data;
     vector<string> text;
 
-    string tempAccAddress = "1000";   // Address for the temporary accumulator
-    string tempValueAddress = "1001"; // Address for the temporary value
+    stack<int> tempAccAddressStack = stack<int>({1001}); // Temporary accumulator address stack
+    string tempValueAddress = "1000";                    // Address for the temporary value
 
     bool isNumber(const string &str, bool allowNegative = true)
     {
