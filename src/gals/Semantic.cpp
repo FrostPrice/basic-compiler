@@ -75,7 +75,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         // * Assembly generation
         string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
-        this->assembly.addComment("Assign value to " + label);
+        this->assembly.addComment("Assigning value to " + label);
 
         reduceExpressionAndGetType(matchedSymbol->dataType, true, true);
         matchedSymbol->isInitialized = true;
@@ -763,13 +763,16 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
         {
+            string label = this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope);
+            this->assembly.addComment("Assigning value to " + label + "[" + to_string(arrayLengthsStack.top()) + "]");
+
             // Set array index
             this->assembly.addText("LDI", to_string(arrayLengthsStack.top()));
             this->assembly.addText("STO", "$indr");
 
             // Set array value
             reduceExpressionAndGetType(this->pendingType, true);
-            this->assembly.addText("STOV", this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope));
+            this->assembly.addText("STOV", label);
 
             this->assembly.addBlankLine();
         }
@@ -862,7 +865,11 @@ void Semantic::executeAction(int action, const Token *token)
         SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
         if (matchedSymbol->arraySize.size())
         {
+            string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
+            this->assembly.addComment("Storing array index for " + label);
+
             this->assembly.emitArrayAssignment(this);
+            this->assembly.addBlankLine();
         }
         break;
     }
