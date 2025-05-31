@@ -126,8 +126,11 @@ void Assembly::emitUnaryOp(SymbolTable &symTable, ExpressionController::Expressi
 
         auto *symbol = symTable.getSymbol(right.value);
         string label = generateAssemblyLabel(symbol->id, symbol->scope);
-        // addText("ADD", label);
-        addText("STO", label);
+
+        if (symbol->arraySize.size())
+            addText("STOV", label);
+        else
+            addText("STO", label);
     }
 }
 
