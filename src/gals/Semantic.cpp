@@ -230,23 +230,13 @@ void Semantic::executeAction(int action, const Token *token)
         }
         else if (lexeme == "-")
         {
-            ExpressionController *expController = &this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController;
-            if (expController->expressionStack.empty() || expController->expressionStack.top().kind == ExpressionController::ExpressionsEntry::BINARY_OP)
-            {
-                expController->pushUnaryOp(SemanticTable::OperationsUnary::NEG, lexeme);
+            validateOneOfTypes({
+                SemanticTable::Types::INT,
+                SemanticTable::Types::FLOAT,
+                SemanticTable::Types::DOUBLE,
+            });
 
-                this->expressionScopeList.push_back(ExpressionScope());
-                this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
-            }
-            else
-            {
-                validateOneOfTypes({
-                    SemanticTable::Types::INT,
-                    SemanticTable::Types::FLOAT,
-                    SemanticTable::Types::DOUBLE,
-                });
-                expController->pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION, lexeme);
-            }
+            this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUBTRACTION, lexeme);
         }
         else if (lexeme == "*")
         {
@@ -420,6 +410,15 @@ void Semantic::executeAction(int action, const Token *token)
         }
         break;
 
+    case 20: // UNARY NEGATION OP
+    {
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushUnaryOp(SemanticTable::OperationsUnary::NEG, lexeme);
+
+        this->expressionScopeList.push_back(ExpressionScope());
+        this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
+
+        break;
+    }
     // * 21-30: Functions, blocks, I/O *
     case 21: // FUNCTION_DEF_PARAMETER
     {

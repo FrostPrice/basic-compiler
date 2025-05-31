@@ -19,6 +19,7 @@ Action Number, Description
 #17, INTEGER OP, (Only integer operator), for integers
 #18, BOOLEAN OP, (boolean operator), for boolean values
 #19, EQ NE OP, (Equal and not equal operator), for everything
+#20, UNARY NEGATION OP, (Unary negation operator), for numbers
 
 // 21 - 30: Functions, subroutines and blocks
 #21, FUNCTION_DEF_PARAMETER, (Function definition parameter)

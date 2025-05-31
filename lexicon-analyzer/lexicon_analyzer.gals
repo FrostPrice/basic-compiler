@@ -222,7 +222,7 @@ VAL_FALSE = ID : "false"
 <op_bitwise> ::= BIT_LSHIFT #17 | BIT_RSHIFT #17;
 <op_arit_low> ::= PLUS #16 | MINUS #15;
 <op_arit_high> ::= MULTIPLY #15 | DIVIDE #15 | REMAINDER #17;
-<op_neg> ::= MINUS #15 | BIT_NOT #17 | NOT #18;
+<op_neg> ::= MINUS #20 | BIT_NOT #17 | NOT #18;
 <op_inc> ::= INCREMENT #15 | DECREMENT #15;
 
 // Values and Function Calls
