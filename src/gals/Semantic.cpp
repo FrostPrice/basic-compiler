@@ -135,26 +135,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 6: // ARRAY SIZE DECLARATION
     {
-        if (this->expressionScopeList.back().expressionController.expressionStack.size() == 1)
-        {
-            ExpressionController::ExpressionsEntry entry = this->expressionScopeList.back().expressionController.expressionStack.top();
-            if (entry.entryType == SemanticTable::INT)
-            {
-                int value = isNumber(entry.value, false) ? stoi(entry.value) : -1;
-
-                this->declarationSymbol->arraySize.push_back(value);
-                this->expressionScopeList.back().expressionController.expressionStack.pop();
-            }
-            else
-            {
-                throw SemanticError(SemanticError::InvalidValueForArrayLength());
-            }
-        }
-        else
-        {
-            // reduceExpressionAndGetType(SemanticTable::INT, true);
-            this->declarationSymbol->arraySize.push_back(-1);
-        }
+        this->declarationSymbol->arraySize.push_back(stoi(lexeme));
 
         break;
     }

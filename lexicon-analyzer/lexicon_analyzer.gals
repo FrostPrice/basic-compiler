@@ -193,7 +193,7 @@ VAL_FALSE = ID : "false"
 <declaration> ::= <data_type> <dec_assign_list>;
 <dec_assign_list> ::= <dec_assign_list> "," <dec_assign> | <dec_assign> ;
 <dec_assign> ::= ID #1 #3 ASSIGNMENT <expression>  #4 | ID #1 #8 <array_dec> ASSIGNMENT #7 <array> #5 | ID #1 #8 <array_dec> #5 | ID #1 #3;
-<array_dec> ::= <array_dec> "[" <expression> #6 "]" | "[" <expression> #6 "]";
+<array_dec> ::= <array_dec> "[" VAL_INTEGER #6 "]" | "[" VAL_INTEGER #6 "]";
 
 // Assignments
 <assignment> ::= <assignable> #57 <op_assign> <expression> #4;
