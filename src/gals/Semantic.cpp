@@ -297,10 +297,12 @@ void Semantic::executeAction(int action, const Token *token)
         else if (lexeme == "--")
         {
             this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT, lexeme);
+            this->createExpressionScope();
         }
         else if (lexeme == "++")
         {
             this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushUnaryOp(SemanticTable::OperationsUnary::INCREMENT, lexeme);
+            this->createExpressionScope();
         }
         else
         {

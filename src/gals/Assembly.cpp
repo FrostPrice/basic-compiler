@@ -71,7 +71,7 @@ void Assembly::emitLoad(SymbolTable &symTable,
     {
         if (entry.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
         {
-            emitUnaryOp(entry, semantic);
+            emitUnaryOp(symTable, entry, semantic);
         }
         else
         {
@@ -91,8 +91,11 @@ void Assembly::emitLoad(SymbolTable &symTable,
     }
 }
 
-void Assembly::emitUnaryOp(ExpressionController::ExpressionsEntry &op, Semantic *semantic)
+void Assembly::emitUnaryOp(SymbolTable &symTable, ExpressionController::ExpressionsEntry &op, Semantic *semantic)
 {
+    // Get the right operand for the unary operation before reducing the stack
+    auto right = semantic->getNextExpressionEntry();
+
     op.entryType = semantic->reduceExpressionAndGetType();
 
     if (op.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT || op.unaryOperation == SemanticTable::OperationsUnary::NOT)
@@ -103,6 +106,22 @@ void Assembly::emitUnaryOp(ExpressionController::ExpressionsEntry &op, Semantic 
     {
         addText("NOT", "");
         addText("ADDI", "1");
+    }
+    else if (op.unaryOperation == SemanticTable::OperationsUnary::INCREMENT)
+    {
+        if (op.value == "++")
+        {
+            addText("LDI", "1");
+        }
+        else if (op.value == "--")
+        {
+            addText("LDI", "-1");
+        }
+
+        auto *symbol = symTable.getSymbol(right.value);
+        string label = generateAssemblyLabel(symbol->id, symbol->scope);
+        addText("ADD", label);
+        addText("STO", label);
     }
 }
 
@@ -115,8 +134,12 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
 {
     if (left.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
     {
+        // Get the right operand for the unary operation before reducing the stack
+        auto rightOperand = semantic->getNextExpressionEntry();
+        emitLoad(symTable, rightOperand, semantic);
+
         // If the left operand is a unary operation, we need to emit it first
-        emitUnaryOp(left, semantic);
+        emitUnaryOp(symTable, left, semantic);
     }
     else if (!left.value.empty())
     {
@@ -140,7 +163,7 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
 
                 if (right.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
                 {
-                    emitUnaryOp(right, semantic);
+                    emitUnaryOp(symTable, right, semantic);
                 }
                 else if (symbol && symbol->arraySize.size())
                 {

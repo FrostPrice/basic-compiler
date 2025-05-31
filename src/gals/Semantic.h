@@ -67,6 +67,15 @@ public:
     void executeAction(int action, const Token *token);
 
     // Helper Functions
+    ExpressionController::ExpressionsEntry getNextExpressionEntry()
+    {
+        if (expressionScopeList.empty() || expressionScopeList.front().expressionController.expressionStack.empty())
+            throw SemanticError(SemanticError::ExpressionStackEmpty());
+
+        ExpressionController::ExpressionsEntry entry = expressionScopeList.front().expressionController.expressionStack.top();
+        return entry;
+    };
+
     bool isNumber(const string &str, bool allowNegative = true)
     {
         if (str.empty())
