@@ -242,6 +242,12 @@ public:
         return result.entryType;
     }
 
+    void createExpressionScope(SymbolTable::SymbolInfo *symbol = nullptr)
+    {
+        this->expressionScopeList.push_back(ExpressionScope(symbol));
+        this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
+    }
+
     void closeUnaryScopeIfNeeded()
     {
         if (this->expressionScopeIndexes.size() > 1)

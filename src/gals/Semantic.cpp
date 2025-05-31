@@ -346,8 +346,7 @@ void Semantic::executeAction(int action, const Token *token)
         {
             this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushUnaryOp(SemanticTable::OperationsUnary::BITWISE_NOT, lexeme);
 
-            this->expressionScopeList.push_back(ExpressionScope());
-            this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
+            this->createExpressionScope();
         }
         else if (lexeme == "<<")
         {
@@ -414,8 +413,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushUnaryOp(SemanticTable::OperationsUnary::NEG, lexeme);
 
-        this->expressionScopeList.push_back(ExpressionScope());
-        this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
+        createExpressionScope();
 
         break;
     }
@@ -684,9 +682,7 @@ void Semantic::executeAction(int action, const Token *token)
         symbol->isUsed = true;
         this->functionSymbol = symbol;
 
-        this->expressionScopeList.push_back(ExpressionScope(this->functionSymbol));
-
-        this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
+        this->createExpressionScope(this->functionSymbol);
 
         break;
     }
@@ -847,8 +843,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(matchedSymbol->dataType, matchedSymbol->id, true);
 
-        this->expressionScopeList.push_back(ExpressionScope(matchedSymbol));
-        this->expressionScopeIndexes.push(++this->lastExpressionScopeIndex);
+        this->createExpressionScope(matchedSymbol);
 
         break;
     }
