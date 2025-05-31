@@ -140,7 +140,7 @@ public:
     SemanticTable::Types reduceExpressionAndGetType(
         SemanticTable::Types expectedType = SemanticTable::Types::__NULL,
         bool validate = false,
-        bool shouldLoad = false)
+        bool shouldLoad = true)
     {
         using Entry = ExpressionController::ExpressionsEntry;
 
@@ -196,7 +196,7 @@ public:
             if (tok.kind == Entry::VALUE || tok.kind == Entry::UNARY_OP)
             {
                 if (rpn.size() == 1)
-                    assembly.emitLoad(this->symbolTable, tok, this);
+                    assembly.emitLoad(this->symbolTable, tok, this, shouldLoad);
                 eval.push(tok);
             }
             else
@@ -209,7 +209,7 @@ public:
                 auto l = eval.top();
                 eval.pop();
 
-                assembly.emitBinaryOp(symbolTable, tok, l, r, shouldLoad, this);
+                assembly.emitBinaryOp(symbolTable, tok, l, r, this);
 
                 auto resultType = SemanticTable::resultBinaryType(l.entryType, r.entryType, tok.binaryOperation);
                 if (resultType == SemanticTable::ERR)

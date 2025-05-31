@@ -196,7 +196,7 @@ VAL_FALSE = ID : "false"
 <array_dec> ::= <array_dec> "[" <expression> #6 "]" | "[" <expression> #6 "]";
 
 // Assignments
-<assignment> ::= <assignable> <op_assign> <expression> #4;
+<assignment> ::= <assignable> #57 <op_assign> <expression> #4;
 
 // Expression
 <expression> ::= <expression> OR #18 <exp2> | <exp2>;

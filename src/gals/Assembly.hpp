@@ -15,8 +15,7 @@ private:
     vector<string> data;
     vector<string> text;
 
-    stack<int> tempAccAddressStack = stack<int>({1001}); // Temporary accumulator address stack
-    string tempValueAddress = "1000";                    // Address for the temporary value
+    stack<int> tempAccAddressStack = stack<int>({1002}); // Temporary accumulator address stack
 
     bool isNumber(const string &str, bool allowNegative = true)
     {
@@ -36,6 +35,9 @@ private:
     }
 
 public:
+    string tempValueAddress = "1000";  // Address for the temporary value
+    string arrayIndexAddress = "1001"; // Address for the array index
+
     void addData(const string id, const string value);
 
     void addData(const string id, const int arrayLength);
@@ -52,7 +54,8 @@ public:
 
     void emitLoad(SymbolTable &symTable,
                   ExpressionController::ExpressionsEntry &entry,
-                  Semantic *semantic);
+                  Semantic *semantic,
+                  bool shouldLoad);
 
     void emitUnaryOp(SymbolTable &symTable, ExpressionController::ExpressionsEntry &op, Semantic *semantic);
 
@@ -60,8 +63,9 @@ public:
                       const ExpressionController::ExpressionsEntry &op,
                       ExpressionController::ExpressionsEntry &left,
                       ExpressionController::ExpressionsEntry &right,
-                      bool shouldLoad,
                       Semantic *semantic);
+
+    void emitArrayAssignment(Semantic *semantic);
 };
 
 #endif // ASSEMBLY_H

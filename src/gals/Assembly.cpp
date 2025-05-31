@@ -61,8 +61,11 @@ string Assembly::generateAssemblyLabel(const string &id, int scope)
 
 void Assembly::emitLoad(SymbolTable &symTable,
                         ExpressionController::ExpressionsEntry &entry,
-                        Semantic *semantic = nullptr)
+                        Semantic *semantic,
+                        bool shouldLoad = true)
 {
+    auto *symbol = symTable.getSymbol(entry.value);
+
     if (isNumber(entry.value, false))
     {
         addText("LDI", entry.value);
@@ -75,19 +78,22 @@ void Assembly::emitLoad(SymbolTable &symTable,
         }
         else
         {
-            auto *symbol = symTable.getSymbol(entry.value);
-            string label = generateAssemblyLabel(symbol->id, symbol->scope);
             if (symbol->arraySize.size())
             {
                 semantic->reduceExpressionAndGetType();
-                addText("STO", "$indr");
-                addText("LDV", label);
-            }
-            else
-            {
-                addText("LD", label);
+                if (shouldLoad)
+                {
+                    string label = generateAssemblyLabel(symbol->id, symbol->scope);
+                    addText("STO", "$indr");
+                    addText("LDV", label);
+                }
             }
         }
+    }
+    else
+    {
+        string label = generateAssemblyLabel(symbol->id, symbol->scope);
+        addText("LD", label);
     }
 }
 
@@ -129,19 +135,9 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
                             const ExpressionController::ExpressionsEntry &op,
                             ExpressionController::ExpressionsEntry &left,
                             ExpressionController::ExpressionsEntry &right,
-                            bool shouldLoad,
                             Semantic *semantic)
 {
-    if (left.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
-    {
-        // Get the right operand for the unary operation before reducing the stack
-        auto rightOperand = semantic->getNextExpressionEntry();
-        emitLoad(symTable, rightOperand, semantic);
-
-        // If the left operand is a unary operation, we need to emit it first
-        emitUnaryOp(symTable, left, semantic);
-    }
-    else if (!left.value.empty())
+    if (!left.value.empty())
     {
         // We always load the left operand, and the rights operand are added
         emitLoad(symTable, left, semantic);
@@ -165,8 +161,9 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
                 {
                     emitUnaryOp(symTable, right, semantic);
                 }
-                else if (symbol && symbol->arraySize.size())
+                else if (symbol->arraySize.size())
                 {
+                    operand = generateAssemblyLabel(symbol->id, symbol->scope);
                     semantic->reduceExpressionAndGetType();
                     addText("STO", "$indr");
                     addText("LDV", operand);
@@ -218,4 +215,10 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
                 addText(isRightNum ? "XORI" : "XOR", operand);
         }
     }
+}
+
+void Assembly::emitArrayAssignment(Semantic *semantic)
+{
+    semantic->reduceExpressionAndGetType(SemanticTable::__NULL, false, false);
+    addText("STO", this->arrayIndexAddress);
 }

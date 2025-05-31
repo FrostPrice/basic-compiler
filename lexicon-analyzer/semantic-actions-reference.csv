@@ -61,6 +61,7 @@ Action Number, Description
 #54, ARRAY ACCESS, (Expression to get array value)
 #55, ARRAY SYMBOL, (Array symbol)
 #56, END ARRAY ACCESS, (Remove symbol)
+#57, ARRAY VALUE ASSIGNMENT, (Array value assignment)
 
 // 61 - 70: utils
 #61, VALIDATE EXPRESSION, (Clear expression stack)

@@ -81,7 +81,18 @@ void Semantic::executeAction(int action, const Token *token)
         matchedSymbol->isInitialized = true;
 
         // * Assembly generation
-        this->assembly.addText("STO", label);
+        if (matchedSymbol->arraySize.size())
+        {
+            this->assembly.addText("STO", this->assembly.tempValueAddress);
+            this->assembly.addText("LD", this->assembly.arrayIndexAddress);
+            this->assembly.addText("STO", "$indr");
+            this->assembly.addText("LD", this->assembly.tempValueAddress);
+            this->assembly.addText("STOV", label);
+        }
+        else
+        {
+            this->assembly.addText("STO", label);
+        }
         this->assembly.addBlankLine();
 
         break;
@@ -189,6 +200,12 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 12: // ARITHMETICAL ASSIGN OP (only for numbers)
     {
+        SymbolTable::SymbolInfo *matchedSymbol =
+            symbolTable.getSymbol(this->currentSymbol->id);
+
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+        this->declarationSymbol = matchedSymbol;
+
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
 
         if (lexeme == "-=")
@@ -204,6 +221,12 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 13: // ADD ASSIGN OP (for strings or numbers)
     {        // +=
+        SymbolTable::SymbolInfo *matchedSymbol =
+            symbolTable.getSymbol(this->currentSymbol->id);
+
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+        this->declarationSymbol = matchedSymbol;
+
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::SUM, lexeme);
 
@@ -211,6 +234,12 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 14: // REMAINDER ASSIGN OP (for integers)
     {        // %=
+        SymbolTable::SymbolInfo *matchedSymbol =
+            symbolTable.getSymbol(this->currentSymbol->id);
+
+        validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
+        this->declarationSymbol = matchedSymbol;
+
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(this->currentSymbol->dataType, this->currentSymbol->id);
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::REMAINDER, lexeme);
 
@@ -860,6 +889,14 @@ void Semantic::executeAction(int action, const Token *token)
         this->expressionScopeIndexes.pop();
 
         this->closeUnaryScopeIfNeeded();
+        break;
+    }
+    case 57: // ARRAY VALUE ASSIGNMENT
+    {
+        if (this->declarationSymbol->arraySize.size())
+        {
+            this->assembly.emitArrayAssignment(this);
+        }
         break;
     }
     case 61: // VALIDATE EXPRESSION
