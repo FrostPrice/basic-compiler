@@ -95,7 +95,7 @@ void Assembly::emitUnaryOp(ExpressionController::ExpressionsEntry &op, Semantic 
 {
     op.entryType = semantic->reduceExpressionAndGetType();
 
-    if (op.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT)
+    if (op.unaryOperation == SemanticTable::OperationsUnary::BITWISE_NOT || op.unaryOperation == SemanticTable::OperationsUnary::NOT)
     {
         addText("NOT", "");
     }

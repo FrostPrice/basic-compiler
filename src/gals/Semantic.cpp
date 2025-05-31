@@ -388,6 +388,7 @@ void Semantic::executeAction(int action, const Token *token)
         else if (lexeme == "!")
         {
             this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushUnaryOp(SemanticTable::OperationsUnary::NOT, lexeme);
+            this->createExpressionScope();
         }
         else
         {
