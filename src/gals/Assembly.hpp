@@ -51,7 +51,7 @@ public:
     string generateAssemblyLabel(const string &id, int scope);
 
     void emitLoad(SymbolTable &symTable,
-                  const ExpressionController::ExpressionsEntry &entry,
+                  ExpressionController::ExpressionsEntry &entry,
                   Semantic *semantic);
 
     void emitUnaryOp(ExpressionController::ExpressionsEntry &op, Semantic *semantic);

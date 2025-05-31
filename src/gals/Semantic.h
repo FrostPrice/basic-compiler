@@ -184,17 +184,10 @@ public:
         stack<Entry> eval;
         for (auto tok : rpn)
         {
-            if (tok.kind == Entry::VALUE)
+            if (tok.kind == Entry::VALUE || tok.kind == Entry::UNARY_OP)
             {
-                eval.push(tok);
                 if (rpn.size() == 1)
                     assembly.emitLoad(this->symbolTable, tok, this);
-            }
-            else if (tok.kind == Entry::UNARY_OP)
-            {
-                if (rpn.size() == 1)
-                    assembly.emitUnaryOp(tok, this);
-
                 eval.push(tok);
             }
             else

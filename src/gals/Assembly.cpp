@@ -60,31 +60,34 @@ string Assembly::generateAssemblyLabel(const string &id, int scope)
 }
 
 void Assembly::emitLoad(SymbolTable &symTable,
-                        const ExpressionController::ExpressionsEntry &entry,
+                        ExpressionController::ExpressionsEntry &entry,
                         Semantic *semantic = nullptr)
 {
-    // ! Guard clause to allow only INT type for now
-    if (entry.entryType != SemanticTable::Types::INT)
-        return;
-
-    if (isNumber(entry.value, true))
+    if (isNumber(entry.value, false))
     {
         addText("LDI", entry.value);
     }
-    else
+    else if (entry.hasOwnScope)
     {
-        auto *symbol = symTable.getSymbol(entry.value);
-        string label = generateAssemblyLabel(symbol->id, symbol->scope);
-
-        if (symbol->arraySize.size())
+        if (entry.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
         {
-            if (semantic)
-                semantic->reduceExpressionAndGetType();
-            addText("STO", "$indr");
-            addText("LDV", label);
-            return;
+            emitUnaryOp(entry, semantic);
         }
-        addText("LD", label);
+        else
+        {
+            auto *symbol = symTable.getSymbol(entry.value);
+            string label = generateAssemblyLabel(symbol->id, symbol->scope);
+            if (symbol->arraySize.size())
+            {
+                semantic->reduceExpressionAndGetType();
+                addText("STO", "$indr");
+                addText("LDV", label);
+            }
+            else
+            {
+                addText("LD", label);
+            }
+        }
     }
 }
 
