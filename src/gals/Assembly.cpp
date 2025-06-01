@@ -90,6 +90,8 @@ void Assembly::emitLoad(SymbolTable &symTable,
             }
         }
     }
+    else if (entry.entryType != SemanticTable::Types::INT)
+        return;
     else
     {
         string label = generateAssemblyLabel(symbol->id, symbol->scope);
@@ -178,10 +180,10 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
                 this->popTempAccAddress();
                 addText("LD", this->getTempAccAddress());
             }
+            else if (right.entryType != SemanticTable::Types::INT)
+                return;
             else
-            {
                 operand = generateAssemblyLabel(symbol->id, symbol->scope);
-            }
         }
 
         if (op.binaryOperation == SemanticTable::OperationsBinary::SUM)
