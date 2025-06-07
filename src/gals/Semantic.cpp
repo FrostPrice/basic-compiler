@@ -135,7 +135,14 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 6: // ARRAY SIZE DECLARATION
     {
-        this->declarationSymbol->arraySize.push_back(stoi(lexeme));
+        int arraySize = stoi(lexeme);
+
+        if (arraySize <= 1)
+        {
+            throw SemanticError("Bip architecture does not support arrays of size less than 2");
+        }
+
+        this->declarationSymbol->arraySize.push_back(arraySize);
 
         break;
     }
@@ -519,7 +526,6 @@ void Semantic::executeAction(int action, const Token *token)
 
         validateIfVariableIsDeclared(matchedSymbol, lexeme);
         validateIsVariable(matchedSymbol);
-        validateSymbolClassification(matchedSymbol, SymbolTable::VARIABLE);
 
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(matchedSymbol->dataType, matchedSymbol->id);
 

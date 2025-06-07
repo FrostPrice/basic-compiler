@@ -298,7 +298,7 @@ public:
 
     void validateIsVariable(SymbolTable::SymbolInfo *currentSymbol)
     {
-        if (currentSymbol->symbolClassification != SymbolTable::VARIABLE)
+        if (currentSymbol->symbolClassification != SymbolTable::VARIABLE && currentSymbol->symbolClassification != SymbolTable::ARRAY)
         {
             throw SemanticError(SemanticError::InputNonVariable(currentSymbol->id));
         }
