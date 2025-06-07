@@ -179,6 +179,13 @@ void Semantic::executeAction(int action, const Token *token)
 
         break;
     }
+    case 9:
+    {
+        SymbolTable::SymbolInfo *array =
+            symbolTable.getSymbolInScope(this->currentSymbol->id, this->symbolTable.getCurrentScope());
+
+        array->isUsed = true; // Mark the array as used
+    }
     // * 11-20: Operators *
     case 11: // ASSIGN OP
     {
