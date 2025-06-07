@@ -233,7 +233,7 @@ VAL_FALSE = ID : "false"
 <data_type> ::= INT #2 | FLOAT #2 | DOUBLE #2 | CHAR #2 | STRING #2 | BOOLEAN #2;
 
 //<assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
-<assignable> ::= ID #1 #55 <array_access> #56 | ID #1 #36;
+<assignable> ::= ID #1 #55 <array_access> #56 #9 | ID #1 #36;
 <array_access> ::= <array_access> "[" <expression> #54 "]" | "[" <expression> #54 "]";
 
 <array> ::= "[" #52 <array_nested> "]" #53 | "[" #52 <array_values> "]" #53;
