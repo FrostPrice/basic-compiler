@@ -209,11 +209,11 @@ VAL_FALSE = ID : "false"
 <exp8> ::= <exp8> <op_bitwise> <exp9> | <exp9>;
 <exp9> ::= <exp9> <op_arit_low> <exp10> | <exp10>;
 <exp10> ::= <exp10> <op_arit_high> <exp11> | <exp11>;
-<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> #36 | <exp12>;
+<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp12>;
 <exp12> ::= <val> | "(" #62 <expression> ")" #63;
 
-<val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call>;
-<assignable_func_call> ::= <assignable> #37 <func_call> | <assignable> #36;
+<val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call> | <assignable>;
+<assignable_func_call> ::= <assignable> #37 <func_call>;
 
 // Operators
 <op_assign> ::= ASSIGNMENT #11 | ASSIGNMENT_ADD #13 | ASSIGNMENT_SUB #12 | ASSIGNMENT_MULT #12 | ASSIGNMENT_DIVIDE #12 | ASSIGNMENT_REMAIN #14;
@@ -233,7 +233,7 @@ VAL_FALSE = ID : "false"
 <data_type> ::= INT #2 | FLOAT #2 | DOUBLE #2 | CHAR #2 | STRING #2 | BOOLEAN #2;
 
 //<assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
-<assignable> ::= ID #1 #55 <array_access> #56 | ID #1;
+<assignable> ::= ID #1 #55 <array_access> #56 | ID #1 #36;
 <array_access> ::= <array_access> "[" <expression> #54 "]" | "[" <expression> #54 "]";
 
 <array> ::= "[" #52 <array_nested> "]" #53 | "[" #52 <array_values> "]" #53;

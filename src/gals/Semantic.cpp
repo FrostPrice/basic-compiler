@@ -95,6 +95,8 @@ void Semantic::executeAction(int action, const Token *token)
         }
         this->assembly.addBlankLine();
 
+        this->declarationSymbol = nullptr;
+
         break;
     }
     case 5: // ASSIGNMENT ARRAY VALUE
@@ -131,6 +133,8 @@ void Semantic::executeAction(int action, const Token *token)
                                this->declarationSymbol->arraySize[0]);
 
         this->valueArraySizes.clear();
+
+        this->declarationSymbol = nullptr;
         break;
     }
     case 6: // ARRAY SIZE DECLARATION
@@ -178,8 +182,11 @@ void Semantic::executeAction(int action, const Token *token)
     // * 11-20: Operators *
     case 11: // ASSIGN OP
     {
-        SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->currentSymbol->id);
+        SymbolTable::SymbolInfo *matchedSymbol;
+        if (!this->declarationSymbol)
+            matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        else
+            matchedSymbol = this->declarationSymbol;
 
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
         this->declarationSymbol = matchedSymbol;
@@ -188,8 +195,11 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 12: // ARITHMETICAL ASSIGN OP (only for numbers)
     {
-        SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->currentSymbol->id);
+        SymbolTable::SymbolInfo *matchedSymbol;
+        if (!this->declarationSymbol)
+            matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        else
+            matchedSymbol = this->declarationSymbol;
 
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
         this->declarationSymbol = matchedSymbol;
@@ -209,8 +219,11 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 13: // ADD ASSIGN OP (for strings or numbers)
     {        // +=
-        SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->currentSymbol->id);
+        SymbolTable::SymbolInfo *matchedSymbol;
+        if (!this->declarationSymbol)
+            matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        else
+            matchedSymbol = this->declarationSymbol;
 
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
         this->declarationSymbol = matchedSymbol;
@@ -222,8 +235,11 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 14: // REMAINDER ASSIGN OP (for integers)
     {        // %=
-        SymbolTable::SymbolInfo *matchedSymbol =
-            symbolTable.getSymbol(this->currentSymbol->id);
+        SymbolTable::SymbolInfo *matchedSymbol;
+        if (!this->declarationSymbol)
+            matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        else
+            matchedSymbol = this->declarationSymbol;
 
         validateIfVariableIsDeclared(matchedSymbol, this->currentSymbol->id);
         this->declarationSymbol = matchedSymbol;
@@ -522,7 +538,11 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 26: // INPUT
     {
-        SymbolTable::SymbolInfo *matchedSymbol = this->symbolTable.getSymbol(this->currentSymbol->id);
+        SymbolTable::SymbolInfo *matchedSymbol;
+        if (!this->declarationSymbol)
+            matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        else
+            matchedSymbol = this->declarationSymbol;
 
         validateIfVariableIsDeclared(matchedSymbol, lexeme);
         validateIsVariable(matchedSymbol);
@@ -541,8 +561,19 @@ void Semantic::executeAction(int action, const Token *token)
         // * Assembly generation
         string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
         this->assembly.addComment("Getting input for " + label);
-        this->assembly.addText("LD", "$in_port");
-        this->assembly.addText("STO", this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope));
+        if (matchedSymbol->arraySize.size())
+        {
+            reduceExpressionAndGetType(matchedSymbol->dataType, true, false);
+            this->assembly.addText("STO", "$indr");
+            this->assembly.addText("LD", "$in_port");
+            this->assembly.addText("STOV", label);
+        }
+        else
+        {
+            this->assembly.addText("LD", "$in_port");
+            this->assembly.addText("STO", label);
+        }
+
         this->assembly.addBlankLine();
 
         break;
@@ -852,6 +883,9 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->createExpressionScope(matchedSymbol);
 
+        if (!this->declarationSymbol)
+            this->declarationSymbol = matchedSymbol;
+
         break;
     }
     case 56: // END ARRAY ACCESS
@@ -868,7 +902,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 57: // ARRAY VALUE ASSIGNMENT
     {
-        SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+        SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(this->declarationSymbol->id);
         if (matchedSymbol->arraySize.size())
         {
             string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
