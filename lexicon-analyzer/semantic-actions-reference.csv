@@ -8,7 +8,6 @@ Action Number, Description
 #6, ARRAY SIZE DECLARATION, (Array size declaration)
 #7, ARRAY ASSIGNMENT VALUE, (Assignment value for arrays)
 #8, DECLARATION ARRAY, (Declaration of an array)
-#9, ARRAY USED IN EXPRESSION, (Set the array is used to true)
 
 // 11 - 20: operators and 
 #11, ASSIGN OP, (Assignment operator)
