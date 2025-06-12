@@ -925,6 +925,21 @@ void Semantic::executeAction(int action, const Token *token)
         this->reduceExpressionAndGetType();
         break;
     }
+    case 64: // IF END BLOCK
+    {
+        // string label = this->assembly.generateAssemblyLabel("ELSE", this->ifCounter);
+        // this->assembly.addText(label, "");
+        // this->ifCounter++;
+        break;
+    }
+    case 65: // ELSE END BLOCK
+    {
+        // string label = this->assembly.generateAssemblyLabel("ELSE_END", this->ifCounter);
+        // this->assembly.addText(label, "");
+        // this->ifCounter++;
+
+        break;
+    }
     default:
         cout << "Ação não reconhecida: " << action << endl;
         break;

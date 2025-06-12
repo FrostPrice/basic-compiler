@@ -214,6 +214,46 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
             addText(isRightNum ? "ADDI" : "ADD", operand);
         else if (op.binaryOperation == SemanticTable::OperationsBinary::SUBTRACTION)
             addText(isRightNum ? "SUBI" : "SUB", operand);
+        else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_HIGH)
+        {
+            addText(isRightNum ? "ADDI" : "ADD", operand);
+            string label = generateAssemblyLabel("ELSE", semantic->symbolTable.getCurrentScope());
+            if (op.value == ">")
+            {
+                addText("BLE", label);
+            }
+            else if (op.value == ">=")
+            {
+                addText("BLT", label);
+            }
+            else if (op.value == "<")
+            {
+                addText("BGE", label);
+            }
+            else if (op.value == "<=")
+            {
+                addText("BGT", label);
+            }
+            else if (op.value == "==")
+            {
+                addText("BNE", label);
+            }
+            else if (op.value == "!=")
+            {
+                addText("BEQ", label);
+            }
+            // TODO: Implement logic operators at bit level
+            // else if (op.value == "&&")
+            // {
+            //     // Logical AND
+            //     addText("AND", operand);
+            // }
+            // else if (op.value == "||")
+            // {
+            //     // Logical OR
+            //     addText("OR", operand);
+            // }
+        }
         else if (op.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
         {
             if (op.value == "<<")
