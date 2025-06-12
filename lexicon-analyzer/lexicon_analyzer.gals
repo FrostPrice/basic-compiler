@@ -252,9 +252,9 @@ VAL_FALSE = ID : "false"
 
 <loop> ::= <while_loop> | <for_loop> | <do_while_loop>;
 
-<if_statement> ::= IF "(" <expression> #41 ")" <block>
-                 | IF "(" <expression> #41 ")" <block> ELSE <block>
-                 | IF "(" <expression> #41 ")" <block> ELSE <if_statement>;
+<if_statement> ::= IF "(" <expression> #41 ")" <block> #64
+                 | IF "(" <expression> #41 ")" <block> #64 ELSE <block>
+                 | IF "(" <expression> #41 ")" <block> #64 ELSE <if_statement>;
 
 
 <switch_case> ::= SWITCH "(" <expression> #42 ")" "{" #23 <case_list> "}" #24 | SWITCH "(" <expression> #42 ")" "{" #23 <case_list> <default_case> "}" #24;
