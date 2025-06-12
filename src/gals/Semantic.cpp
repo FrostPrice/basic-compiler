@@ -431,10 +431,8 @@ void Semantic::executeAction(int action, const Token *token)
             SemanticTable::Types::BOOL,
         });
 
-        if (lexeme == "==")
-        {
-            this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_LOW, lexeme);
-        }
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushBinaryOp(SemanticTable::OperationsBinary::RELATION_LOW, lexeme);
+
         break;
 
     case 20: // UNARY NEGATION OP
