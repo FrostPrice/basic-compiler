@@ -163,25 +163,14 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
     if (!right.value.empty())
     {
         bool isRightNum = isNumber(right.value, false);
+        bool isRightBool = isBoolean(right.value);
         string operand = right.value;
 
-        if (!isRightNum)
+        if (!(isRightNum || isRightBool))
         {
             SymbolTable::SymbolInfo *symbol = symTable.getSymbol(right.value);
 
-            if (isBoolean(right.value))
-            {
-                // Load boolean values as integers (0 or 1)
-                if (right.value == "true")
-                {
-                    addText("LDI", "1");
-                }
-                else if (right.value == "false")
-                {
-                    addText("LDI", "0");
-                }
-            }
-            else if (right.hasOwnScope)
+            if (right.hasOwnScope)
             {
                 addText("STO", this->getTempAccAddress());
                 this->addTempAccAddress();
@@ -204,7 +193,7 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
                 this->popTempAccAddress();
                 addText("LD", this->getTempAccAddress());
             }
-            else if (right.entryType != SemanticTable::Types::INT)
+            else if (right.entryType != SemanticTable::Types::INT && right.entryType != SemanticTable::Types::BOOL)
                 return;
             else
                 operand = generateAssemblyLabel(symbol->id, symbol->scope);
@@ -243,17 +232,23 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
             {
                 addText("BEQ", label);
             }
-            // TODO: Implement logic operators at bit level
-            // else if (op.value == "&&")
-            // {
-            //     // Logical AND
-            //     addText("AND", operand);
-            // }
-            // else if (op.value == "||")
-            // {
-            //     // Logical OR
-            //     addText("OR", operand);
-            // }
+        }
+        else if (op.binaryOperation == SemanticTable::OperationsBinary::LOGICAL)
+        {
+            if (op.value == "&&")
+            {
+                if (isRightBool)
+                    addText("ANDI", operand == "true" ? "1" : "0");
+                else
+                    addText("AND", operand);
+            }
+            else if (op.value == "||")
+            {
+                if (isRightBool)
+                    addText("ORI", operand == "true" ? "1" : "0");
+                else
+                    addText("OR", operand);
+            }
         }
         else if (op.binaryOperation == SemanticTable::OperationsBinary::BITWISE)
         {
