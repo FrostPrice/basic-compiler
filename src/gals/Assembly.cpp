@@ -70,6 +70,18 @@ void Assembly::emitLoad(SymbolTable &symTable,
     {
         addText("LDI", entry.value);
     }
+    else if (isBoolean(entry.value))
+    {
+        // Load boolean values as integers (0 or 1)
+        if (entry.value == "true")
+        {
+            addText("LDI", "1");
+        }
+        else if (entry.value == "false")
+        {
+            addText("LDI", "0");
+        }
+    }
     else if (entry.hasOwnScope)
     {
         if (entry.kind == ExpressionController::ExpressionsEntry::UNARY_OP)
@@ -157,7 +169,19 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         {
             SymbolTable::SymbolInfo *symbol = symTable.getSymbol(right.value);
 
-            if (right.hasOwnScope)
+            if (isBoolean(right.value))
+            {
+                // Load boolean values as integers (0 or 1)
+                if (right.value == "true")
+                {
+                    addText("LDI", "1");
+                }
+                else if (right.value == "false")
+                {
+                    addText("LDI", "0");
+                }
+            }
+            else if (right.hasOwnScope)
             {
                 addText("STO", this->getTempAccAddress());
                 this->addTempAccAddress();

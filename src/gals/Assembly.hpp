@@ -34,6 +34,11 @@ private:
         return true;
     }
 
+    bool isBoolean(const string &str)
+    {
+        return str == "true" || str == "false";
+    }
+
     string getTempAccAddress()
     {
         return to_string(tempAccAddressStack.top());
