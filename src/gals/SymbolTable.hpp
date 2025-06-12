@@ -40,9 +40,10 @@ public:
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
     };
 
+    int currentScope = 0; // Current scope level for the symbol table
+
     // Private variables
 private:
-    int currentScope = 0;           // Current scope level for the symbol table
     vector<SymbolInfo> symbolTable; // Vector to store all symbols
     stack<int> scopeStack;          // Stack to manage scopes
 

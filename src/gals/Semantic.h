@@ -53,10 +53,9 @@ private:
     SemanticTable::Types switchResultType; // Type of the switch expression
     int switchDepth = 0;
 
-    int ifCounter = 0; // Counter for if statements
-
 public:
-    Assembly assembly; // Assembly object to generate assembly code
+    Assembly assembly;        // Assembly object to generate assembly code
+    stack<string> labelStack; // Counter for if statements
 
     vector<string> warnings; // Warnings generated during semantic analysis
     void reportWarning(const string &msg)

@@ -217,7 +217,8 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_HIGH)
         {
             addText(isRightNum ? "ADDI" : "ADD", operand);
-            string label = generateAssemblyLabel("ELSE", semantic->symbolTable.getCurrentScope());
+            string label = generateAssemblyLabel("ELSE", semantic->symbolTable.currentScope);
+            semantic->labelStack.push(label);
             if (op.value == ">")
             {
                 addText("BLE", label);
