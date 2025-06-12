@@ -72,7 +72,6 @@ void Assembly::emitLoad(SymbolTable &symTable,
     }
     else if (isBoolean(entry.value))
     {
-        // Load boolean values as integers (0 or 1)
         if (entry.value == "true")
         {
             addText("LDI", "1");
