@@ -212,19 +212,31 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
             semantic->labelStack.push(label);
             if (op.value == ">")
             {
-                addText("BLE", label);
+                if (semantic->invertLogicalOperation)
+                    addText("BLE", label);
+                else
+                    addText("BGT", label);
             }
             else if (op.value == ">=")
             {
-                addText("BLT", label);
+                if (semantic->invertLogicalOperation)
+                    addText("BLT", label);
+                else
+                    addText("BGE", label);
             }
             else if (op.value == "<")
             {
-                addText("BGE", label);
+                if (semantic->invertLogicalOperation)
+                    addText("BGE", label);
+                else
+                    addText("BLT", label);
             }
             else if (op.value == "<=")
             {
-                addText("BGT", label);
+                if (semantic->invertLogicalOperation)
+                    addText("BGT", label);
+                else
+                    addText("BLE", label);
             }
         }
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_LOW)
@@ -235,11 +247,17 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
 
             if (op.value == "==")
             {
-                addText("BNE", label);
+                if (semantic->invertLogicalOperation)
+                    addText("BNE", label);
+                else
+                    addText("BEQ", label);
             }
             else if (op.value == "!=")
             {
-                addText("BEQ", label);
+                if (semantic->invertLogicalOperation)
+                    addText("BEQ", label);
+                else
+                    addText("BNE", label);
             }
         }
         else if (op.binaryOperation == SemanticTable::OperationsBinary::LOGICAL)

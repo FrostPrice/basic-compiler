@@ -766,7 +766,8 @@ void Semantic::executeAction(int action, const Token *token)
     case 45: // DO WHILE CONDITION
     {
         reduceExpressionAndGetType();
-        loopDepth++; // Entering a loop
+        loopDepth++;                         // Entering a loop
+        this->invertLogicalOperation = true; // Inverting the condition for assembly generation
         break;
     }
     case 46: // FOR ASSIGNMENT OR DECLARATION
@@ -939,8 +940,13 @@ void Semantic::executeAction(int action, const Token *token)
 
         break;
     }
-    case 66: // DI WHILE INIT BLOCK
+    case 66: // DO WHILE INIT BLOCK
     {
+        string label = this->assembly.generateAssemblyLabel("BRANCH", this->symbolTable.getCurrentScope(), true);
+        this->labelStack.push(label);
+
+        this->invertLogicalOperation = false;
+
         break;
     }
     default:

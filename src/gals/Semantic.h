@@ -54,8 +54,9 @@ private:
     int switchDepth = 0;
 
 public:
-    Assembly assembly;        // Assembly object to generate assembly code
-    stack<string> labelStack; // Counter for if statements
+    Assembly assembly;                  // Assembly object to generate assembly code
+    stack<string> labelStack;           // Counter for if statements
+    bool invertLogicalOperation = true; // Flag to invert logical operations (FOR DO WHILE)
 
     vector<string> warnings; // Warnings generated during semantic analysis
     void reportWarning(const string &msg)
