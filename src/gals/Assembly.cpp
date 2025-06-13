@@ -54,9 +54,12 @@ string Assembly::generateAssembly()
     return assemblyCode;
 }
 
-string Assembly::generateAssemblyLabel(const string &id, int scope)
+string Assembly::generateAssemblyLabel(const string &id, int scope, bool isForJump = false)
 {
-    return id + "_" + to_string(scope);
+    if (isForJump)
+        return id + "_" + to_string(scope) + " :";
+    else
+        return id + "_" + to_string(scope);
 }
 
 void Assembly::emitLoad(SymbolTable &symTable,
@@ -205,7 +208,7 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_HIGH)
         {
             addText(isRightNum ? "SUBI" : "SUB", operand);
-            string label = generateAssemblyLabel("ELSE", semantic->symbolTable.currentScope);
+            string label = generateAssemblyLabel("BRANCH", semantic->symbolTable.currentScope);
             semantic->labelStack.push(label);
             if (op.value == ">")
             {

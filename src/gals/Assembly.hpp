@@ -73,7 +73,7 @@ public:
 
     string generateAssembly();
 
-    string generateAssemblyLabel(const string &id, int scope);
+    string generateAssemblyLabel(const string &id, int scope, bool isForJump);
 
     void emitLoad(SymbolTable &symTable,
                   ExpressionController::ExpressionsEntry &entry,
