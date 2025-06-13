@@ -230,7 +230,7 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_LOW)
         {
             addText(isRightNum || isRightBool ? "SUBI" : "SUB", operand);
-            string label = generateAssemblyLabel("ELSE", semantic->symbolTable.currentScope);
+            string label = generateAssemblyLabel("BRANCH", semantic->symbolTable.currentScope);
             semantic->labelStack.push(label);
 
             if (op.value == "==")
