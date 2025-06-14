@@ -248,10 +248,10 @@ VAL_FALSE = ID : "false"
 <func_call_params> ::= <func_call_params> "," <expression> #22 | <expression> #22;
 
 // Control Structures
-<while_loop> ::= WHILE "(" <expression> #44 ")" <block> #65;
+<while_loop> ::= WHILE #66 "(" <expression> #44 ")" <block> #65;
 <assign_or_dec> ::= <assignment> | <declaration>;
 <for_increment> ::= <assignment> | <expression>;
-<for_loop> ::= FOR "(" <assign_or_dec> #46 ";" <expression> #47 ";" <for_increment> #48 ")" <block> #67;
+<for_loop> ::= FOR #66 "(" <assign_or_dec> #46 ";" <expression> #47 ";" <for_increment> #48 ")" <block> #67;
 <do_while_loop> ::= DO #66 <block> WHILE "(" <expression> #45 ")" ";";
 
 <loop> ::= <while_loop> | <for_loop> | <do_while_loop>;
