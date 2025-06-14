@@ -477,7 +477,10 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 23: // BLOCK_INIT
     {
-        this->symbolTable.enterScope();
+        if (this->hasToCreateScope)
+            this->symbolTable.enterScope();
+        else
+            this->hasToCreateScope = true; // Reset the scope creation flag
 
         break;
     }
@@ -782,8 +785,10 @@ void Semantic::executeAction(int action, const Token *token)
         this->assembly.addBlankLine();
         break;
     }
-    case 46: // FOR ASSIGNMENT OR DECLARATION
+    case 46: // FOR STATEMENT
     {
+        this->symbolTable.enterScope();
+        this->hasToCreateScope = false; // We are already in a scope
         break;
     }
     case 47: // FOR CONDITION
@@ -807,6 +812,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         reduceExpressionAndGetType();
         this->assembly.setShouldKeepInstruction(false);
+
         break;
     }
     case 49: // BREAK
@@ -996,13 +1002,9 @@ void Semantic::executeAction(int action, const Token *token)
         {
             currentJumpType = Semantic::JumpType::WHILE;
         }
-        else if (lexeme == "for")
-        {
-            currentJumpType = Semantic::JumpType::FOR;
-        }
         else
         {
-            currentJumpType = Semantic::JumpType::NONE;
+            currentJumpType = Semantic::JumpType::FOR;
         }
 
         string name = this->assembly.generateAssemblyLabel(this->jumpTypeToString(currentJumpType), this->symbolTable.currentScope);

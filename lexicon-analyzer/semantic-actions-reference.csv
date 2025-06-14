@@ -48,7 +48,7 @@ Action Number, Description
 #43, CASE VALUE, (Case value)
 #44, WHILE CONDITION, (While loop condition)
 #45, DO WHILE CONDITION, (Do while loop condition)
-#46, FOR ASSIGNMENT OR DECLARATION, (For loop assignment or declaration)
+#46, FOR STATEMENT, (For loop assignment or declaration)
 #47, FOR CONDITION, (For loop condition)
 #48, FOR INCREMENT, (For loop increment)
 #49, BREAK, (Break statement)

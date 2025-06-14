@@ -53,6 +53,8 @@ private:
     SemanticTable::Types switchResultType; // Type of the switch expression
     int switchDepth = 0;
 
+    bool hasToCreateScope = true; // Flag to indicate if a new scope should be created
+
 public:
     Assembly assembly; // Assembly object to generate assembly code
     enum JumpType
