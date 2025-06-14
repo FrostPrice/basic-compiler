@@ -62,8 +62,9 @@ public:
         WHILE,     // Label for while loops
         FOR,       // Label for for loops
         DO_WHILE,  // Label for do-while loops
-        SWITCH     // Label for switch statements
-    } currentJumpType;
+        SWITCH,    // Label for switch statements
+        FUNCTION,  // Label for function definitions
+    };
     struct Label
     {
         string name;

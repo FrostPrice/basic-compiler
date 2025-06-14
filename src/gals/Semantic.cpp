@@ -723,14 +723,19 @@ void Semantic::executeAction(int action, const Token *token)
     // * 41-50: Conditionals and loops *
     case 41: // IF CONDITION
     {
-        this->currentJumpType = Semantic::JumpType::IF;
+        Semantic::Label label = Semantic::Label{
+            this->assembly.generateAssemblyLabel("IF", this->symbolTable.currentScope),
+            Semantic::JumpType::IF,
+        };
+        this->labelStack.push(label);
+
         reduceExpressionAndGetType(SemanticTable::Types::BOOL, true);
 
         break;
     }
     case 42: // SWITCH EXPRESSION
     {
-        this->currentJumpType = Semantic::JumpType::SWITCH;
+
         validateOneOfTypes({
             SemanticTable::Types::INT,
             SemanticTable::Types::FLOAT,
@@ -739,6 +744,12 @@ void Semantic::executeAction(int action, const Token *token)
             SemanticTable::Types::STRING,
             SemanticTable::Types::BOOL,
         });
+
+        Semantic::Label label = Semantic::Label{
+            this->assembly.generateAssemblyLabel("IF", this->symbolTable.currentScope),
+            Semantic::JumpType::SWITCH,
+        };
+        this->labelStack.push(label);
 
         this->switchResultType = reduceExpressionAndGetType();
 
@@ -752,14 +763,12 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 44: // WHILE CONDITION
     {
-        this->currentJumpType = Semantic::JumpType::WHILE;
         reduceExpressionAndGetType();
 
         break;
     }
     case 45: // DO WHILE CONDITION
     {
-        this->currentJumpType = Semantic::JumpType::DO_WHILE;
         reduceExpressionAndGetType();
         string name = this->labelStack.top().name;
         this->labelStack.pop();
@@ -775,7 +784,6 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 46: // FOR ASSIGNMENT OR DECLARATION
     {
-        this->currentJumpType = Semantic::JumpType::FOR;
         break;
     }
     case 47: // FOR CONDITION
@@ -979,27 +987,28 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 66: // LOOP INIT BLOCK
     {
+        Semantic::JumpType currentJumpType;
         if (lexeme == "do")
         {
-            this->currentJumpType = Semantic::JumpType::DO_WHILE;
+            currentJumpType = Semantic::JumpType::DO_WHILE;
         }
         else if (lexeme == "while")
         {
-            this->currentJumpType = Semantic::JumpType::WHILE;
+            currentJumpType = Semantic::JumpType::WHILE;
         }
         else if (lexeme == "for")
         {
-            this->currentJumpType = Semantic::JumpType::FOR;
+            currentJumpType = Semantic::JumpType::FOR;
         }
         else
         {
-            this->currentJumpType = Semantic::JumpType::NONE;
+            currentJumpType = Semantic::JumpType::NONE;
         }
 
-        string name = this->assembly.generateAssemblyLabel(this->jumpTypeToString(this->currentJumpType), this->symbolTable.currentScope);
+        string name = this->assembly.generateAssemblyLabel(this->jumpTypeToString(currentJumpType), this->symbolTable.currentScope);
         this->assembly.addText("INIT_" + name + ":", "");
 
-        Semantic::Label label = {name, this->currentJumpType};
+        Semantic::Label label = {name, currentJumpType};
         this->labelStack.push(label);
 
         loopDepth++; // Entering a loop

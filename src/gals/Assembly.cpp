@@ -232,10 +232,10 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
             addText(isRightNum ? "SUBI" : "SUB", operand);
 
             // Define the label name based on the current jump type
+            Semantic::Label label = semantic->labelStack.top();
             string name;
-            if (semantic->currentJumpType == Semantic::JumpType::DO_WHILE)
+            if (label.jumpType == Semantic::JumpType::DO_WHILE)
             {
-                Semantic::Label label = semantic->labelStack.top();
                 name = "INIT_" + label.name;
             }
             else
