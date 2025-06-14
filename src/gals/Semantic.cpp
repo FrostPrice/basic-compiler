@@ -453,6 +453,9 @@ void Semantic::executeAction(int action, const Token *token)
         this->currentSymbol->arraySize = this->functionArraySizes;
         this->symbolTable.addSymbol(*this->currentSymbol);
 
+        // * Assembly generation
+        this->assembly.addData(this->assembly.generateAssemblyLabel("FUNC_" + this->currentSymbol->id, newScope), "0");
+
         this->functionArraySizes.clear();
 
         break;
@@ -470,6 +473,8 @@ void Semantic::executeAction(int action, const Token *token)
             throw SemanticError("Too many parameters in function call");
 
         reduceExpressionAndGetType(currentParam->dataType, true);
+
+        // * Assembly generation
 
         this->parametersCountInFuncCall++;
 
@@ -621,6 +626,16 @@ void Semantic::executeAction(int action, const Token *token)
         this->currentSymbol->functionParams = 0; // Starts with 0 parameters
         this->currentSymbol->arraySize = this->functionArraySizes;
         this->symbolTable.addSymbol(*this->currentSymbol);
+
+        // * Assembly generation
+        string name = this->assembly.generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope);
+        this->assembly.addText("FUNC_" + name + ":", "");
+
+        Semantic::Label label{
+            name,
+            Semantic::JumpType::FUNCTION,
+        };
+        this->labelStack.push(label);
 
         this->functionSymbol = this->currentSymbol;
 
