@@ -864,22 +864,6 @@ void Semantic::executeAction(int action, const Token *token)
         auto [symbol, arrayDepth, expression] = this->expressionScopeList[this->expressionScopeIndexes.top()];
         if (arrayDepth < (int)symbol->arraySize.size())
         {
-            if (expression.expressionStack.size() == 1)
-            {
-                ExpressionController::ExpressionsEntry entry = expression.expressionStack.top();
-                if (entry.entryType == SemanticTable::INT)
-                {
-                    int value = isNumber(entry.value, false) ? stoi(entry.value) : -1;
-
-                    if (value >= symbol->arraySize[arrayDepth] && symbol->arraySize[arrayDepth] != -1)
-                        throw SemanticError("Array size exceeded");
-                }
-                else
-                {
-                    throw SemanticError(SemanticError::InvalidValueForArrayLength());
-                }
-            }
-
             this->expressionScopeList[this->expressionScopeIndexes.top()].arrayDepth++;
         }
         else
@@ -921,7 +905,15 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 57: // ARRAY VALUE ASSIGNMENT
     {
-        SymbolTable::SymbolInfo *matchedSymbol = symbolTable.getSymbol(this->declarationSymbol->id);
+        SymbolTable::SymbolInfo *matchedSymbol;
+        if (!this->declarationSymbol)
+        {
+            this->declarationSymbol = symbolTable.getSymbol(this->currentSymbol->id);
+            matchedSymbol = this->declarationSymbol;
+        }
+        else
+            matchedSymbol = symbolTable.getSymbol(this->declarationSymbol->id);
+
         if (matchedSymbol->arraySize.size())
         {
             string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope, false);

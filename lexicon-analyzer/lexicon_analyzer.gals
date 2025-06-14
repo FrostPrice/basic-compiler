@@ -144,6 +144,7 @@ VAL_FALSE = ID : "false"
 <data_type>
 //<assignable>
 <assignable>
+<variable>
 <array_access>
 <array>
 <array_nested>
@@ -152,6 +153,7 @@ VAL_FALSE = ID : "false"
 <func_call_params>
 <while_loop>
 <assign_or_dec>
+<for_increment>
 <for_loop>
 <do_while_loop>
 <loop>
@@ -209,10 +211,10 @@ VAL_FALSE = ID : "false"
 <exp8> ::= <exp8> <op_bitwise> <exp9> | <exp9>;
 <exp9> ::= <exp9> <op_arit_low> <exp10> | <exp10>;
 <exp10> ::= <exp10> <op_arit_high> <exp11> | <exp11>;
-<exp11> ::= <op_neg> <exp11> | <op_inc> <assignable> | <exp12>;
+<exp11> ::= <op_neg> <exp11> | <op_inc> <variable> | <exp12>;
 <exp12> ::= <val> | "(" #62 <expression> ")" #63;
 
-<val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call> | <assignable>;
+<val> ::= <val_number> | <val_string> | <val_boolean> | <assignable_func_call> | <variable>;
 <assignable_func_call> ::= <assignable> #37 <func_call>;
 
 // Operators
@@ -233,7 +235,8 @@ VAL_FALSE = ID : "false"
 <data_type> ::= INT #2 | FLOAT #2 | DOUBLE #2 | CHAR #2 | STRING #2 | BOOLEAN #2;
 
 //<assignable> ::= ID #1 <array_access> "." <assignable> | ID #1 <array_access> | ID #1 "." <assignable> | ID #1;
-<assignable> ::= ID #1 #55 <array_access> #56 | ID #1 #36;
+<assignable> ::= ID #1 #55 <array_access> #56 | ID #1;
+<variable> ::= ID #1 #55 <array_access> #56 | ID #1 #36;
 <array_access> ::= <array_access> "[" <expression> #54 "]" | "[" <expression> #54 "]";
 
 <array> ::= "[" #52 <array_nested> "]" #53 | "[" #52 <array_values> "]" #53;
@@ -247,7 +250,8 @@ VAL_FALSE = ID : "false"
 // Control Structures
 <while_loop> ::= WHILE "(" <expression> #44 ")" <block> #65;
 <assign_or_dec> ::= <assignment> | <declaration>;
-<for_loop> ::= FOR "(" <assign_or_dec> #46 ";" <expression> #47 ";" <expression> #48 ")" <block>;
+<for_increment> ::= <assignment> | <expression>;
+<for_loop> ::= FOR "(" <assign_or_dec> #46 ";" <expression> #47 ";" <for_increment> #48 ")" <block> #67;
 <do_while_loop> ::= DO #66 <block> WHILE "(" <expression> #45 ")" ";";
 
 <loop> ::= <while_loop> | <for_loop> | <do_while_loop>;
@@ -267,7 +271,7 @@ VAL_FALSE = ID : "false"
 <continue_statement> ::= CONTINUE #50;
 
 // I/O and Flow Control
-<input> ::= INPUT "(" <assignable> #26 ")";
+<input> ::= INPUT "(" <variable> #26 ")";
 <output> ::= OUTPUT "(" <expression> #27 ")";
 
 // Subroutines
