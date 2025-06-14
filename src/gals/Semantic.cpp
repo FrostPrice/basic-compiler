@@ -787,8 +787,10 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 45: // DO WHILE CONDITION
     {
-        reduceExpressionAndGetType();
         string name = this->labelStack.top().name;
+        // Add a label for the condition check (Used by continue to make the jump)
+        this->assembly.addText("COND_" + name + ":", "");
+        reduceExpressionAndGetType();
         this->labelStack.pop();
         this->loopDepth--;                   // Exiting a loop
         this->invertLogicalOperation = true; // Inverting the condition for assembly generation
@@ -865,8 +867,12 @@ void Semantic::executeAction(int action, const Token *token)
         {
             Semantic::Label label = copyLabelStack.top();
             copyLabelStack.pop();
-
-            if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::DO_WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
+            if (label.jumpType == Semantic::JumpType::DO_WHILE)
+            {
+                this->assembly.addText("JMP", "COND_" + label.name);
+                this->assembly.addBlankLine();
+            }
+            else if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
             {
                 this->assembly.addText("JMP", "INIT_" + label.name);
                 this->assembly.addBlankLine();
