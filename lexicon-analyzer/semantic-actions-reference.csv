@@ -69,7 +69,7 @@ Action Number, Description
 #63, EXIT EXPRESSION SCOPE, (Exit expression scope)
 #64, IF END BLOCK, (If block end, and set label for else)
 #65, While END BLOCK, (While block end, and set label for continue)
-#66, DO WHILE INIT BLOCK, (Do while block initialization)
+#66, LOOP INIT BLOCK, (Loops block initialization, used for while/dowhile/for)
 #67, FOR END BLOCK, (For block end)
 
 <dec_assign> ::= ID #1 ASSIGNMENT #11 <expression> #4 | ID #1 <array_access> ASSIGNMENT #11 <array_value> #5 | ID #1 <array_access> | ID #1;

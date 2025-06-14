@@ -62,7 +62,7 @@ void Semantic::executeAction(int action, const Token *token)
         this->symbolTable.addSymbol(*this->currentSymbol);
 
         // * Assembly generation
-        this->assembly.addData(this->assembly.generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope, false), "0");
+        this->assembly.addData(this->assembly.generateAssemblyLabel(this->currentSymbol->id, this->currentSymbol->scope), "0");
 
         break;
     }
@@ -74,7 +74,7 @@ void Semantic::executeAction(int action, const Token *token)
         validateIfVariableIsDeclared(matchedSymbol, this->declarationSymbol->id);
 
         // * Assembly generation
-        string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope, false);
+        string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
         this->assembly.addComment("Assigning value to " + label);
 
         reduceExpressionAndGetType(matchedSymbol->dataType, true, true);
@@ -129,7 +129,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->symbolTable.addSymbol(*this->declarationSymbol);
 
-        this->assembly.addData(this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope, false),
+        this->assembly.addData(this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope),
                                this->declarationSymbol->arraySize[0]);
 
         this->valueArraySizes.clear();
@@ -557,7 +557,7 @@ void Semantic::executeAction(int action, const Token *token)
         this->currentSymbol->isInitialized = true;
 
         // * Assembly generation
-        string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope, false);
+        string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
         this->assembly.addComment("Getting input for " + label);
         if (matchedSymbol->arraySize.size())
         {
@@ -753,11 +753,7 @@ void Semantic::executeAction(int action, const Token *token)
     case 44: // WHILE CONDITION
     {
         this->currentJumpType = Semantic::JumpType::WHILE;
-        string label = this->assembly.generateAssemblyLabel("INIT_WHILE", this->symbolTable.getCurrentScope(), true);
-        this->assembly.addText(label, "");
         reduceExpressionAndGetType();
-
-        loopDepth++; // Entering a loop
 
         break;
     }
@@ -772,21 +768,18 @@ void Semantic::executeAction(int action, const Token *token)
 
         size_t underscorePos = name.find_last_of('_');
         int doWhileId = stoi(name.substr(underscorePos + 1));
-        string label = this->assembly.generateAssemblyLabel("END_DO_WHILE", doWhileId, true);
-        this->assembly.addText(label, "");
+        string label = this->assembly.generateAssemblyLabel("END_DO_WHILE", doWhileId);
+        this->assembly.addText(label + ":", "");
+        this->assembly.addBlankLine();
         break;
     }
     case 46: // FOR ASSIGNMENT OR DECLARATION
     {
         this->currentJumpType = Semantic::JumpType::FOR;
-        loopDepth++;
         break;
     }
     case 47: // FOR CONDITION
     {
-        string label = this->assembly.generateAssemblyLabel("INIT_FOR", this->symbolTable.getCurrentScope(), true);
-        this->assembly.addText(label, "");
-
         SemanticTable::Types condType = reduceExpressionAndGetType();
         this->assembly.addBlankLine();
         if (condType != SemanticTable::Types::BOOL && condType != SemanticTable::Types::INT)
@@ -820,21 +813,9 @@ void Semantic::executeAction(int action, const Token *token)
             Semantic::Label label = copyLabelStack.top();
             copyLabelStack.pop();
 
-            if (label.jumpType == Semantic::JumpType::DO_WHILE)
+            if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::DO_WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
             {
-                size_t underscorePos = label.name.find_last_of('_');
-                string doWhileId = label.name.substr(underscorePos + 1);
-                if (doWhileId.back() == ':') // Remove the last character (the double dots :)
-                {
-                    doWhileId.pop_back();
-                }
-                this->assembly.addText("JMP", "END_DO_WHILE_" + doWhileId);
-                this->assembly.addBlankLine();
-                break;
-            }
-            else if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
-            {
-                this->assembly.addText("JMP", label.name);
+                this->assembly.addText("JMP", "END_" + label.name);
                 this->assembly.addBlankLine();
                 break;
             }
@@ -854,18 +835,7 @@ void Semantic::executeAction(int action, const Token *token)
             Semantic::Label label = copyLabelStack.top();
             copyLabelStack.pop();
 
-            if (label.jumpType == Semantic::JumpType::DO_WHILE)
-            {
-                string name = label.name;
-                if (name.back() == ':') // Remove the last character (the double dots :)
-                {
-                    name.pop_back();
-                }
-                this->assembly.addText("JMP", name);
-                this->assembly.addBlankLine();
-                break;
-            }
-            else if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
+            if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::DO_WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
             {
                 this->assembly.addText("JMP", "INIT_" + label.name);
                 this->assembly.addBlankLine();
@@ -878,7 +848,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if ((size_t)this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
         {
-            string label = this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope, false);
+            string label = this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope);
             this->assembly.addComment("Assigning value to " + label + "[" + to_string(arrayLengthsStack.top()) + "]");
 
             // Set array index
@@ -975,7 +945,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         if (matchedSymbol->arraySize.size())
         {
-            string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope, false);
+            string label = this->assembly.generateAssemblyLabel(matchedSymbol->id, matchedSymbol->scope);
             this->assembly.addComment("Storing array index for " + label);
 
             this->assembly.emitArrayAssignment(this);
@@ -1002,17 +972,34 @@ void Semantic::executeAction(int action, const Token *token)
         this->labelStack.pop();
         string name = "INIT_" + label.name;
         this->assembly.addText("JMP", name);
-        this->assembly.addText(label.name + ":", "");
+        this->assembly.addText("END_" + label.name + ":", "");
         this->loopDepth--; // Exiting a loop
 
         break;
     }
-    case 66: // DO WHILE INIT BLOCK
+    case 66: // LOOP INIT BLOCK
     {
-        this->currentJumpType = Semantic::JumpType::DO_WHILE;
-        string name = this->assembly.generateAssemblyLabel("INIT_DO_WHILE", this->symbolTable.getCurrentScope(), true);
+        if (lexeme == "do")
+        {
+            this->currentJumpType = Semantic::JumpType::DO_WHILE;
+        }
+        else if (lexeme == "while")
+        {
+            this->currentJumpType = Semantic::JumpType::WHILE;
+        }
+        else if (lexeme == "for")
+        {
+            this->currentJumpType = Semantic::JumpType::FOR;
+        }
+        else
+        {
+            this->currentJumpType = Semantic::JumpType::NONE;
+        }
+
+        string name = this->assembly.generateAssemblyLabel(this->jumpTypeToString(this->currentJumpType), this->symbolTable.currentScope);
+        this->assembly.addText("INIT_" + name + ":", "");
+
         Semantic::Label label = {name, this->currentJumpType};
-        this->assembly.addText(label.name, "");
         this->labelStack.push(label);
 
         loopDepth++; // Entering a loop

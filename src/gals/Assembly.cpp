@@ -79,12 +79,9 @@ string Assembly::generateAssembly()
     return assemblyCode;
 }
 
-string Assembly::generateAssemblyLabel(const string &id, int scope, bool isForJump = false)
+string Assembly::generateAssemblyLabel(const string &id, int scope)
 {
-    if (isForJump)
-        return id + "_" + to_string(scope) + ":";
-    else
-        return id + "_" + to_string(scope);
+    return id + "_" + to_string(scope);
 }
 
 void Assembly::emitLoad(SymbolTable &symTable,
@@ -233,41 +230,18 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_HIGH)
         {
             addText(isRightNum ? "SUBI" : "SUB", operand);
-            string name;
 
+            // Define the label name based on the current jump type
+            string name;
             if (semantic->currentJumpType == Semantic::JumpType::DO_WHILE)
             {
-                stack<Semantic::Label> copyLabelStack = semantic->labelStack;
-
-                stack<Semantic::Label> invertedStack;
-                while (!copyLabelStack.empty())
-                {
-                    invertedStack.push(copyLabelStack.top());
-                    copyLabelStack.pop();
-                }
-
-                copyLabelStack = invertedStack;
-                int doWhileScope = 0;
-
-                while (!copyLabelStack.empty())
-                {
-                    Semantic::Label label = copyLabelStack.top();
-                    copyLabelStack.pop();
-
-                    if (label.jumpType == Semantic::JumpType::DO_WHILE)
-                    {
-                        name = generateAssemblyLabel("INIT_" + semantic->jumpTypeToString(semantic->currentJumpType), doWhileScope);
-                        break;
-                    }
-
-                    doWhileScope++;
-                }
+                Semantic::Label label = semantic->labelStack.top();
+                name = "INIT_" + label.name;
             }
             else
             {
-                name = generateAssemblyLabel(semantic->jumpTypeToString(semantic->currentJumpType), semantic->symbolTable.currentScope);
-                Semantic::Label label = {name, semantic->currentJumpType};
-                semantic->labelStack.push(label);
+                Semantic::Label label = semantic->labelStack.top();
+                name = label.name;
             }
 
             if (op.value == ">")
@@ -302,9 +276,9 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_LOW)
         {
             addText(isRightNum || isRightBool ? "SUBI" : "SUB", operand);
-            string name = generateAssemblyLabel(semantic->jumpTypeToString(semantic->currentJumpType), semantic->symbolTable.currentScope);
-            Semantic::Label label = {name, semantic->currentJumpType};
-            semantic->labelStack.push(label);
+
+            Semantic::Label label = semantic->labelStack.top();
+            string name = label.name;
 
             if (op.value == "==")
             {
