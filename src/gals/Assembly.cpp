@@ -6,6 +6,31 @@
 
 using namespace std;
 
+void Assembly::setShouldKeepInstruction(bool shouldKeep)
+{
+    if (shouldKeep)
+    {
+        this->keptInstructions.push(vector<string>());
+        this->textPointer = &keptInstructions.top();
+    }
+    else
+    {
+        this->textPointer = &text;
+    }
+}
+
+void Assembly::applyKeptInstruction()
+{
+    if (!keptInstructions.empty())
+    {
+        vector<string> instructions = keptInstructions.top();
+        for (string instruction : instructions)
+            text.push_back(instruction);
+
+        keptInstructions.pop();
+    }
+}
+
 void Assembly::addData(const string id, const string value = "0")
 {
     data.push_back("\t" + id + " : " + value);
@@ -25,17 +50,17 @@ void Assembly::addData(const string id, const int arrayLength = 0)
 
 void Assembly::addText(const string instruction, const string operand)
 {
-    text.push_back("\t" + instruction + " " + operand);
+    textPointer->push_back("\t" + instruction + " " + operand);
 }
 
 void Assembly::addBlankLine()
 {
-    text.push_back("");
+    textPointer->push_back("");
 }
 
 void Assembly::addComment(const string &comment)
 {
-    text.push_back("\t# " + comment);
+    textPointer->push_back("\t# " + comment);
 }
 
 string Assembly::generateAssembly()

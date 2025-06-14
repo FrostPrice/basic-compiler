@@ -14,6 +14,9 @@ class Assembly
 private:
     vector<string> data;
     vector<string> text;
+    vector<string> *textPointer = &text;
+
+    stack<vector<string>> keptInstructions;
 
     stack<int> tempAccAddressStack = stack<int>({1002}); // Temporary accumulator address stack
 
@@ -60,6 +63,10 @@ private:
 public:
     string tempValueAddress = "1000";  // Address for the temporary value
     string arrayIndexAddress = "1001"; // Address for the array index
+
+    void setShouldKeepInstruction(bool shouldKeep);
+
+    void applyKeptInstruction();
 
     void addData(const string id, const string value);
 
