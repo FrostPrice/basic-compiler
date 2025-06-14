@@ -783,6 +783,8 @@ void Semantic::executeAction(int action, const Token *token)
         string label = this->assembly.generateAssemblyLabel("END_DO_WHILE", doWhileId);
         this->assembly.addText(label + ":", "");
         this->assembly.addBlankLine();
+
+        this->invertLogicalOperation = true; // Reset the invert logical operation flag
         break;
     }
     case 46: // FOR STATEMENT
@@ -997,6 +999,7 @@ void Semantic::executeAction(int action, const Token *token)
         if (lexeme == "do")
         {
             currentJumpType = Semantic::JumpType::DO_WHILE;
+            this->invertLogicalOperation = false;
         }
         else if (lexeme == "while")
         {
@@ -1014,8 +1017,6 @@ void Semantic::executeAction(int action, const Token *token)
         this->labelStack.push(label);
 
         loopDepth++; // Entering a loop
-
-        this->invertLogicalOperation = false;
 
         break;
     }
