@@ -103,7 +103,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if (this->valueArraySizes.size())
         {
-            for (int i = 0; i < this->declarationSymbol->arraySize.size(); i++)
+            for (size_t i = 0; i < this->declarationSymbol->arraySize.size(); i++)
             {
                 int symbolArraySize = this->declarationSymbol->arraySize[i];
 
@@ -154,7 +154,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth = -1;
 
-        for (int i = 0; i < this->declarationSymbol->arraySize.size(); i++)
+        for (size_t i = 0; i < this->declarationSymbol->arraySize.size(); i++)
         {
             this->valueArraySizes.push_back(vector<int>());
         }
@@ -178,13 +178,6 @@ void Semantic::executeAction(int action, const Token *token)
         this->declarationSymbol = this->currentSymbol;
 
         break;
-    }
-    case 9:
-    {
-        SymbolTable::SymbolInfo *array =
-            symbolTable.getSymbolInScope(this->currentSymbol->id, this->symbolTable.getCurrentScope());
-
-        array->isUsed = true; // Mark the array as used
     }
     // * 11-20: Operators *
     case 11: // ASSIGN OP
@@ -804,7 +797,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 51: // ARRAY VALUE
     {
-        if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
+        if ((size_t)this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
         {
             string label = this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope, false);
             this->assembly.addComment("Assigning value to " + label + "[" + to_string(arrayLengthsStack.top()) + "]");
@@ -826,7 +819,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth++;
 
-        if (this->arrayDepth >= this->declarationSymbol->arraySize.size())
+        if ((size_t)this->arrayDepth >= this->declarationSymbol->arraySize.size())
         {
             throw SemanticError("Array length exceeded");
         }
