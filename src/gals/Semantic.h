@@ -67,7 +67,7 @@ public:
     struct Label
     {
         string name;
-        JumpType jumptType = NONE;
+        JumpType jumpType = NONE;
     };
     stack<Label> labelStack;            // Counter for if statements
     bool invertLogicalOperation = true; // Flag to invert logical operations (FOR DO WHILE)

@@ -753,6 +753,8 @@ void Semantic::executeAction(int action, const Token *token)
     case 44: // WHILE CONDITION
     {
         this->currentJumpType = Semantic::JumpType::WHILE;
+        string label = this->assembly.generateAssemblyLabel("INIT_WHILE", this->symbolTable.getCurrentScope(), true);
+        this->assembly.addText(label, "");
         reduceExpressionAndGetType();
 
         loopDepth++; // Entering a loop
@@ -763,8 +765,15 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->currentJumpType = Semantic::JumpType::DO_WHILE;
         reduceExpressionAndGetType();
-        loopDepth++;                         // Entering a loop
+        string name = this->labelStack.top().name;
+        this->labelStack.pop();
+        this->loopDepth--;                   // Exiting a loop
         this->invertLogicalOperation = true; // Inverting the condition for assembly generation
+
+        size_t underscorePos = name.find_last_of('_');
+        int doWhileId = stoi(name.substr(underscorePos + 1));
+        string label = this->assembly.generateAssemblyLabel("END_DO_WHILE", doWhileId, true);
+        this->assembly.addText(label, "");
         break;
     }
     case 46: // FOR ASSIGNMENT OR DECLARATION
@@ -799,7 +808,19 @@ void Semantic::executeAction(int action, const Token *token)
             Semantic::Label label = copyLabelStack.top();
             copyLabelStack.pop();
 
-            if (label.jumptType == Semantic::JumpType::WHILE || label.jumptType == Semantic::JumpType::DO_WHILE || label.jumptType == Semantic::JumpType::FOR || label.jumptType == Semantic::JumpType::SWITCH)
+            if (label.jumpType == Semantic::JumpType::DO_WHILE)
+            {
+                size_t underscorePos = label.name.find_last_of('_');
+                string doWhileId = label.name.substr(underscorePos + 1);
+                if (doWhileId.back() == ':') // Remove the last character (the double dots :)
+                {
+                    doWhileId.pop_back();
+                }
+                this->assembly.addText("JMP", "END_DO_WHILE_" + doWhileId);
+                this->assembly.addBlankLine();
+                break;
+            }
+            else if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
             {
                 this->assembly.addText("JMP", label.name);
                 this->assembly.addBlankLine();
@@ -813,6 +834,32 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if (loopDepth == 0)
             throw SemanticError("CONTINUE used outside of a loop.");
+
+        stack<Semantic::Label> copyLabelStack = this->labelStack;
+
+        while (!copyLabelStack.empty())
+        {
+            Semantic::Label label = copyLabelStack.top();
+            copyLabelStack.pop();
+
+            if (label.jumpType == Semantic::JumpType::DO_WHILE)
+            {
+                string name = label.name;
+                if (name.back() == ':') // Remove the last character (the double dots :)
+                {
+                    name.pop_back();
+                }
+                this->assembly.addText("JMP", name);
+                this->assembly.addBlankLine();
+                break;
+            }
+            else if (label.jumpType == Semantic::JumpType::WHILE || label.jumpType == Semantic::JumpType::FOR || label.jumpType == Semantic::JumpType::SWITCH)
+            {
+                this->assembly.addText("JMP", "INIT_" + label.name);
+                this->assembly.addBlankLine();
+                break;
+            }
+        }
         break;
     }
     case 51: // ARRAY VALUE
@@ -933,7 +980,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         Semantic::Label label = this->labelStack.top();
         this->labelStack.pop();
-        this->assembly.addText(label.name, "");
+        this->assembly.addText(label.name + ":", "");
 
         break;
     }
@@ -941,16 +988,22 @@ void Semantic::executeAction(int action, const Token *token)
     {
         Semantic::Label label = this->labelStack.top();
         this->labelStack.pop();
-        this->assembly.addText(label.name, "");
+        string name = "INIT_" + label.name;
+        this->assembly.addText("JMP", name);
+        this->assembly.addText(label.name + ":", "");
+        this->loopDepth--; // Exiting a loop
 
         break;
     }
     case 66: // DO WHILE INIT BLOCK
     {
         this->currentJumpType = Semantic::JumpType::DO_WHILE;
-        string name = this->assembly.generateAssemblyLabel("DO_WHILE", this->symbolTable.getCurrentScope(), true);
+        string name = this->assembly.generateAssemblyLabel("INIT_DO_WHILE", this->symbolTable.getCurrentScope(), true);
         Semantic::Label label = {name, this->currentJumpType};
+        this->assembly.addText(label.name, "");
         this->labelStack.push(label);
+
+        loopDepth++; // Entering a loop
 
         this->invertLogicalOperation = false;
 

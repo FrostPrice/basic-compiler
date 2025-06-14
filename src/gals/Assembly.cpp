@@ -57,7 +57,7 @@ string Assembly::generateAssembly()
 string Assembly::generateAssemblyLabel(const string &id, int scope, bool isForJump = false)
 {
     if (isForJump)
-        return id + "_" + to_string(scope) + " :";
+        return id + "_" + to_string(scope) + ":";
     else
         return id + "_" + to_string(scope);
 }
@@ -208,9 +208,43 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_HIGH)
         {
             addText(isRightNum ? "SUBI" : "SUB", operand);
-            string name = generateAssemblyLabel(semantic->jumpTypeToString(semantic->currentJumpType), semantic->symbolTable.currentScope);
-            Semantic::Label label = {name, semantic->currentJumpType};
-            semantic->labelStack.push(label);
+            string name;
+
+            if (semantic->currentJumpType == Semantic::JumpType::DO_WHILE)
+            {
+                stack<Semantic::Label> copyLabelStack = semantic->labelStack;
+
+                stack<Semantic::Label> invertedStack;
+                while (!copyLabelStack.empty())
+                {
+                    invertedStack.push(copyLabelStack.top());
+                    copyLabelStack.pop();
+                }
+
+                copyLabelStack = invertedStack;
+                int doWhileScope = 0;
+
+                while (!copyLabelStack.empty())
+                {
+                    Semantic::Label label = copyLabelStack.top();
+                    copyLabelStack.pop();
+
+                    if (label.jumpType == Semantic::JumpType::DO_WHILE)
+                    {
+                        name = generateAssemblyLabel("INIT_" + semantic->jumpTypeToString(semantic->currentJumpType), doWhileScope);
+                        break;
+                    }
+
+                    doWhileScope++;
+                }
+            }
+            else
+            {
+                name = generateAssemblyLabel(semantic->jumpTypeToString(semantic->currentJumpType), semantic->symbolTable.currentScope);
+                Semantic::Label label = {name, semantic->currentJumpType};
+                semantic->labelStack.push(label);
+            }
+
             if (op.value == ">")
             {
                 if (semantic->invertLogicalOperation)
