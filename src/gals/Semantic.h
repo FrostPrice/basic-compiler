@@ -54,8 +54,22 @@ private:
     int switchDepth = 0;
 
 public:
-    Assembly assembly;                  // Assembly object to generate assembly code
-    stack<string> labelStack;           // Counter for if statements
+    Assembly assembly; // Assembly object to generate assembly code
+    enum JumpType
+    {
+        NONE = -1, // No specific type
+        IF,        // Label for if statements
+        WHILE,     // Label for while loops
+        FOR,       // Label for for loops
+        DO_WHILE,  // Label for do-while loops
+        SWITCH     // Label for switch statements
+    } currentJumpType;
+    struct Label
+    {
+        string name;
+        JumpType jumptType = NONE;
+    };
+    stack<Label> labelStack;            // Counter for if statements
     bool invertLogicalOperation = true; // Flag to invert logical operations (FOR DO WHILE)
 
     vector<string> warnings; // Warnings generated during semantic analysis
@@ -69,6 +83,25 @@ public:
     void executeAction(int action, const Token *token);
 
     // Helper Functions
+    string jumpTypeToString(JumpType type)
+    {
+        switch (type)
+        {
+        case IF:
+            return "IF";
+        case WHILE:
+            return "WHILE";
+        case FOR:
+            return "FOR";
+        case DO_WHILE:
+            return "DO_WHILE";
+        case SWITCH:
+            return "SWITCH";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
     ExpressionController::ExpressionsEntry getNextExpressionEntry()
     {
         if (expressionScopeList.empty() || expressionScopeList.front().expressionController.expressionStack.empty())

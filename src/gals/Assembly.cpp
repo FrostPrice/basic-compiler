@@ -14,7 +14,7 @@ void Assembly::addData(const string id, const string value = "0")
 void Assembly::addData(const string id, const int arrayLength = 0)
 {
     string values = "";
-    for (size_t i = 0; i < arrayLength; i++)
+    for (int i = 0; i < arrayLength; i++)
     {
         if (i != 0)
             values += ", ";
@@ -208,56 +208,58 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_HIGH)
         {
             addText(isRightNum ? "SUBI" : "SUB", operand);
-            string label = generateAssemblyLabel("BRANCH", semantic->symbolTable.currentScope);
+            string name = generateAssemblyLabel(semantic->jumpTypeToString(semantic->currentJumpType), semantic->symbolTable.currentScope);
+            Semantic::Label label = {name, semantic->currentJumpType};
             semantic->labelStack.push(label);
             if (op.value == ">")
             {
                 if (semantic->invertLogicalOperation)
-                    addText("BLE", label);
+                    addText("BLE", name);
                 else
-                    addText("BGT", label);
+                    addText("BGT", name);
             }
             else if (op.value == ">=")
             {
                 if (semantic->invertLogicalOperation)
-                    addText("BLT", label);
+                    addText("BLT", name);
                 else
-                    addText("BGE", label);
+                    addText("BGE", name);
             }
             else if (op.value == "<")
             {
                 if (semantic->invertLogicalOperation)
-                    addText("BGE", label);
+                    addText("BGE", name);
                 else
-                    addText("BLT", label);
+                    addText("BLT", name);
             }
             else if (op.value == "<=")
             {
                 if (semantic->invertLogicalOperation)
-                    addText("BGT", label);
+                    addText("BGT", name);
                 else
-                    addText("BLE", label);
+                    addText("BLE", name);
             }
         }
         else if (op.binaryOperation == SemanticTable::OperationsBinary::RELATION_LOW)
         {
             addText(isRightNum || isRightBool ? "SUBI" : "SUB", operand);
-            string label = generateAssemblyLabel("BRANCH", semantic->symbolTable.currentScope);
+            string name = generateAssemblyLabel(semantic->jumpTypeToString(semantic->currentJumpType), semantic->symbolTable.currentScope);
+            Semantic::Label label = {name, semantic->currentJumpType};
             semantic->labelStack.push(label);
 
             if (op.value == "==")
             {
                 if (semantic->invertLogicalOperation)
-                    addText("BNE", label);
+                    addText("BNE", name);
                 else
-                    addText("BEQ", label);
+                    addText("BEQ", name);
             }
             else if (op.value == "!=")
             {
                 if (semantic->invertLogicalOperation)
-                    addText("BEQ", label);
+                    addText("BEQ", name);
                 else
-                    addText("BNE", label);
+                    addText("BNE", name);
             }
         }
         else if (op.binaryOperation == SemanticTable::OperationsBinary::LOGICAL)

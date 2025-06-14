@@ -723,12 +723,14 @@ void Semantic::executeAction(int action, const Token *token)
     // * 41-50: Conditionals and loops *
     case 41: // IF CONDITION
     {
+        this->currentJumpType = Semantic::JumpType::IF;
         reduceExpressionAndGetType(SemanticTable::Types::BOOL, true);
 
         break;
     }
     case 42: // SWITCH EXPRESSION
     {
+        this->currentJumpType = Semantic::JumpType::SWITCH;
         validateOneOfTypes({
             SemanticTable::Types::INT,
             SemanticTable::Types::FLOAT,
@@ -750,6 +752,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 44: // WHILE CONDITION
     {
+        this->currentJumpType = Semantic::JumpType::WHILE;
         reduceExpressionAndGetType();
 
         loopDepth++; // Entering a loop
@@ -758,6 +761,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 45: // DO WHILE CONDITION
     {
+        this->currentJumpType = Semantic::JumpType::DO_WHILE;
         reduceExpressionAndGetType();
         loopDepth++;                         // Entering a loop
         this->invertLogicalOperation = true; // Inverting the condition for assembly generation
@@ -765,6 +769,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 46: // FOR ASSIGNMENT OR DECLARATION
     {
+        this->currentJumpType = Semantic::JumpType::FOR;
         loopDepth++;
         break;
     }
@@ -786,6 +791,21 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if (loopDepth == 0 && switchDepth == 0)
             throw SemanticError("BREAK used outside of a loop or switch.");
+
+        stack<Semantic::Label> copyLabelStack = this->labelStack;
+
+        while (!copyLabelStack.empty())
+        {
+            Semantic::Label label = copyLabelStack.top();
+            copyLabelStack.pop();
+
+            if (label.jumptType == Semantic::JumpType::WHILE || label.jumptType == Semantic::JumpType::DO_WHILE || label.jumptType == Semantic::JumpType::FOR || label.jumptType == Semantic::JumpType::SWITCH)
+            {
+                this->assembly.addText("JMP", label.name);
+                this->assembly.addBlankLine();
+                break;
+            }
+        }
 
         break;
     }
@@ -919,23 +939,25 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 64: // IF END BLOCK
     {
-        string label = this->labelStack.top();
+        Semantic::Label label = this->labelStack.top();
         this->labelStack.pop();
-        this->assembly.addText(label, "");
+        this->assembly.addText(label.name, "");
 
         break;
     }
     case 65: // While End Block
     {
-        string label = this->labelStack.top();
+        Semantic::Label label = this->labelStack.top();
         this->labelStack.pop();
-        this->assembly.addText(label, "");
+        this->assembly.addText(label.name, "");
 
         break;
     }
     case 66: // DO WHILE INIT BLOCK
     {
-        string label = this->assembly.generateAssemblyLabel("BRANCH", this->symbolTable.getCurrentScope(), true);
+        this->currentJumpType = Semantic::JumpType::DO_WHILE;
+        string name = this->assembly.generateAssemblyLabel("DO_WHILE", this->symbolTable.getCurrentScope(), true);
+        Semantic::Label label = {name, this->currentJumpType};
         this->labelStack.push(label);
 
         this->invertLogicalOperation = false;

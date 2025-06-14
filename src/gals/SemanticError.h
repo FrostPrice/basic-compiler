@@ -101,6 +101,8 @@ public:
             return "STRING";
         else if (type == SemanticTable::Types::BOOL)
             return "BOOL";
+        else
+            return "UNKNOWN";
     }
 };
 
