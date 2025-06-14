@@ -241,7 +241,7 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
             else
             {
                 Semantic::Label label = semantic->labelStack.top();
-                name = label.name;
+                name = "END_" + label.name;
             }
 
             if (op.value == ">")

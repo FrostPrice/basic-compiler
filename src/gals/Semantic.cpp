@@ -978,7 +978,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         Semantic::Label label = this->labelStack.top();
         this->labelStack.pop();
-        this->assembly.addText(label.name + ":", "");
+        this->assembly.addText("END_" + label.name + ":", "");
 
         break;
     }
