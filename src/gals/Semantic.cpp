@@ -1016,7 +1016,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->assembly.addText("JMP", name);
         this->assembly.addBlankLine();
-        this->assembly.addText(label.name + ":", "");
+        this->assembly.addText("END_" + label.name + ":", "");
 
         this->labelStack.pop();
         this->loopDepth--;
