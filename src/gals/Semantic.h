@@ -56,7 +56,8 @@ private:
     bool hasToCreateScope = true; // Flag to indicate if a new scope should be created
 
 public:
-    Assembly assembly; // Assembly object to generate assembly code
+    vector<SymbolTable::SymbolInfo *> symbolPointers; // Pointers to symbols for semantic analysis
+    Assembly assembly;                                // Assembly object to generate assembly code
     enum JumpType
     {
         NONE = -1, // No specific type
@@ -113,6 +114,16 @@ public:
         ExpressionController::ExpressionsEntry entry = expressionScopeList.front().expressionController.expressionStack.top();
         return entry;
     };
+
+    void clearSymbolPointer()
+    {
+        for (SymbolTable::SymbolInfo *symbol : symbolPointers)
+        {
+            delete symbol;
+        }
+
+        symbolPointers.clear();
+    }
 
     bool isNumber(const string &str, bool allowNegative = true)
     {

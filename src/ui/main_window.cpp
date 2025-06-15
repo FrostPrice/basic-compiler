@@ -248,4 +248,6 @@ void MainWindow::compileCode()
         output->setTextColor(Qt::red);
         output->setText("Semantic error: " + QString::fromStdString(err.getMessage()));
     }
+
+    sem.clearSymbolPointer();
 }

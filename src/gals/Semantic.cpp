@@ -24,6 +24,8 @@ void Semantic::executeAction(int action, const Token *token)
             this->pendingType,                  // type
             this->symbolTable.getCurrentScope() // scope
         );
+
+        this->symbolPointers.push_back(this->currentSymbol);
         break;
     }
     case 2: // TYPE
