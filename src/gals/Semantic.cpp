@@ -105,7 +105,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         if (this->valueArraySizes.size())
         {
-            for (size_t i = 0; i < this->declarationSymbol->arraySize.size(); i++)
+            for (int i = 0; i < this->declarationSymbol->arraySize.size(); i++)
             {
                 int symbolArraySize = this->declarationSymbol->arraySize[i];
 
@@ -156,7 +156,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth = -1;
 
-        for (size_t i = 0; i < this->declarationSymbol->arraySize.size(); i++)
+        for (int i = 0; i < this->declarationSymbol->arraySize.size(); i++)
         {
             this->valueArraySizes.push_back(vector<int>());
         }
@@ -469,13 +469,14 @@ void Semantic::executeAction(int action, const Token *token)
 
         vector<SymbolTable::SymbolInfo *> params = this->symbolTable.getFunctionParams(this->functionSymbol->scope + 1);
 
-        if ((size_t)this->parametersCountInFuncCall >= params.size())
+        if (this->parametersCountInFuncCall >= params.size())
             throw SemanticError("Too many parameters in function call");
 
         SymbolTable::SymbolInfo *currentParam = params[this->parametersCountInFuncCall];
         reduceExpressionAndGetType(currentParam->dataType, true, true, this->expressionScopeIndexes.top());
 
         // * Assembly generation
+        this->assembly.addText("STO", this->assembly.generateAssemblyLabel("FUNC_" + currentParam->id, currentParam->scope));
 
         this->parametersCountInFuncCall++;
 
@@ -500,7 +501,11 @@ void Semantic::executeAction(int action, const Token *token)
             {
                 if (!this->functionSymbol->hasReturn)
                     throw SemanticError("Function " + this->functionSymbol->id + " has no return statement");
+
                 this->functionSymbol = nullptr;
+
+                // * Assembly generation
+                this->assembly.addText("RETURN", "");
             }
         }
         break;
@@ -651,6 +656,9 @@ void Semantic::executeAction(int action, const Token *token)
         validateFunctionParamCount(this->functionSymbol);
 
         this->parametersCountInFuncCall = 0;
+
+        int expressionScopeIndex = this->expressionScopeIndexes.top();
+        this->expressionScopeList.erase(expressionScopeList.begin() + expressionScopeIndex);
         this->expressionScopeIndexes.pop();
 
         break;
@@ -729,7 +737,7 @@ void Semantic::executeAction(int action, const Token *token)
         symbol->isUsed = true;
         this->functionSymbol = symbol;
 
-        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(symbol->dataType, symbol->id);
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(symbol->dataType, symbol->id, true);
         this->createExpressionScope(this->functionSymbol);
 
         break;
@@ -792,7 +800,7 @@ void Semantic::executeAction(int action, const Token *token)
         this->loopDepth--;                   // Exiting a loop
         this->invertLogicalOperation = true; // Inverting the condition for assembly generation
 
-        size_t underscorePos = name.find_last_of('_');
+        int underscorePos = name.find_last_of('_');
         int doWhileId = stoi(name.substr(underscorePos + 1));
         string label = this->assembly.generateAssemblyLabel("END_DO_WHILE", doWhileId);
         this->assembly.addText(label + ":", "");
@@ -880,7 +888,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 51: // ARRAY VALUE
     {
-        if ((size_t)this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
+        if (this->arrayDepth == this->declarationSymbol->arraySize.size() - 1)
         {
             string label = this->assembly.generateAssemblyLabel(this->declarationSymbol->id, this->declarationSymbol->scope);
             this->assembly.addComment("Assigning value to " + label + "[" + to_string(arrayLengthsStack.top()) + "]");
@@ -902,7 +910,7 @@ void Semantic::executeAction(int action, const Token *token)
     {
         this->arrayDepth++;
 
-        if ((size_t)this->arrayDepth >= this->declarationSymbol->arraySize.size())
+        if (this->arrayDepth >= this->declarationSymbol->arraySize.size())
         {
             throw SemanticError("Array length exceeded");
         }

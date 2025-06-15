@@ -210,6 +210,12 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
                     addText("STO", "$indr");
                     addText("LDV", operand);
                 }
+                else if (symbol->symbolClassification == SymbolTable::SymbolClassification::FUNCTION)
+                {
+                    // * Assembly generation
+                    this->addComment("Calling function " + symbol->id);
+                    this->addText("CALL", "FUNC_" + this->generateAssemblyLabel(symbol->id, symbol->scope));
+                }
 
                 addText("STO", this->tempValueAddress);
                 operand = this->tempValueAddress;

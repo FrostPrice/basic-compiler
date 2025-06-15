@@ -160,9 +160,8 @@ public:
     {
         vector<SymbolInfo *> params;
 
-        for (auto it = symbolTable.rbegin(); it != symbolTable.rend(); ++it)
+        for (SymbolInfo &symbol : symbolTable)
         {
-            SymbolInfo &symbol = *it;
             if (symbol.symbolClassification == PARAM && symbol.scope == scope)
             {
                 params.push_back(&symbol);
