@@ -178,13 +178,18 @@ public:
     SemanticTable::Types reduceExpressionAndGetType(
         SemanticTable::Types expectedType = SemanticTable::Types::__NULL,
         bool validate = false,
-        bool shouldLoad = true)
+        bool shouldLoad = true,
+        int expressionScopeIndex = 0)
     {
         using Entry = ExpressionController::ExpressionsEntry;
 
         this->lastExpressionScopeIndex = 0;
 
-        stack<Entry> *orig = &expressionScopeList.front().expressionController.expressionStack;
+        stack<Entry> *orig = nullptr;
+        if (expressionScopeIndex != 0)
+            orig = &expressionScopeList[expressionScopeIndex].expressionController.expressionStack;
+        else
+            orig = &expressionScopeList.front().expressionController.expressionStack;
 
         if (orig->empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
@@ -198,7 +203,7 @@ public:
         }
         reverse(tokens.begin(), tokens.end());
 
-        if (expressionScopeList.size() > 1)
+        if (expressionScopeList.size() > 1 && expressionScopeIndex == 0)
             expressionScopeList.erase(expressionScopeList.begin());
 
         // Convert to RPN using precedence

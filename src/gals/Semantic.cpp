@@ -467,12 +467,11 @@ void Semantic::executeAction(int action, const Token *token)
 
         vector<SymbolTable::SymbolInfo *> params = this->symbolTable.getFunctionParams(this->functionSymbol->scope + 1);
 
-        SymbolTable::SymbolInfo *currentParam = params[this->parametersCountInFuncCall];
-
-        if (!currentParam)
+        if ((size_t)this->parametersCountInFuncCall >= params.size())
             throw SemanticError("Too many parameters in function call");
 
-        reduceExpressionAndGetType(currentParam->dataType, true);
+        SymbolTable::SymbolInfo *currentParam = params[this->parametersCountInFuncCall];
+        reduceExpressionAndGetType(currentParam->dataType, true, true, this->expressionScopeIndexes.top());
 
         // * Assembly generation
 
@@ -650,12 +649,7 @@ void Semantic::executeAction(int action, const Token *token)
         validateFunctionParamCount(this->functionSymbol);
 
         this->parametersCountInFuncCall = 0;
-
-        SymbolTable::SymbolInfo *symbol = this->expressionScopeList[this->expressionScopeIndexes.top()].symbol;
-
         this->expressionScopeIndexes.pop();
-
-        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(symbol->dataType, symbol->id);
 
         break;
     }
@@ -733,6 +727,7 @@ void Semantic::executeAction(int action, const Token *token)
         symbol->isUsed = true;
         this->functionSymbol = symbol;
 
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushType(symbol->dataType, symbol->id);
         this->createExpressionScope(this->functionSymbol);
 
         break;
