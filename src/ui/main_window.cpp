@@ -194,8 +194,6 @@ void MainWindow::compileCode()
     Lexical lex;
     Syntactic syn;
     Semantic sem;
-    sem.warnings.clear(); // Clear previous warnings
-    tableModel->clear();  // Reset the table model
 
     lex.setInput(code.toStdString().c_str());
 
@@ -250,4 +248,6 @@ void MainWindow::compileCode()
     }
 
     sem.clearSymbolPointer();
+    sem.warnings.clear(); // Clear previous warnings
+    tableModel->clear();  // Reset the table model
 }
