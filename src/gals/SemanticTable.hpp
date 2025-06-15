@@ -3,9 +3,6 @@
 
 class SemanticTable
 {
-private:
-    // stack<int> scope;
-
 public:
     enum Types
     {
@@ -81,8 +78,6 @@ public:
         }
         return atribTable[TP1][TP2];
     }
-
-    // SemanticTable();
 };
 
 #endif // SEMANTIC_TABLE_H
