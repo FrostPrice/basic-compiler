@@ -250,7 +250,7 @@ VAL_FALSE = ID : "false"
 // Control Structures
 <while_loop> ::= WHILE #66 "(" <expression> #44 ")" <block> #65;
 <assign_or_dec> ::= <assignment> | <declaration>;
-<for_increment> ::= <assignment> | <expression>;
+<for_increment> ::= <assignment> | <expression> #61;
 <for_loop> ::= FOR #46 "(" <assign_or_dec> ";" #66 <expression> #47 ";" <for_increment> #48 ")" <block> #67;
 <do_while_loop> ::= DO #66 <block> WHILE "(" <expression> #45 ")" ";";
 

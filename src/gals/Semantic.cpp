@@ -821,20 +821,13 @@ void Semantic::executeAction(int action, const Token *token)
         this->assembly.addBlankLine();
         if (condType != SemanticTable::Types::BOOL && condType != SemanticTable::Types::INT)
             throw SemanticError("Invalid FOR condition expression type.");
+
+        this->assembly.setShouldKeepInstruction(true);
+
         break;
     }
     case 48: // FOR INCREMENT
     {
-        SymbolTable::SymbolInfo *sym;
-        if (this->declarationSymbol)
-            sym = this->declarationSymbol;
-        else
-            sym = symbolTable.getSymbol(this->currentSymbol->id);
-
-        this->assembly.setShouldKeepInstruction(true);
-        this->assembly.addComment("Incrementing variable " + sym->id);
-
-        reduceExpressionAndGetType();
         this->assembly.setShouldKeepInstruction(false);
 
         break;
