@@ -967,7 +967,7 @@ void Semantic::executeAction(int action, const Token *token)
         this->closeUnaryScopeIfNeeded();
         break;
     }
-    case 57: // ARRAY VALUE ASSIGNMENT
+    case 57: // VARIABLE/ARRAY ASSIGNMENT
     {
         SymbolTable::SymbolInfo *matchedSymbol;
         if (!this->declarationSymbol)
@@ -977,6 +977,9 @@ void Semantic::executeAction(int action, const Token *token)
         }
         else
             matchedSymbol = symbolTable.getSymbol(this->declarationSymbol->id);
+
+        if (matchedSymbol == nullptr)
+            throw SemanticError(SemanticError::SymbolUndeclared(this->currentSymbol->id) + " in this scope");
 
         if (matchedSymbol->arraySize.size())
         {
