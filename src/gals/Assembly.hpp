@@ -13,7 +13,6 @@ class Assembly
 {
 private:
     vector<string> data;
-    vector<string> text;
     vector<string> *textPointer = &text;
 
     stack<vector<string>> keptInstructions;
@@ -61,6 +60,7 @@ private:
     }
 
 public:
+    vector<string> text;
     string tempValueAddress = "1000";  // Address for the temporary value
     string arrayIndexAddress = "1001"; // Address for the array index
 

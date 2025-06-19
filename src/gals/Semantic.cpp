@@ -651,6 +651,8 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->functionArraySizes.clear();
 
+        if (lexeme == "main")
+            this->mainInnerScope = this->symbolTable.currentScope + 1; // Save the main function scope for later use
         break;
     }
     case 29: // FUNCTION CALL

@@ -77,6 +77,7 @@ public:
     };
     stack<Label> labelStack;            // Counter for if statements
     bool invertLogicalOperation = true; // Flag to invert logical operations (FOR DO WHILE)
+    int mainInnerScope = -1;            // Inner scope of the main function, used to check if we are inside the main function, for the warning
 
     vector<string> warnings; // Warnings generated during semantic analysis
     void reportWarning(const string &msg)

@@ -6,6 +6,7 @@
 
 #include "code_editor.hpp"
 #include "semantic_table_model.hpp"
+#include "../gals/Semantic.h"
 
 class QTextEdit;
 class QTextBrowser;
@@ -21,6 +22,11 @@ public:
 
 private slots:
     void compileCode();
+    void validateSemantics(Semantic &sem);
+    void validateMainFunction(Semantic &sem);
+    void checkUnusedSymbols(Semantic &sem);
+    void displayCompilationResults(Semantic &sem);
+    QString buildWarningsText(const std::vector<std::string> warnings);
 
 private:
     CodeEditor *editor;

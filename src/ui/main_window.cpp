@@ -201,35 +201,8 @@ void MainWindow::compileCode()
     {
         syn.parse(&lex, &sem);
 
-        // Check if a symbol was no used
-        for (const auto &symbol : sem.symbolTable.getAllSymbols())
-        {
-            if (!symbol.isUsed)
-            {
-                // TODO: Change the 'Symbol' for the classification of the symbol
-                sem.warnings.push_back("Warning: Symbol '" + symbol.id + "' declared but not used.");
-            }
-        }
-
-        // Show warnings if any
-        QString resultText;
-        if (!sem.warnings.empty())
-        {
-            for (const string &warning : sem.warnings)
-            {
-                resultText += "<span style='color:orange;'>" + QString::fromStdString(warning) + "</span><br>";
-            }
-            resultText += "<br>";
-        }
-
-        resultText += "<span style='color:lightgreen;'>Compiled successfully!</span>";
-
-        tableModel->populateModel(sem.symbolTable.getAllSymbols());
-
-        // sem.symbolTable.printTable(); // Print the symbol table for debugging
-        output->setHtml(resultText);
-
-        assemblyOutput->setText(QString::fromStdString(sem.assembly.generateAssembly()));
+        validateSemantics(sem);
+        displayCompilationResults(sem);
     }
     catch (LexicalError err)
     {
@@ -250,4 +223,121 @@ void MainWindow::compileCode()
     sem.clearSymbolPointer();
     sem.warnings.clear(); // Clear previous warnings
     tableModel->clear();  // Reset the table model
+}
+
+void MainWindow::validateSemantics(Semantic &sem)
+{
+    validateMainFunction(sem);
+    checkUnusedSymbols(sem);
+}
+
+void MainWindow::validateMainFunction(Semantic &sem)
+{
+    vector<SymbolTable::SymbolInfo> symbols = sem.symbolTable.getAllSymbols();
+    SymbolTable::SymbolInfo *mainSymbol = nullptr;
+    int mainIndex = -1;
+
+    for (int i = 0; i < symbols.size(); ++i)
+    {
+        if (symbols[i].id == "main" && symbols[i].symbolClassification == SymbolTable::SymbolClassification::FUNCTION)
+        {
+            if (symbols[i].dataType != SemanticTable::Types::__NULL)
+            {
+                throw SemanticError("Semantic error: 'main' function must return 'void'.");
+            }
+            else if (symbols[i].functionParams.size() > 0)
+            {
+                throw SemanticError("Semantic error: 'main' function must not have parameters.");
+            }
+
+            // Add the first jump to the main function
+            // Add in the beginning of the assembly code
+            string label = sem.assembly.generateAssemblyLabel("main", symbols[i].scope);
+            sem.assembly.text.insert(sem.assembly.text.begin(), "\tJMP FUNC_" + label);
+
+            // Check if inside main has any return statement
+            // Changes them to a Bip instruction: HLT 0
+            bool insideMainFunction = false;
+            for (auto &instruction : sem.assembly.text)
+            {
+                // Check if we're entering the main function
+                if (instruction.find("FUNC_" + label + ":") != std::string::npos)
+                {
+                    insideMainFunction = true;
+                }
+                // Check if we're exiting the main function
+                else if (insideMainFunction && instruction.find("# End of function " + label) != std::string::npos)
+                {
+                    break; // Exit the loop, we found the end of main function
+                }
+                // Replace RETURN with HLT 0 if we're inside main function
+                else if (insideMainFunction && instruction.find("RETURN") != std::string::npos)
+                {
+                    instruction = "\tHLT 0";
+                }
+            }
+
+            mainSymbol = &symbols[i];
+            mainIndex = i;
+            break;
+        }
+    }
+
+    if (!mainSymbol)
+    {
+        throw SemanticError("Semantic error: 'main' function not declared.");
+    }
+
+    // Check if there are symbols after the main function, after it has been declared
+    for (int i = mainIndex + 1; i < symbols.size(); ++i)
+    {
+        cout << "Symbol: " << symbols[i].id << ", Scope: " << symbols[i].scope << endl;
+        if (symbols[i].scope == mainSymbol->scope || symbols[i].scope > sem.mainInnerScope + 1) // Ignore the symbols in the main function scope, thats why we add 1
+        {
+            sem.warnings.push_back("Warning: Symbol '" + symbols[i].id + "' declared after 'main' function.");
+        }
+    }
+}
+
+void MainWindow::checkUnusedSymbols(Semantic &sem)
+{
+    for (auto &symbol : sem.symbolTable.getAllSymbols())
+    {
+        if (symbol.id == "main")
+        {
+            continue; // Skip main function
+        }
+
+        if (!symbol.isUsed)
+        {
+            sem.warnings.push_back("Warning: Symbol '" + symbol.id + "' declared but not used.");
+        }
+    }
+}
+
+void MainWindow::displayCompilationResults(Semantic &sem)
+{
+    QString resultText = buildWarningsText(sem.warnings);
+    resultText += "<span style='color:lightgreen;'>Compiled successfully!</span>";
+
+    tableModel->populateModel(sem.symbolTable.getAllSymbols());
+    output->setHtml(resultText);
+
+    assemblyOutput->setText(QString::fromStdString(sem.assembly.generateAssembly()));
+}
+
+QString MainWindow::buildWarningsText(std::vector<std::string> warnings)
+{
+    QString warningsText;
+
+    if (!warnings.empty())
+    {
+        for (std::string &warning : warnings)
+        {
+            warningsText += "<span style='color:orange;'>" + QString::fromStdString(warning) + "</span><br>";
+        }
+        warningsText += "<br>";
+    }
+
+    return warningsText;
 }
