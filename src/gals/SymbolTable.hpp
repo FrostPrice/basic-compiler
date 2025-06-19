@@ -29,12 +29,12 @@ public:
         SemanticTable::Types dataType; // -1: __NULL, 0: INT, 1: FLOAT, 2: DOUBLE, 3: CHAR, 4: STRING, 5: BOOL (From SemanticTable)
         int scope;                     // 0: global, n: local
         SymbolClassification symbolClassification;
-        bool isInitialized = false; // true if the variable is initialized (has value)
-        bool isUsed = false;        // true if the variable is used
-        vector<int> arraySize;      // Array size of each dimension
-        int functionParams = -1;    // Number of parameters in the function
-        string functionId;          // ID of the function
-        bool hasReturn = false;     // true if the function has a return statement
+        bool isInitialized = false;               // true if the variable is initialized (has value)
+        bool isUsed = false;                      // true if the variable is used
+        vector<int> arraySize;                    // Array size of each dimension
+        string functionId;                        // ID of the function
+        bool hasReturn = false;                   // true if the function has a return statement
+        vector<SymbolInfo *> functionParams = {}; // List of parameter types for the function
 
         SymbolInfo() {}
         SymbolInfo(string id, SemanticTable::Types dataType, int scope) : id(id), dataType(dataType), scope(scope) {}
@@ -155,20 +155,6 @@ public:
         }
         return nullptr; // Symbol not found
     };
-
-    vector<SymbolInfo *> getFunctionParams(int scope)
-    {
-        vector<SymbolInfo *> params;
-
-        for (SymbolInfo &symbol : symbolTable)
-        {
-            if (symbol.symbolClassification == PARAM && symbol.scope == scope)
-            {
-                params.push_back(&symbol);
-            }
-        }
-        return params;
-    }
 
     // * Used only for debugging
     void printTable()

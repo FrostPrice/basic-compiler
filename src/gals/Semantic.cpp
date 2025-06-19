@@ -447,7 +447,7 @@ void Semantic::executeAction(int action, const Token *token)
         // Validation that a function already exists is made in the sintactic
         // You cannot have a parameter without a function
         SymbolTable::SymbolInfo *functionSymbol = this->symbolTable.getFunctionInScope();
-        functionSymbol->functionParams++;
+        functionSymbol->functionParams.push_back(this->currentSymbol);
 
         this->currentSymbol->symbolClassification = SymbolTable::PARAM;
         this->currentSymbol->functionId = functionSymbol->id;
@@ -467,7 +467,7 @@ void Semantic::executeAction(int action, const Token *token)
         if (!this->functionSymbol)
             throw SemanticError("Function not found in scope");
 
-        vector<SymbolTable::SymbolInfo *> params = this->symbolTable.getFunctionParams(this->functionSymbol->scope + 1);
+        vector<SymbolTable::SymbolInfo *> params = this->functionSymbol->functionParams;
 
         if (this->parametersCountInFuncCall >= params.size())
             throw SemanticError("Too many parameters in function call");
@@ -629,7 +629,7 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->currentSymbol->symbolClassification = SymbolTable::FUNCTION;
         this->currentSymbol->isInitialized = true;
-        this->currentSymbol->functionParams = 0; // Starts with 0 parameters
+        // this->currentSymbol->functionParams = {}; // Starts with 0 parameters, its instantiated with an empty vector
         this->currentSymbol->arraySize = this->functionArraySizes;
         this->symbolTable.addSymbol(*this->currentSymbol);
 

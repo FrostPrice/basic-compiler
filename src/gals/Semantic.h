@@ -386,11 +386,11 @@ public:
 
     void validateFunctionParamCount(SymbolTable::SymbolInfo *functionSymbol)
     {
-        if (functionSymbol->functionParams != parametersCountInFuncCall)
+        if (functionSymbol->functionParams.size() != parametersCountInFuncCall)
         {
             throw SemanticError(SemanticError::WrongArgumentCount(
                 functionSymbol->id,
-                functionSymbol->functionParams,
+                functionSymbol->functionParams.size(),
                 parametersCountInFuncCall));
         }
     }
