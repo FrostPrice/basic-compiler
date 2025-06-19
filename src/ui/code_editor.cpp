@@ -3,6 +3,7 @@
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QShortcut>
+#include <QKeyEvent>
 
 LineNumberArea::LineNumberArea(CodeEditor *editor)
     : QWidget(static_cast<QWidget *>(editor)), codeEditor(editor) {}
@@ -169,4 +170,86 @@ QSize LineNumberArea::sizeHint() const
 void LineNumberArea::paintEvent(QPaintEvent *event)
 {
     codeEditor->lineNumberAreaPaintEvent(event);
+}
+
+void CodeEditor::keyPressEvent(QKeyEvent *event)
+{
+    if (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))
+    {
+        if (event->key() == Qt::Key_Up)
+        {
+            duplicateLineOrSelection(-1);
+            return;
+        }
+        else if (event->key() == Qt::Key_Down)
+        {
+            duplicateLineOrSelection(1);
+            return;
+        }
+    }
+
+    QPlainTextEdit::keyPressEvent(event);
+}
+
+void CodeEditor::duplicateLineOrSelection(int direction)
+{
+    QTextCursor cursor = textCursor();
+    QString textToDuplicate;
+
+    if (cursor.hasSelection())
+    {
+        int start = cursor.selectionStart();
+        int end = cursor.selectionEnd();
+
+        cursor.setPosition(start);
+        cursor.movePosition(QTextCursor::StartOfBlock);
+        int firstPos = cursor.position();
+
+        cursor.setPosition(end, QTextCursor::KeepAnchor);
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+        int lastPos = cursor.position();
+
+        textToDuplicate = cursor.selectedText();
+        textToDuplicate.replace(QChar::ParagraphSeparator, "\n");
+
+        cursor.beginEditBlock();
+
+        if (direction > 0)
+        {
+            cursor.setPosition(lastPos);
+            cursor.movePosition(QTextCursor::EndOfBlock);
+            cursor.insertBlock();
+            cursor.insertText(textToDuplicate);
+        }
+        else
+        {
+            cursor.setPosition(firstPos);
+            cursor.movePosition(QTextCursor::StartOfBlock);
+            cursor.insertText(textToDuplicate + "\n");
+        }
+
+        cursor.endEditBlock();
+    }
+    else
+    {
+        cursor.movePosition(QTextCursor::StartOfBlock);
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+        textToDuplicate = cursor.selectedText();
+
+        cursor.beginEditBlock();
+
+        if (direction > 0)
+        {
+            cursor.movePosition(QTextCursor::EndOfBlock);
+            cursor.insertBlock();
+            cursor.insertText(textToDuplicate);
+        }
+        else
+        {
+            cursor.movePosition(QTextCursor::StartOfBlock);
+            cursor.insertText(textToDuplicate + "\n");
+        }
+
+        cursor.endEditBlock();
+    }
 }

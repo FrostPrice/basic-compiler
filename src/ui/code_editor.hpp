@@ -38,6 +38,12 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+    
+    protected:
+        void keyPressEvent(QKeyEvent *event) override;
+    
+    private:
+        void duplicateLineOrSelection(int direction);
 };
 
 #endif // CODEEDITOR_H
