@@ -503,11 +503,10 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 25: // RETURN
     {
-        this->functionSymbol = symbolTable.getEnclosingFunction(this->symbolTable.getCurrentScope());
-        this->functionSymbol->hasReturn = true;
         if (!this->functionSymbol)
             throw SemanticError("Function not found in scope");
 
+        this->functionSymbol->hasReturn = true;
         if (this->functionSymbol->dataType == SemanticTable::Types::__NULL)
         {
             if (lexeme != "return")
