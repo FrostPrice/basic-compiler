@@ -17,6 +17,8 @@
 
 using namespace std;
 
+using Entry = ExpressionController::ExpressionsEntry;
+
 class Semantic
 {
 private:
@@ -189,18 +191,11 @@ public:
     SemanticTable::Types reduceExpressionAndGetType(
         SemanticTable::Types expectedType = SemanticTable::Types::__NULL,
         bool validate = false,
-        bool shouldLoad = true,
-        int expressionScopeIndex = 0)
+        bool shouldLoad = true)
     {
-        using Entry = ExpressionController::ExpressionsEntry;
-
         this->lastExpressionScopeIndex = 0;
 
-        stack<Entry> *orig = nullptr;
-        if (expressionScopeIndex != 0)
-            orig = &expressionScopeList[expressionScopeIndex].expressionController.expressionStack;
-        else
-            orig = &expressionScopeList.front().expressionController.expressionStack;
+        stack<Entry> *orig = &expressionScopeList.front().expressionController.expressionStack;
 
         if (orig->empty())
             throw SemanticError(SemanticError::ExpressionStackEmpty());
@@ -214,7 +209,7 @@ public:
         }
         reverse(tokens.begin(), tokens.end());
 
-        if (expressionScopeList.size() > 1 && expressionScopeIndex == 0)
+        if (expressionScopeList.size() > 1)
             expressionScopeList.erase(expressionScopeList.begin());
 
         // Convert to RPN using precedence
@@ -296,6 +291,35 @@ public:
         }
 
         return result.entryType;
+    }
+
+    void reduceParameters(SymbolTable::SymbolInfo *functionSymbol)
+    {
+        stack<Entry> *orig = &expressionScopeList.front().expressionController.expressionStack;
+
+        vector<Entry> tokens;
+        tokens.reserve(orig->size());
+        while (!orig->empty())
+        {
+            tokens.push_back(move(orig->top()));
+            orig->pop();
+        }
+        reverse(tokens.begin(), tokens.end());
+
+        vector<SymbolTable::SymbolInfo *> params = functionSymbol->functionParams;
+
+        if (expressionScopeList.size() > 1)
+            expressionScopeList.erase(expressionScopeList.begin());
+
+        this->assembly.addComment("Function parameters for " + functionSymbol->id);
+
+        for (int i = 0; i < tokens.size(); i++)
+        {
+            reduceExpressionAndGetType(params[i]->dataType, true, true);
+            this->assembly.addText("STO", this->assembly.generateAssemblyLabel("FUNC_" + params[i]->id, params[i]->scope));
+        }
+
+        this->assembly.addBlankLine();
     }
 
     void createExpressionScope(SymbolTable::SymbolInfo *symbol = nullptr)

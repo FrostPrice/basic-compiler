@@ -112,18 +112,23 @@ void Assembly::emitLoad(SymbolTable &symTable,
         {
             emitUnaryOp(symTable, entry, semantic);
         }
-        else
+        else if (symbol->arraySize.size())
         {
-            if (symbol->arraySize.size())
+            semantic->reduceExpressionAndGetType();
+            if (shouldLoad)
             {
-                semantic->reduceExpressionAndGetType();
-                if (shouldLoad)
-                {
-                    string label = generateAssemblyLabel(symbol->id, symbol->scope);
-                    addText("STO", "$indr");
-                    addText("LDV", label);
-                }
+                string label = generateAssemblyLabel(symbol->id, symbol->scope);
+                addText("STO", "$indr");
+                addText("LDV", label);
             }
+        }
+        else if (symbol->symbolClassification == SymbolTable::SymbolClassification::FUNCTION)
+        {
+            semantic->reduceParameters(symbol);
+
+            // * Assembly generation
+            this->addComment("Calling function " + symbol->id);
+            this->addText("CALL", "FUNC_" + this->generateAssemblyLabel(symbol->id, symbol->scope));
         }
     }
     else if (entry.entryType != SemanticTable::Types::INT)
@@ -212,6 +217,8 @@ void Assembly::emitBinaryOp(SymbolTable &symTable,
                 }
                 else if (symbol->symbolClassification == SymbolTable::SymbolClassification::FUNCTION)
                 {
+                    semantic->reduceParameters(symbol);
+
                     // * Assembly generation
                     this->addComment("Calling function " + symbol->id);
                     this->addText("CALL", "FUNC_" + this->generateAssemblyLabel(symbol->id, symbol->scope));

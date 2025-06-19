@@ -473,10 +473,9 @@ void Semantic::executeAction(int action, const Token *token)
             throw SemanticError("Too many parameters in function call");
 
         SymbolTable::SymbolInfo *currentParam = params[this->parametersCountInFuncCall];
-        reduceExpressionAndGetType(currentParam->dataType, true, true, this->expressionScopeIndexes.top());
 
-        // * Assembly generation
-        this->assembly.addText("STO", this->assembly.generateAssemblyLabel("FUNC_" + currentParam->id, currentParam->scope));
+        this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushParameter();
+        this->createExpressionScope();
 
         this->parametersCountInFuncCall++;
 
@@ -506,6 +505,7 @@ void Semantic::executeAction(int action, const Token *token)
 
                 // * Assembly generation
                 this->assembly.addText("RETURN", "");
+                this->assembly.addBlankLine();
             }
         }
         break;
@@ -655,12 +655,9 @@ void Semantic::executeAction(int action, const Token *token)
             throw SemanticError("Function not found in scope");
         validateFunctionParamCount(this->functionSymbol);
 
-        this->parametersCountInFuncCall = 0;
-
-        int expressionScopeIndex = this->expressionScopeIndexes.top();
-        this->expressionScopeList.erase(expressionScopeList.begin() + expressionScopeIndex);
         this->expressionScopeIndexes.pop();
 
+        this->parametersCountInFuncCall = 0;
         break;
     }
     case 30: // FUNCTION_DEF_ARRAY
@@ -1054,6 +1051,11 @@ void Semantic::executeAction(int action, const Token *token)
 
         this->labelStack.pop();
         this->loopDepth--;
+        break;
+    }
+    case 68:
+    {
+        this->expressionScopeIndexes.pop();
         break;
     }
     default:

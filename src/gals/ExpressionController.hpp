@@ -19,7 +19,8 @@ public:
         {
             BINARY_OP,
             UNARY_OP,
-            VALUE
+            VALUE,
+            PARAMETER
         } kind; // Type of the entry (binary operator, unary operator, or value)
 
         SemanticTable::Types entryType = SemanticTable::Types::__NULL; // Type of the entry
@@ -38,6 +39,16 @@ public:
         entry.entryType = type;
         entry.value = value;
         entry.hasOwnScope = hasOwnScope; // Set if the entry has its own scope
+        expressionStack.push(entry);
+    }
+
+    void pushParameter()
+    {
+        ExpressionsEntry entry;
+        entry.kind = ExpressionsEntry::PARAMETER;
+        entry.entryType = SemanticTable::Types::__NULL; // Placeholder for parameter type
+        entry.value = "$parameter$";                    // No value for parameters
+        entry.hasOwnScope = true;                       // Parameters always have their own scope
         expressionStack.push(entry);
     }
 
