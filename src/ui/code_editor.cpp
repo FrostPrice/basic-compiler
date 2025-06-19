@@ -3,7 +3,6 @@
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QShortcut>
-#include <QKeyEvent>
 
 LineNumberArea::LineNumberArea(CodeEditor *editor)
     : QWidget(static_cast<QWidget *>(editor)), codeEditor(editor) {}
@@ -25,6 +24,18 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     commentShortcut->setKey(Qt::CTRL + Qt::Key_Slash);
 
     connect(commentShortcut, &QShortcut::activated, this, &CodeEditor::toggleLineComment);
+
+    QShortcut *duplicateDownShortcut = new QShortcut(this);
+    duplicateDownShortcut->setKey(Qt::ALT + Qt::SHIFT + Qt::Key_Down);
+
+    connect(duplicateDownShortcut, &QShortcut::activated, this, [this]()
+            { this->duplicateLines(true); });
+
+    QShortcut *duplicateUpShortcut = new QShortcut(this);
+    duplicateUpShortcut->setKey(Qt::ALT + Qt::SHIFT + Qt::Key_Up);
+
+    connect(duplicateUpShortcut, &QShortcut::activated, this, [this]()
+            { this->duplicateLines(false); });
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -172,84 +183,35 @@ void LineNumberArea::paintEvent(QPaintEvent *event)
     codeEditor->lineNumberAreaPaintEvent(event);
 }
 
-void CodeEditor::keyPressEvent(QKeyEvent *event)
-{
-    if (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))
-    {
-        if (event->key() == Qt::Key_Up)
-        {
-            duplicateLineOrSelection(-1);
-            return;
-        }
-        else if (event->key() == Qt::Key_Down)
-        {
-            duplicateLineOrSelection(1);
-            return;
-        }
-    }
-
-    QPlainTextEdit::keyPressEvent(event);
-}
-
-void CodeEditor::duplicateLineOrSelection(int direction)
+void CodeEditor::duplicateLines(bool isDown)
 {
     QTextCursor cursor = textCursor();
     QString textToDuplicate;
 
-    if (cursor.hasSelection())
-    {
-        int start = cursor.selectionStart();
-        int end = cursor.selectionEnd();
+    int start = cursor.selectionStart();
+    int end = cursor.selectionEnd();
 
-        cursor.setPosition(start);
-        cursor.movePosition(QTextCursor::StartOfBlock);
-        int firstPos = cursor.position();
+    cursor.beginEditBlock();
 
-        cursor.setPosition(end, QTextCursor::KeepAnchor);
-        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-        int lastPos = cursor.position();
+    cursor.setPosition(start);
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    int firstPos = cursor.position();
 
-        textToDuplicate = cursor.selectedText();
-        textToDuplicate.replace(QChar::ParagraphSeparator, "\n");
+    cursor.setPosition(end, QTextCursor::KeepAnchor);
+    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    int lastPos = cursor.position();
 
-        cursor.beginEditBlock();
+    textToDuplicate = cursor.selectedText();
 
-        if (direction > 0)
-        {
-            cursor.setPosition(lastPos);
-            cursor.movePosition(QTextCursor::EndOfBlock);
-            cursor.insertBlock();
-            cursor.insertText(textToDuplicate);
-        }
-        else
-        {
-            cursor.setPosition(firstPos);
-            cursor.movePosition(QTextCursor::StartOfBlock);
-            cursor.insertText(textToDuplicate + "\n");
-        }
+    cursor.movePosition(QTextCursor::EndOfBlock);
+    cursor.insertText("\n" + textToDuplicate);
 
-        cursor.endEditBlock();
-    }
-    else
-    {
-        cursor.movePosition(QTextCursor::StartOfBlock);
-        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-        textToDuplicate = cursor.selectedText();
+    int offset = isDown ? textToDuplicate.length() + 1 : 0;
 
-        cursor.beginEditBlock();
+    cursor.setPosition(start + offset);
+    cursor.setPosition(end + offset, QTextCursor::KeepAnchor);
 
-        if (direction > 0)
-        {
-            cursor.movePosition(QTextCursor::EndOfBlock);
-            cursor.insertBlock();
-            cursor.insertText(textToDuplicate);
-        }
-        else
-        {
-            cursor.movePosition(QTextCursor::StartOfBlock);
-            cursor.insertText(textToDuplicate + "\n");
-        }
+    cursor.endEditBlock();
 
-        cursor.endEditBlock();
-    }
+    setTextCursor(cursor);
 }

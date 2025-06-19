@@ -30,6 +30,7 @@ public:
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void toggleLineComment();
+    void duplicateLines(bool isDown);
 
 private slots:
     void updateLineNumberAreaWidth(int);
@@ -38,12 +39,6 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
-    
-    protected:
-        void keyPressEvent(QKeyEvent *event) override;
-    
-    private:
-        void duplicateLineOrSelection(int direction);
 };
 
 #endif // CODEEDITOR_H
