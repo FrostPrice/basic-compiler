@@ -492,13 +492,19 @@ void Semantic::executeAction(int action, const Token *token)
                 if (!this->functionSymbol->hasReturn)
                     throw SemanticError("Function " + this->functionSymbol->id + " has no return statement");
 
-                this->functionSymbol = nullptr;
-
                 // * Assembly generation
-                this->assembly.addText("RETURN", "");
-                this->assembly.addBlankLine();
+                if (!this->returnInstructionAdded) // Will add only when there is no explicit return in the function body
+                {
+                    this->assembly.addText("RETURN", "");
+                    this->assembly.addBlankLine();
+                }
+                string label = this->assembly.generateAssemblyLabel(this->functionSymbol->id, this->functionSymbol->scope);
+                this->assembly.addComment("End of function " + label);
+
+                this->functionSymbol = nullptr; // Reset the function symbol after exiting the block
             }
         }
+        this->returnInstructionAdded = false;
         break;
     }
     case 25: // RETURN
@@ -535,6 +541,14 @@ void Semantic::executeAction(int action, const Token *token)
             throw SemanticError("Invalid return type for function " + this->functionSymbol->id);
         else
             reduceExpressionAndGetType(this->functionSymbol->dataType, true);
+
+        // Add the return instruction for scoped returns, like in if statements and loops
+        if (this->functionSymbol->scope != this->symbolTable.getCurrentScope())
+        {
+            this->assembly.addText("RETURN", "");
+            this->assembly.addBlankLine();
+            this->returnInstructionAdded = true; // Mark that we've added a return instruction
+        }
 
         break;
     }

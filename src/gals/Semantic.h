@@ -55,6 +55,7 @@ private:
     int switchDepth = 0;
 
     bool hasToCreateScope = true; // Flag to indicate if a new scope should be created
+    bool returnInstructionAdded = false;
 
 public:
     vector<SymbolTable::SymbolInfo *> symbolPointers; // Pointers to symbols for semantic analysis
