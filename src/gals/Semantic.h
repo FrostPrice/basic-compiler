@@ -47,8 +47,7 @@ private:
     int arrayDepth = -1;                 // Array depth of the last identifier
     bool hasToCleanAccumulator = true;   // Flag to indicate if the accumulator needs to be cleaned
 
-    vector<int> functionArraySizes;    // Array dimensions of the function array value
-    int parametersCountInFuncCall = 0; // Number of parameters in the function call
+    vector<int> functionArraySizes; // Array dimensions of the function array value
 
     int loopDepth = 0; // Loop depth for break and continue statements
 
@@ -313,6 +312,9 @@ public:
 
         this->assembly.addComment("Function parameters for " + functionSymbol->id);
 
+        if (tokens.size() != params.size())
+            throw SemanticError(SemanticError::WrongArgumentCount(functionSymbol->id, params.size(), tokens.size()));
+
         for (int i = 0; i < tokens.size(); i++)
         {
             reduceExpressionAndGetType(params[i]->dataType, true, true);
@@ -406,17 +408,6 @@ public:
 
         throw SemanticError("Expression type '" + std::to_string(top.entryType) +
                             "' not allowed here.");
-    }
-
-    void validateFunctionParamCount(SymbolTable::SymbolInfo *functionSymbol)
-    {
-        if (functionSymbol->functionParams.size() != parametersCountInFuncCall)
-        {
-            throw SemanticError(SemanticError::WrongArgumentCount(
-                functionSymbol->id,
-                functionSymbol->functionParams.size(),
-                parametersCountInFuncCall));
-        }
     }
 };
 

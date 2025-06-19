@@ -467,17 +467,8 @@ void Semantic::executeAction(int action, const Token *token)
         if (!this->functionSymbol)
             throw SemanticError("Function not found in scope");
 
-        vector<SymbolTable::SymbolInfo *> params = this->functionSymbol->functionParams;
-
-        if (this->parametersCountInFuncCall >= params.size())
-            throw SemanticError("Too many parameters in function call");
-
-        SymbolTable::SymbolInfo *currentParam = params[this->parametersCountInFuncCall];
-
         this->expressionScopeList[this->expressionScopeIndexes.top()].expressionController.pushParameter();
         this->createExpressionScope();
-
-        this->parametersCountInFuncCall++;
 
         break;
     }
@@ -651,13 +642,7 @@ void Semantic::executeAction(int action, const Token *token)
     }
     case 29: // FUNCTION CALL
     {
-        if (!this->functionSymbol)
-            throw SemanticError("Function not found in scope");
-        validateFunctionParamCount(this->functionSymbol);
-
         this->expressionScopeIndexes.pop();
-
-        this->parametersCountInFuncCall = 0;
         break;
     }
     case 30: // FUNCTION_DEF_ARRAY
