@@ -189,6 +189,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 void MainWindow::compileCode()
 {
+    tableModel->clear(); // Reset the table model
+
     QString code = editor->toPlainText();
 
     Lexical lex;
@@ -222,7 +224,6 @@ void MainWindow::compileCode()
 
     sem.clearSymbolPointer();
     sem.warnings.clear(); // Clear previous warnings
-    tableModel->clear();  // Reset the table model
 }
 
 void MainWindow::validateSemantics(Semantic &sem)
